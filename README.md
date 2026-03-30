@@ -40,14 +40,7 @@ ai-memorycore/
 │   ├── LRU-Project-Management-System/ # Smart project tracking
 │   │   ├── README.md        # System documentation
 │   │   ├── install-lru-projects-core.md # Auto-installation wizard
-│   │   ├── new-project-protocol.md # Create project workflow
-│   │   ├── load-project-protocol.md # Resume project workflow
-│   │   ├── save-project-protocol.md # Save progress workflow
-│   │   └── project-templates/ # Type-specific templates
-│   │       ├── coding-template.md
-│   │       ├── writing-template.md
-│   │       ├── research-template.md
-│   │       └── business-template.md
+│   │   └── SKILL.md         # Auto-triggered skill (all commands + LRU engine embedded)
 │   ├── Memory-Consolidation-System/ # Unified memory upgrade + patch system
 │   │   ├── README.md        # Feature explanation & benefits
 │   │   ├── consolidation-core.md # Integration protocol
@@ -78,19 +71,31 @@ ai-memorycore/
 │   │   ├── install-work-plan.md # Installation protocol
 │   │   ├── plan-format.md   # Sample format for plan files
 │   │   └── SKILL.md         # Auto-triggered skill (for Skill Plugin System)
-│   └── Library-System/      # Knowledge library system
-│       ├── README.md         # Feature explanation & benefits
-│       ├── install-library.md # Installation protocol
-│       ├── SKILL.md          # Auto-triggered skill (format embedded)
-│       └── formats/          # Library entry format templates
-│           ├── architecture-format.md
-│           ├── component-format.md
-│           ├── database-format.md
-│           ├── diagram-format.md
-│           ├── integration-format.md
-│           ├── security-format.md
-│           ├── theme-format.md
-│           └── workflow-format.md
+│   ├── Library-System/      # Knowledge library system
+│   │   ├── README.md         # Feature explanation & benefits
+│   │   ├── install-library.md # Installation protocol
+│   │   ├── SKILL.md          # Auto-triggered skill (format embedded)
+│   │   └── formats/          # Library entry format templates
+│   │       ├── architecture-format.md
+│   │       ├── component-format.md
+│   │       ├── database-format.md
+│   │       ├── diagram-format.md
+│   │       ├── integration-format.md
+│   │       ├── security-format.md
+│   │       ├── theme-format.md
+│   │       └── workflow-format.md
+│   ├── Reminders-System/     # Persistent cross-session reminders
+│   │   ├── README.md          # Feature explanation & benefits
+│   │   ├── install-reminders.md # Installation protocol
+│   │   └── SKILL.md           # Auto-triggered skill (for Skill Plugin System)
+│   ├── Decision-Log-System/  # Append-only decision tracking
+│   │   ├── README.md          # Feature explanation & benefits
+│   │   ├── install-decision-log.md # Installation protocol
+│   │   └── SKILL.md           # Auto-triggered skill (for Skill Plugin System)
+│   └── Forge-Self-Improvement-System/ # AI self-improvement through skill creation
+│       ├── README.md          # Feature explanation & benefits
+│       ├── install-forge.md   # Installation protocol
+│       └── SKILL.md           # Auto-triggered skill (pattern detection + forging)
 ├── library-items/            # Pre-made knowledge entries for Library System
 │   ├── README.md             # Catalog and install instructions
 │   └── security/             # Security section items
@@ -99,12 +104,10 @@ ai-memorycore/
 │   ├── daily-diary-protocol.md # Archive management rules
 │   ├── Daily-Diary-001.md   # Current active diary
 │   └── archive/             # Auto-archived files (>1k lines)
-├── projects/                # LRU managed projects (after install)
-│   ├── coding-projects/
-│   │   ├── active/          # Positions 1-10
-│   │   └── archived/        # Position 11+
-│   └── project-list.md     # Master project index
-└── save-protocol.md         # Manual save system
+└── projects/                # LRU managed projects (after install)
+    ├── active/              # Positions 1-10
+    ├── archived/            # Position 11+
+    └── project-list.md      # Auto-generated project index
 ```
 
 ### **Core Components**
@@ -113,7 +116,6 @@ ai-memorycore/
 3. **Relationship Memory** - User preferences and learning patterns
 4. **Current Session** - Temporary working memory (resets each session)
 5. **Daily Diary** - Optional conversation history with auto-archiving
-6. **Save Protocol** - User-triggered save system
 
 ## 🚀 **Quick Start**
 
@@ -225,31 +227,35 @@ Your AI companion can specialize in:
 **What It Does:**
 - Tracks multiple projects with intelligent LRU (Least Recently Used) positioning
 - Automatically archives old projects when reaching capacity (10 active slots)
-- Type-specific memory patterns (coding, writing, research, business)
+- Duration tracking that accumulates time from Auto-Commit messages
+- Line limit enforcement (1000 lines max with auto-summarization)
 - Seamless context switching between different projects
-- Maintains complete project history and progress logs
+- Fuzzy search for loading projects by partial name
 
 **Quick Setup:**
 1. Navigate to `Feature/LRU-Project-Management-System/`
-2. Type: "install lru projects" (loads install-lru-projects-core.md)
-3. Select project type(s) you want to manage
+2. Type: "install lru projects"
+3. System creates project structure and installs skill
 4. System auto-integrates and removes installation files
 
 **Benefits:**
 - Never lose track of multiple ongoing projects
 - AI remembers exactly where you left off in each project
-- Automatic organization with smart archiving
-- Type-specific memory loading for optimal context
-- Perfect for developers, writers, researchers, and business professionals
+- Automatic organization with smart LRU archiving
+- Duration tracking shows time invested per project
+- 1000-line cap prevents project file bloat over time
 
 **Available Commands:**
-- `new [type] project [name]` - Create new project with LRU management
-- `load project [name]` - Resume any project instantly
-- `save project` - Save current project progress (separate from AI memory save)
+- `new project [name]` - Create new project at position #1
+- `load project [name]` - Resume any project instantly (fuzzy search)
+- `save project` - Save current project progress (separate from AI memory)
 - `list projects` - View all active and archived projects
-- `archive project [name]` - Manually archive completed projects
 
-*Revolutionary project memory system proven in production*
+**Synergy with Auto-Commit:** Duration tracking parses `Time: ~XX min` from Auto-Commit messages, accumulating per project across sessions.
+
+**Platform Note:** Includes `SKILL.md` for auto-triggering via the Skill Plugin System. Works on any platform without the plugin (load install protocol manually).
+
+*Based on proven project management in production AI companions (70+ projects tracked)*
 
 ### **🔄 Memory Consolidation System**
 *Unified memory architecture for faster loading and better context*
@@ -496,12 +502,111 @@ The `library-items/` folder contains production-tested knowledge entries ready t
 
 *Based on proven knowledge management systems in production AI companions (4+ months of daily use, 30+ library entries)*
 
+### **🔔 Reminders System**
+*Persistent cross-session reminders that survive memory resets*
+
+**What It Does:**
+- Persistent reminders that survive session resets and context changes
+- Open/Completed lifecycle for tracking active and resolved items
+- Deadline awareness for time-sensitive tasks with overdue detection
+- Session-end auto-check ensures reminders are reviewed before closing
+- Separate from session RAM so reminders never get overwritten
+
+**Quick Setup:**
+1. Navigate to `Feature/Reminders-System/`
+2. Type: "Load reminders"
+3. Reminders file created in `main/reminders.md` with lifecycle rules
+
+**Benefits:**
+- Nothing gets lost between sessions -- follow-ups persist indefinitely
+- Deadline tracking catches overdue items before they become problems
+- Completed section serves as searchable history of resolved tasks
+- Natural language detection -- "remind me", "don't forget", "follow up"
+
+**Available Commands:**
+- `remind me [task]` - Add a new reminder
+- `check reminders` - Review all open reminders
+- Session start: AI automatically flags urgent/overdue items
+- Session end: AI reviews and updates reminder status
+
+**Platform Note:** Includes `SKILL.md` for auto-triggering via the Skill Plugin System. Works on any platform without the plugin (load install protocol manually).
+
+*Based on proven reminder systems in production AI companions (4+ months of daily use, 50+ sessions without a lost follow-up)*
+
+### **📋 Decision Log System**
+*Append-only record of non-obvious decisions and their reasoning*
+
+**What It Does:**
+- Append-only log of architectural, technical, and strategic decisions
+- Context + Decision + Rationale format for each entry
+- Searchable history of "why did we do it this way?"
+- Immutable -- past decisions are never edited, reversals create new entries
+- Cross-session persistence that survives memory resets
+
+**Quick Setup:**
+1. Navigate to `Feature/Decision-Log-System/`
+2. Type: "Load decision-log"
+3. Decision log created in `main/decisions.md` with append-only rules
+
+**Benefits:**
+- Institutional memory across sessions and context resets
+- Faster onboarding when returning to a project after weeks
+- Confident reversals -- know exactly what trade-offs were accepted
+- AI detects decision-worthy moments and offers to log them
+
+**Available Commands:**
+- `log decision` - Capture a decision with context and rationale
+- `why did we choose [X]?` - Search decision log for past reasoning
+
+**Synergy with Other Features:**
+- **Echo Memory Recall**: "Do you remember why we chose X?" searches the decision log
+- **Save Diary**: Diary captures what happened; decision log captures why
+- **Reminders**: "Revisit this decision in 2 weeks" becomes a reminder
+
+*Based on proven decision tracking in production AI companions (20+ architectural decisions logged and referenced across sessions)*
+
+### **🔨 Forge Self-Improvement System**
+*Teach your AI to improve itself through pattern detection and skill creation*
+
+**What It Does:**
+- Pattern detection that recognizes repeated tasks handled ad-hoc 3+ times
+- Mistake prevention that turns errors into permanent rules
+- Skill creation with properly formatted files and trigger conditions
+- Level-up system where skills evolve through experience (Lv.1 -> Lv.2 -> Lv.3+)
+- Human-in-the-loop approval -- AI proposes, you decide
+
+**Quick Setup:**
+1. Navigate to `Feature/Forge-Self-Improvement-System/`
+2. Type: "Load forge"
+3. AI gains self-improvement awareness and skill creation ability
+
+**Benefits:**
+- Continuous improvement -- your AI gets smarter with every session
+- Safe evolution -- human approval required for every change
+- Organized skills -- standard format, proper triggers, level tracking
+- Compound growth -- each skill makes the next session more productive
+
+**Available Commands:**
+- `create skill` / `new skill` / `forge this` - Propose a new skill
+- `level up [skill]` / `upgrade [skill]` - Improve existing skill
+- `self improve` - Review recent sessions for improvement opportunities
+
+**Synergy with Other Features:**
+- **Skill Plugin System**: Forge creates skills in the plugin's folder structure
+- **Auto-Commit System**: After forging, commit the new/updated skill file
+- **Decision Log System**: Log skill creation decisions with rationale
+
+**Platform Note:** Includes `SKILL.md` for auto-triggering via the Skill Plugin System. Works on any platform without the plugin (load install protocol manually).
+
+*Based on proven AI self-improvement systems in production (23 skills forged over 7 months of daily use)*
+
 ---
 
-**Version**: 3.0 - Library System
+**Version**: 3.3 - Forge Self-Improvement System
 **Created by**: Kiyoraka Ken & Alice
+**Contributors**: Faiz Khairi (@faizkhairi)
 **License**: Open Source Community Project
-**Last Updated**: March 6, 2026 - Added Library System feature
+**Last Updated**: March 27, 2026 - Added Forge Self-Improvement System
 **Purpose**: Simple, effective AI memory for everyone
 
 *Transform basic AI conversations into meaningful, growing relationships*
