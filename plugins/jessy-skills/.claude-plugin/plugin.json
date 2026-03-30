@@ -1,0 +1,9 @@
+{
+  "name": "jessy-skills",
+  "version": "1.0.0",
+  "description": "Jessy AI companion skill plugins — Spring Boot best practices, memory management, and developer productivity skills.",
+  "author": {
+    "name": "Dejul",
+    "email": ""
+  }
+}

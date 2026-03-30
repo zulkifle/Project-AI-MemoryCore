@@ -31,6 +31,7 @@ You can also browse items manually and copy any `.md` file directly into your `l
 | Section | Item | Description |
 |---------|------|-------------|
 | `security` | `security-headers` | HTTP security headers with CSP — framework-agnostic (Laravel, Express, Spring Boot, Nginx/Apache) |
+| `deployment` | `sync-dev-deployment` | Pattern for keeping dev source and deployment config in sync — switch-env script with batch launcher |
 
 ## Item Format
 

@@ -1,0 +1,15 @@
+{
+  "name": "jessy-marketplace",
+  "description": "Jessy AI companion local skill marketplace",
+  "owner": {
+    "name": "Dejul",
+    "email": ""
+  },
+  "plugins": [
+    {
+      "name": "jessy-skills",
+      "description": "Jessy AI companion skills — Spring Boot best practices and memory management",
+      "source": "./jessy-skills"
+    }
+  ]
+}
