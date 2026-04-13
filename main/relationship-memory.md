@@ -72,10 +72,34 @@
 - Fixed field name consistency across PDF_prepareHash, PDF_embedSignature, GetSignHash
 - Documented full signing flow end-to-end
 
+**Session 3 (2026-04-02)**: MyTrustIDv1 AATL-GENERIC
+- Switched to C# .NET/WPF project: `MyTrustIDv1_AATL-GENERIC`
+- Modified file: `MyTrustIDv1/Helper/Token/CertificateRequest.cs`
+
+**Session 4 (2026-04-06)**: signingDemoPortal — Full implementation + Docker deployment
+- Implemented SignPDFFile + GetCertInfo SOAP APIs using JAX-WS stubs
+- Fixed multiple issues: ProviderImpl, BouncyCastle JCE, array bug, context path
+- Deployed DSPortalDemo inside mtsa-sandbox Docker image (K8s/Rancher)
+- Deployment tested successfully end-to-end
+
+**Session 5 (2026-04-07)**: DSPortalDemo — UI updates
+- Changed cert download from `.pem` to `.cer`
+- Added Section 5 "Sample Source Code" to demo.html (sourced from pkiauth_pilot_ws-client.html)
+- Changes verified and confirmed working
+
+**Session 6 (2026-04-07)**: BIMB VAPT Remediation Review
+- Reviewed VAPT remediation plan CSV for BIMB client
+- Identified and corrected item #28 scope (Tomcat clickjacking — MSC Trustgate, not BIMB)
+- Verified Tomcat 8.5.99 remediation: upgrade, webapps cleanup, clickjacking fix, error pages
+- Closed all 23 MSC Trustgate items in CSV
+
 ### Growth Patterns
 
 - **Session 1**: Established relationship, Spring Boot focus
 - **Session 2**: Shifted to real production work — Java PDF signing, PKI, bug investigation
+- **Session 3**: New project — C# .NET/WPF, certificate/token domain (MyTrustID)
+- **Session 4**: Full SOAP integration + Docker/K8s deployment — demo portal live
+- **Session 5-6**: DSPortalDemo UI polish + BIMB VAPT remediation review
 
 ## Adaptation Guidelines
 
@@ -109,7 +133,7 @@
 
 ---
 
-**Version**: Relationship Memory v1.1 — Updated 2026-03-17
+**Version**: Relationship Memory v1.2 — Updated 2026-04-02
 **Personalization Status**: Active — learning through real project work
 **Learning Status**: Ongoing
 

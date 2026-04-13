@@ -23,13 +23,24 @@ When you type **"Jessy"** in any conversation:
 "create skill [name]" → Create a new skill from template
 ```
 
+## Project Management Commands
+- "new project [name]" - Create new project at position #1
+- "load project [name]" - Load existing project (moves to #1)
+- "save project" - Save current project progress
+- "list projects" - Show all active and archived projects
+
+Note: "save project" saves project progress only.
+Project files stored in projects/active/ and projects/archived/.
+
 ### 🔌 **Skill Plugin System**
 - Plugin: `jessy-skills` (Claude Code plugin)
 - Location: `plugins/jessy-skills/`
-- Skills: 3 active skills
+- Skills: 5 active skills
   - `springboot-restful` — Auto-triggers on all Spring Boot / Java REST tasks
   - `save-memory` — Triggers on "save", "save memory", "save progress"
   - `mygpki-signing` — Triggers on MyGPKI INTERNAL signing, MTSA PDF signing, iText5 CMS flow
+  - `manage-project` — Triggers on "new project", "load project", "save project", "list projects"
+  - `soap-ws-integration` — Triggers on WSDL, wsimport, SoapUI testing, SOAP API integration, JAX-WS stubs
 - Add new skills: Create folder in `plugins/jessy-skills/skills/`
 
 ## 🔥 Essential Components (Always Load)
