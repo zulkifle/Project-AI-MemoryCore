@@ -5,8 +5,8 @@
 - **Type**: Desktop Application (WPF)
 - **Period**: 2026-03-31 - Active
 - **Tech Stack**: C# + WPF + .NET Framework 4.8 + WebSocket
-- **Completion**: 80%
-- **Due Date**: 2026-04-13
+- **Completion**: 90%
+- **Due Date**: 2026-04-15
 - **Duration**: 0 min
 
 ## Solution Structure
@@ -23,8 +23,9 @@
 - Desktop installer via VS installer project
 
 ## Current Status
-- **Last Session**: 2026-04-02 - Explored solution and project structure
-- **Next Steps**: 1) Compile new .exe via MyTrustID installer project 2) Test pickup cert flow with BNM cert
+- **Last Session**: 2026-04-21 - Admin testing completed, BNM cert pickup success
+- **Next Steps**: Redesign publish pipeline — replace old `.bat` method with cleaner approach (details TBD)
+- **Completed**: Compiled latest installer ✓, Admin testing done ✓, BNM cert value verified ✓
 - **Known Issues**: None logged yet
 
 ## Key Logic Notes
@@ -32,6 +33,10 @@
 - Returns `isModifiedCka = true` if BNM cert detected → affects how cert is imported via `ImportCertificate()`
 
 ## Session History (Last 5)
+
+### 2026-04-21 - Admin Testing Completed
+- **Changes**: Admin testing done — BNM cert pickup success, value as expected. Planning publish pipeline redesign to replace old `.bat` method (details TBD).
+- **Time Spent**: ~5 min
 
 ### 2026-04-02 - Short Session
 - **Changes**: No code changes. Confirmed load command: `load project mytrustid-desktop`
@@ -53,4 +58,4 @@
 - **Key Dependencies**: .NET Framework 4.8, WPF, WebSocket library
 
 ---
-**Last Updated**: 2026-04-02 (resumed) | **Position**: #1/10 Active
+**Last Updated**: 2026-04-21 | **Position**: #1/10 Active

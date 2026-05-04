@@ -35,12 +35,16 @@ Project files stored in projects/active/ and projects/archived/.
 ### 🔌 **Skill Plugin System**
 - Plugin: `jessy-skills` (Claude Code plugin)
 - Location: `plugins/jessy-skills/`
-- Skills: 5 active skills
+- Skills: 9 active skills
   - `springboot-restful` — Auto-triggers on all Spring Boot / Java REST tasks
   - `save-memory` — Triggers on "save", "save memory", "save progress"
   - `mygpki-signing` — Triggers on MyGPKI INTERNAL signing, MTSA PDF signing, iText5 CMS flow
   - `manage-project` — Triggers on "new project", "load project", "save project", "list projects"
   - `soap-ws-integration` — Triggers on WSDL, wsimport, SoapUI testing, SOAP API integration, JAX-WS stubs
+  - `image-compression` — Triggers on "include image compression" or "add image compression" in any Java project — adds ImageCompressionUtil + Scalr as reusable utility classes
+  - `laravel-php-skills` — Triggers on any Laravel project task: artisan, eloquent, blade, tailwind, migration, controllers, caching, HTTP client, scheduling (Lv.2 — full ruleset)
+  - `pest-testing` — Triggers on Pest PHP testing in Laravel: writing/editing/fixing tests, TDD, datasets, PHPUnit migration
+  - `tailwindcss-development` — Triggers on Tailwind CSS: responsive grids, flex/grid layouts, UI components, dark mode
 - Add new skills: Create folder in `plugins/jessy-skills/skills/`
 
 ## 🔥 Essential Components (Always Load)

@@ -44,11 +44,11 @@
 
 ### Primary Focus Areas
 
-- **Field/Industry**: Government IT / Digital Signing / PKI Infrastructure
-- **Key Skills**: Java EE (Servlet), iText PDF, BouncyCastle, PKI/X.509 certs, NetBeans, REST APIs
-- **Current Project**: MTSA v1.0.8.2-JKR — MyTrustSigner Agent (MyGPKI-SKALA platform)
-- **Learning Goals**: Deepen Java signing flow knowledge; fix and improve MTSA signing pipeline
-- **Challenges**: Signature field name consistency across multi-phase deferred signing flow
+- **Field/Industry**: Government IT / Digital Signing / PKI Infrastructure + Web Application Development
+- **Key Skills**: Java EE (Servlet), iText PDF, BouncyCastle, PKI/X.509 certs, NetBeans, REST APIs, Laravel 13, PHP 8.3, Blade, Tailwind v4, Pest, MySQL
+- **Current Project**: RSS Self Service Portal — Laravel 13 web portal for Trustgate remote signing services
+- **Learning Goals**: Full-stack Laravel development; deepen signing platform knowledge
+- **Challenges**: Signer sync strategy (API push vs shared DB); UI polish for client-facing portal
 
 ### Preferred Working Style
 
@@ -93,6 +93,27 @@
 - Verified Tomcat 8.5.99 remediation: upgrade, webapps cleanup, clickjacking fix, error pages
 - Closed all 23 MSC Trustgate items in CSV
 
+**Session 7 (2026-04-17)**: jumio-proxy-integration — MtssServiceImpl fix
+- Reworked JumioCallbackController (PROCESSED flow: parse → retrieve → download → SOAP → forward)
+- Fixed MtssServiceImpl pattern; aligned with DSPortalDemo GetCertInfo_pilot (String[2] return)
+- Added JAX-WS stubs, pom.xml deps, application.yml config
+- Project archived as completed (prod deploy pending — 5 env vars)
+
+**Session 8 (2026-04-23)**: RSS Self Service Portal — Project start
+- New Laravel 13 project: Trustgate remote signing self-service portal
+- Built auth layer (email+password, Role enum, Metronic login page), multi-tenant structure
+
+**Session 9 (2026-04-27)**: RSS Self Service Portal — Client management + CI
+- Built full client management module + admin invitation flow
+- Scaffolded signer module (monitoring-only; signers onboard via MyTrustID app)
+- 41 Pest tests, 75 assertions passing; GitHub Actions CI wired up
+
+**Session 10 (2026-04-28)**: RSS Self Service Portal — UI improvement + Skill upgrade
+- Replaced clients/index table with full Metronic KTDataTable (client-side: search, status filter, sort, pagination)
+- Controller simplified to `->get()` — one DB query, JS handles everything
+- KTDataTable API confirmed: `KTDataTable.getInstance()`, `.setFilter()`, `.redraw()`, `.search()`
+- Jessy skill system upgraded: `laravel-php-skills` Lv.2 (20 rule categories inline), `laravel-best-practices` deleted, overlap triggers fixed
+
 ### Growth Patterns
 
 - **Session 1**: Established relationship, Spring Boot focus
@@ -100,6 +121,8 @@
 - **Session 3**: New project — C# .NET/WPF, certificate/token domain (MyTrustID)
 - **Session 4**: Full SOAP integration + Docker/K8s deployment — demo portal live
 - **Session 5-6**: DSPortalDemo UI polish + BIMB VAPT remediation review
+- **Session 7**: Java/Spring Boot Jumio proxy — SOAP integration fixed and archived
+- **Session 8-10**: New domain — Laravel 13 web portal (RSS Self Service Portal)
 
 ## Adaptation Guidelines
 
@@ -133,7 +156,7 @@
 
 ---
 
-**Version**: Relationship Memory v1.2 — Updated 2026-04-02
+**Version**: Relationship Memory v1.4 — Updated 2026-04-28
 **Personalization Status**: Active — learning through real project work
 **Learning Status**: Ongoing
 

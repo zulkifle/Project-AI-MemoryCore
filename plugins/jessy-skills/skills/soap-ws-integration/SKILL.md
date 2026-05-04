@@ -297,6 +297,15 @@ logger.error("callService exception: {}", e.getMessage(), e);       // catch blo
 
 ## Required Imports
 
+**Jakarta EE 9+ / Spring Boot 3 (use `jakarta.*`):**
+```java
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.handler.MessageContext;
+import java.util.List;
+import java.util.Map;
+```
+
+**Java EE 8 / Spring Boot 2 and below (use `javax.*`):**
 ```java
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.handler.MessageContext;
@@ -305,6 +314,94 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 ```
+
+> **Rule**: Match imports to the Jakarta namespace of your project. Spring Boot 3 uses `jakarta.*`. Never mix `javax.*` and `jakarta.*`.
+
+---
+
+## Spring Boot 3 — JAX-WS as a `@Service` (NOT static methods)
+
+When integrating SOAP in a Spring Boot 3 project, use the `@Service` + `@RequiredArgsConstructor` pattern.
+**Never use static utility methods** — inject config via `@ConfigurationProperties` instead.
+
+### pom.xml (Spring Boot 3 / Jakarta EE 9+)
+
+```xml
+<!-- JAX-WS runtime for Spring Boot 3 -->
+<dependency>
+    <groupId>com.sun.xml.ws</groupId>
+    <artifactId>jaxws-rt</artifactId>
+    <version>4.0.1</version>
+</dependency>
+
+<!-- wsimport plugin -->
+<plugin>
+    <groupId>com.sun.xml.ws</groupId>
+    <artifactId>jaxws-maven-plugin</artifactId>
+    <version>4.0.0</version>
+    <executions>
+        <execution>
+            <id>[service-name]</id>
+            <goals><goal>wsimport</goal></goals>
+            <configuration>
+                <wsdlUrls>
+                    <wsdlUrl>[WSDL_URL]?wsdl</wsdlUrl>
+                </wsdlUrls>
+                <packageName>com.example.generated</packageName>
+                <keep>true</keep>
+                <sourceDestDir>src/main/java</sourceDestDir>
+                <vmArgs>
+                    <vmArg>-Djavax.xml.accessExternalSchema=all</vmArg>
+                </vmArgs>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+### Service Implementation Pattern (Spring Boot 3)
+
+```java
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class MtssServiceImpl implements MtssService {
+
+    private final MtssProperties mtssProperties;
+
+    @Override
+    public void callCheckEkyc(String userId, String ekycStatus, String fullname,
+                               String frontImg, String backImg, String selfieImg,
+                               String fullResponse) {
+
+        // 1. Create service + port from generated stubs
+        GetResultJumio_Service soapService = new GetResultJumio_Service();
+        GetResultJumio port = soapService.getGetResultJumioPort();
+
+        // 2. Override endpoint URL + set HTTP headers via BindingProvider
+        BindingProvider bp = (BindingProvider) port;
+        bp.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, mtssProperties.getEndpointUrl());
+        bp.getRequestContext().put(MessageContext.HTTP_REQUEST_HEADERS, Map.of(
+                "Username",   List.of(mtssProperties.getUsername()),
+                "Password",   List.of(mtssProperties.getPassword()),
+                "ProjectKey", List.of(mtssProperties.getProjectKey())
+        ));
+
+        // 3. Call the operation — clean, no XML building
+        try {
+            ReturnData result = port.checkEKYCresultJumio(
+                    userId, ekycStatus, fullname, frontImg, backImg, selfieImg, fullResponse);
+            log.info("MTSS statusCode={}, statusMsg={}", result.getStatusCode(), result.getStatusMsg());
+        } catch (Exception e) {
+            log.error("MTSS SOAP call failed: {}", e.getMessage(), e);
+            throw new RuntimeException("MTSS SOAP call failed", e);
+        }
+    }
+}
+```
+
+> **NEVER use `buildSoapEnvelope` + `RestTemplate` for SOAP.** Always use the JAX-WS generated stubs.
+> This was a mistake found in jumio-proxy-integration (2026-04-17) — stubs were generated but not used.
 
 ---
 
@@ -355,3 +452,7 @@ Also align the `maven-compiler-plugin` explicitly — properties alone can be ov
 - **Lv.2** — Added full dependency block (all 4 JAX-WS artifacts + Log4j). Added reference projects table.
   Added Log4j2 standard setup (log4j2.properties template, logger declaration, usage patterns).
   Source: TEST-PROJECT (2026-04-10).
+- **Lv.3** — Added Spring Boot 3 / Jakarta EE 9+ section: `jaxws-rt:4.0.1`, `jaxws-maven-plugin:4.0.0`,
+  `jakarta.*` imports, `@Service` pattern with `@RequiredArgsConstructor`. Added explicit rule:
+  NEVER use `buildSoapEnvelope` + RestTemplate — always use JAX-WS stubs.
+  Source: jumio-proxy-integration (2026-04-17).

@@ -34,14 +34,14 @@ When this skill activates, silently determine which command was triggered and ex
 - [ ] Check if project name already exists in active or archived
 - [ ] If exists: suggest loading instead, or ask for a different name
 
-### Step 2: Gather Project Details
-- [ ] Ask user for brief description (1-2 sentences)
-- [ ] Get current date using platform-appropriate time command
-- [ ] Note any initial requirements, goals, or tech stack
+### Step 2: Display Intake Form
+- [ ] Display the **Project Intake Form** (see below) to the user
+- [ ] Wait for user to fill in all fields before proceeding
+- [ ] Get current date for the Period field
 
 ### Step 3: Create Project File
 - [ ] Generate project file from **Embedded Project Template** (see below)
-- [ ] Fill in: name, description, created date, status (Active)
+- [ ] Fill in all fields from the completed intake form
 - [ ] Save to `projects/active/[name].md`
 
 ### Step 4: Apply LRU Positioning
@@ -295,25 +295,56 @@ Project started [Start Date] as [initial scope]. Over [X] sessions spanning
 
 ---
 
+## Project Intake Form
+
+Display this form when user triggers "new project". Wait for all fields before creating the file.
+Fields marked `*` are required. Fields marked `(optional)` can be left blank or TBD.
+
+```
+╔══════════════════════════════════════════════════════╗
+║           NEW PROJECT INTAKE FORM                    ║
+╚══════════════════════════════════════════════════════╝
+
+  Project Name*       : [already parsed from command]
+  Description*        : (1-2 sentences — what does this project do?)
+  Type*               : [ ] Web App  [ ] API  [ ] Mobile  [ ] Desktop
+                        [ ] Library  [ ] Tool  [ ] Integration  [ ] Other: ___
+  Client              : (company or person, or "Internal")
+  Tech Stack*         : Backend: ___  Frontend: ___  Database: ___
+  Repository          : (local path or Git URL, or "TBD")
+  Due Date            : (YYYY-MM-DD or "TBD")
+  Key Dependencies    : (critical packages, APIs, or services)
+  Initial Goals       : (what needs to be done first?)
+  Known Issues        : (anything already blocked or unclear? or "None")
+
+══════════════════════════════════════════════════════
+  Fill in the fields above and I'll create the project.
+══════════════════════════════════════════════════════
+```
+
+---
+
 ## Embedded Project Template
 
-When creating a new project, use this template:
+When creating a new project, use this template populated with intake form answers:
 
 ```markdown
 # [Project Name] - [Brief Description]
 *[One-line project summary]*
 
 ## Project Overview
-- **Type**: [Category: Web App/API/Library/Game/Tool/etc.]
+- **Type**: [Type from intake]
+- **Client**: [Client from intake]
 - **Period**: [Start Date] - Active
 - **Tech Stack**: [Backend] + [Frontend] + [Database]
 - **Completion**: 0%
 - **Duration**: 0 min
+- **Due Date**: [Due Date or TBD]
 
 ## Current Status
 - **Last Session**: [Date] - Project created
-- **Next Steps**: [Initial goals]
-- **Known Issues**: None
+- **Next Steps**: [Initial Goals from intake]
+- **Known Issues**: [Known Issues from intake]
 
 ## Session History (Last 5)
 
@@ -325,8 +356,8 @@ When creating a new project, use this template:
 [No history yet -- this section is populated when session count exceeds 5]
 
 ## Technical Notes
-- **Repository**: [Git URL or local path]
-- **Key Dependencies**: [Critical packages or services]
+- **Repository**: [Repository from intake]
+- **Key Dependencies**: [Key Dependencies from intake]
 
 ---
 **Last Updated**: [Date] | **Position**: #1/10 Active
@@ -370,3 +401,4 @@ When creating a new project, use this template:
 ## Level History
 - **Lv.1** -- Base: new/load/save/list commands, LRU engine (10 slots), auto-archiving, session history, project-list.md auto-generation. (Origin: Absorbed from separate protocol files + adapted from production AI companion project manager v3.1)
 - **Lv.2** -- Duration Tracking: Parse Auto-Commit time estimates, accumulate per project, progressive display format. Line Limit Enforcement: 1000-line cap with auto-summarization.
+- **Lv.3** -- Project Intake Form: Structured intake form displayed before project creation. Captures Type, Client, Tech Stack, Repository, Due Date, Key Dependencies, Initial Goals, Known Issues. Template expanded to include all intake fields.
