@@ -6,9 +6,9 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[Windows Server Housekeeping](./active/windows-server-housekeeping.md)** | 2026-04-29 | TBD | 0% | New — writing housekeeping.bat |
-| 2 | **[RSS Self Service Portal](./active/rss-self-service-portal.md)** | 2026-04-29 | Q2 2026 | 60% | Quota module built — next: Service Plans UI |
-| 3 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-04-21 | TBD | 90% | Publish Pipeline Redesign |
+| 1 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-05-08 | TBD | 95% | UI freeze async fix ✓ — next: pickup + NPRA full flow test |
+| 2 | **[RSS Self Service Portal](./active/rss-self-service-portal.md)** | 2026-05-06 | Q2 2026 | 60% | Pricing confirmed — next: drop scaffolded tables, create Billing models, Service Plans UI |
+| 3 | **[Windows Server Housekeeping](./active/windows-server-housekeeping.md)** | 2026-04-29 | TBD | 0% | New — writing housekeeping.bat |
 
 ## Archived Projects (3)
 
@@ -21,4 +21,4 @@
 ---
 ## System Status
 - **Total Projects**: 6 (3 active + 3 archived)
-- **Last Updated**: 2026-04-29 - New project: Windows Server Housekeeping
+- **Last Updated**: 2026-05-08 - Save project: MyTrustID Desktop (5 sessions saved)

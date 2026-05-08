@@ -3,52 +3,43 @@
 
 ## Session RAM Status
 **Current Session**: Saved
-**Last Activity**: 2026-04-29
-**Session Focus**: RSS Self Service Portal — Quota module built, logos replaced, signer flow clarified
+**Last Activity**: 2026-05-06
+**Session Focus**: Billing pricing confirmed from PDS — ready to start implementation
 
 ## Active Project
-- **Name**: RSS Self Service Portal
-- **Started**: 2026-04-23
-- **Path**: `C:\laragon\www\remote-signing-portal`
-- **Focus**: Next — Service Plans UI (AT) + Assign Subscription + Signer internal/external classification
+- **Name**: MyTrustID Desktop
+- **Resumed**: 2026-05-06
+- **Last Worked**: 2026-04-21
+- **Path**: `C:\repos\MyTrustIDv1_AATL-GENERIC\`
+- **Focus**: STA thread bug fixed in DetectToken.cs — next: Publish Pipeline Redesign (replace old .bat method)
 
 ## 💭 Session Recap (For AI Restart)
 
-### RSS Self Service Portal (Active — #2)
+### RSS Self Service Portal (Active — #1)
 **Stack**: Laravel 13 + PHP 8.3 + Blade + Tailwind v4 + MySQL + Pest
 **Completion**: 60%
 **Repo**: `C:\laragon\www\remote-signing-portal`
 
-**What's done (session 2026-04-29):**
-- Quota/Usage module fully built:
-  - Migrations: `plans`, `subscriptions`, `signing_transactions`
-  - Models: Plan, Subscription, SigningTransaction (with enums PlanType, SubscriptionStatus)
-  - PlanSeeder: 8 plans seeded (Individual, Corporate, Starter→Diamond)
-  - QuotaController: AT view (all clients summary) + AC view (own company detail)
-  - Views: `quota/index.blade.php` (AT) + `quota/show.blade.php` (AC)
-  - Transaction counter: live COUNT(*) — Option A (no cached column)
-- Signers table made read-only in both `signers/index.blade.php` and `clients/show.blade.php`
-- Signers/index upgraded to KTDataTable (search + status + type + sort filters, column-index-aware JS for AT/AC)
-- Logos replaced: `logo-circle-2.jpeg` (sidebar, mobile header, footer) + `logo-login-2.jpeg` (login page)
-- LARAVEL COMMAND.txt updated with 5 new artisan commands
-- System design .txt updated to reflect current implementation
-
-**Signer flow clarification (from team, 2026-04-29):**
-- **Internal signers**: Added by AC/AT directly in portal → unlimited signing, NO quota deduction
-- **External signers**: Registered via MyTrustID Mobile or MyDigitalID → quota IS deducted per signing
-- Both types use MyTrustID Mobile or MyDigitalID to *approve* signatures
-- Impact: need `is_internal` boolean on `signers` table, restore Add Signer form (for internal only), update quota COUNT to exclude internal signers
-- Pending decision: boolean field vs enum for internal/external classification
+**Billing model finalized (session 2026-05-06):**
+- Subscription model: per signer/yr (Individual RM100, Corporate RM200), unlimited signing, added by AC/AT in portal
+- Transaction model: per company shared quota block, deducts 1 per signing, signers via MyTrustID app
+- One company = one model only (not simultaneous)
+- Integrating with existing `billing`/`billing_users`/`billing_txsign` tables (shared with signing backend)
+- Drop portal-scaffolded `subscriptions` + `signing_transactions` tables
+- Only change to existing DB: add `client_id` to `billing` table
+- Join key: `signers.ic_passport = billing_users.id_no`
+- AT creates `billing` row manually; `billing.used` = external signings only; `billing_txsign` = all signings
 
 **Next Steps (in order):**
-1. Decide: `is_internal` boolean vs `SignerCategory` enum on signers table
-2. Migration: add internal/external field to signers
-3. Restore Add Signer form (for internal signers — AC and AT can add)
-4. Update quota COUNT query to exclude internal signers
-5. Service Plans UI (AT): `plans.index` route/controller/views
-6. Assign Subscription to Client: AT assigns plan to client from client show page
-7. Dashboard live data: wire up real DB counts
-8. Reports: filter + CSV/PDF export
+1. ✅ Keep `is_internal` on signers
+2. ✅ Transaction tiers confirmed — Starter(500/RM5k) → Diamond(80k/RM80k); Subscription: Individual RM100/USD25, Corporate RM200/USD50
+3. Drop scaffolded `subscriptions` + `signing_transactions` tables
+4. Migration: add `client_id` to `billing`, add `billing_id` to `clients`
+5. Create Eloquent models: `Billing`, `BillingUser`, `BillingTxSign`
+6. Service Plans UI (AT): AT creates billing row, sets quota
+7. Signer management: AC adds internal signer → writes to `signers` + `billing_users`
+8. Quota view (AC): `billing.quota - billing.used`
+9. Dashboard live data + Reports
 
 **Known issues / pending config:**
 - Mail: MAIL_* not configured in .env — invitation emails go to log driver

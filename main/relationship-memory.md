@@ -108,6 +108,11 @@
 - Scaffolded signer module (monitoring-only; signers onboard via MyTrustID app)
 - 41 Pest tests, 75 assertions passing; GitHub Actions CI wired up
 
+**Session 11 (2026-05-04)**: RSS Self Service Portal — Session start, project list path fix
+- Confirmed project list lives at `C:\PROJECTS\JESSY\Project-AI-MemoryCore\projects\project-list.md`
+- Saved to Claude memory so future sessions auto-read from correct path
+- No code changes — orientation session
+
 **Session 10 (2026-04-28)**: RSS Self Service Portal — UI improvement + Skill upgrade
 - Replaced clients/index table with full Metronic KTDataTable (client-side: search, status filter, sort, pagination)
 - Controller simplified to `->get()` — one DB query, JS handles everything

@@ -12,6 +12,7 @@ Jessy AI companion skill plugins for Claude Code.
 | `tailwindcss-development` | Auto — any Tailwind styling, responsive layouts, UI components, dark mode | Tailwind v4: CSS-first config, replaced utilities, flex/grid layouts, dark mode |
 | `laravel-php-skills` | Auto — combined trigger for all Laravel/Pest/Tailwind tasks | Combined full-stack Laravel skill (backend + testing + UI) — single activation covers all three domains |
 | `save-memory` | "save", "save memory", "save progress" | Persists conversation insights to memory files |
+| `async-wpf-patterns` | "screen hang", "not responding", "UI freeze", "async", "Task.Run", blocking call on WPF | Fix UI freezes with async/await, disable buttons + loading cursor in WPF + Caliburn.Micro |
 
 ## Adding New Skills
 
