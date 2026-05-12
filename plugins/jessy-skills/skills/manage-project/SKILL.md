@@ -165,8 +165,16 @@ When this skill activates, silently determine which command was triggered and ex
 ### Step 6: Update Project List
 - [ ] Regenerate `projects/project-list.md` with updated timestamps
 
-### Step 7: Confirm Save
+### Step 7: Commit & Push to GitHub
+- [ ] `cd C:\PROJECTS\JESSY\Project-AI-MemoryCore`
+- [ ] `git add -A`
+- [ ] `git commit -m "save project: [project name] — [brief session summary]"`
+- [ ] `git push`
+- [ ] Confirm push succeeded
+
+### Step 8: Confirm Save
 - [ ] Display: project name, saved timestamp, session summary, total duration
+- [ ] Confirm GitHub push status
 
 ---
 

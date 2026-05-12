@@ -6,19 +6,19 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-05-08 | TBD | 95% | UI freeze async fix ✓ — next: pickup + NPRA full flow test |
-| 2 | **[RSS Self Service Portal](./active/rss-self-service-portal.md)** | 2026-05-06 | Q2 2026 | 60% | Pricing confirmed — next: drop scaffolded tables, create Billing models, Service Plans UI |
+| 1 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-05-12 | TBD | 97% | FaultException investigated (user error, no changes) — next: full flow test |
+| 2 | **[RSS Self Service Portal](./active/rss-self-service-portal.md)** | 2026-05-12 | Q2 2026 | 80% | Phase 1 complete — Dashboard + Reports + Quota circular rings — next: browser test |
 | 3 | **[Windows Server Housekeeping](./active/windows-server-housekeeping.md)** | 2026-04-29 | TBD | 0% | New — writing housekeeping.bat |
 
 ## Archived Projects (3)
 
 | Project | Completed | Status |
 |---------|-----------|--------|
-| **[jumio-proxy-integration](./archived/jumio-proxy-integration.md)** | 2026-04-22 | Completed — Prod deploy pending (5 env vars) |
+| **[jumio-proxy-integration](./archived/jumio-proxy-integration.md)** | 2026-05-11 | SESSION_EXPIRED bug fixed, deployed to pilot — awaiting UAT retest, then prod deploy |
 | **[MTSA v1.0.8.2-JKR](./archived/mtsa-v1082-jkr.md)** | 2026-04-22 | Completed — Delivered to client |
 | **[signingDemoPortal](./archived/signingdemoporatal.md)** | 2026-04-10 | Completed |
 
 ---
 ## System Status
 - **Total Projects**: 6 (3 active + 3 archived)
-- **Last Updated**: 2026-05-08 - Save project: MyTrustID Desktop (5 sessions saved)
+- **Last Updated**: 2026-05-12 - Save project: RSS Self Service Portal (Phase 1 complete — Dashboard + Reports + Quota)

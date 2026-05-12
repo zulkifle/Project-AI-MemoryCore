@@ -20,11 +20,11 @@
 3. User completes eKYC on Jumio side
 4. Jumio sends callback to Trustgate callback URL
 5. On `PROCESSED` status: retrieve workflow, download images as Base64, call MTSS SOAP, forward to Adacash
-6. On non-`PROCESSED` status: log and return 200
+6. On non-`PROCESSED` status (e.g. `SESSION_EXPIRED`): skip MTSS, forward to Adacash directly
 
 ## Current Status
-- **Last Session**: 2026-04-22 - Production deployment-prod.yaml reviewed, pending prod env values from client
-- **Next Steps**: Update 5 prod values in `deployment-prod.yaml`, then `kubectl apply -f deployment-prod.yaml`
+- **Last Session**: 2026-05-11 - SESSION_EXPIRED callback bug fixed, built and deployed to pilot
+- **Next Steps**: Await Adacash/Jumio team UAT retest confirmation for SESSION_EXPIRED. Then proceed with prod deploy (5 env vars).
 - **Known Issues**: None
 
 ## Pending Production Values (deployment-prod.yaml)
@@ -37,6 +37,10 @@
 | `MTSS_PASSWORD` | Replace with production password |
 
 ## Session History (Last 5)
+
+### 2026-05-11 - SESSION_EXPIRED Bug Fix
+- **Changes**: Fixed `JumioCallbackController` — non-PROCESSED statuses (SESSION_EXPIRED etc.) were not forwarded to Adacash. Extracted `forwardToAdacash()` method; now ALL statuses forward to Adacash, MTSS SOAP only runs for PROCESSED. Built and deployed to pilot.
+- **Time Spent**: ~20 min
 
 ### 2026-04-22 - Production Review & Archive
 - **Changes**: Reviewed deployment-prod.yaml vs pilot yaml, identified 5 env vars needing production values. Same .jar/image confirmed reusable across environments.

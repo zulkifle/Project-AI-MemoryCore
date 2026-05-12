@@ -5,9 +5,9 @@
 - **Type**: Desktop Application (WPF)
 - **Period**: 2026-03-31 - Active
 - **Tech Stack**: C# + WPF + .NET Framework 4.8 + WebSocket
-- **Completion**: 95%
+- **Completion**: 97%
 - **Due Date**: 2026-04-15
-- **Duration**: ~3 hours
+- **Duration**: ~3.75 hours
 
 ## Solution Structure
 | Project | Purpose | Path |
@@ -23,9 +23,9 @@
 - Desktop installer via VS installer project
 
 ## Current Status
-- **Last Session**: 2026-05-08 - UI freeze fix (SelectStorageViewModel + PickupNewCertViewModel)
-- **Next Steps**: Full end-to-end test — pickup cert flow + NPRA auth with real token
-- **Completed**: STA thread fix ✓, NullRef fix ✓, expired cert fallback ✓, CertVerifier integrated ✓, NPRA 5-param auth ✓, BPFKCert fix ✓, error codes verified ✓, UI freeze async fix ✓
+- **Last Session**: 2026-05-12 - FaultException investigation (case closed — user error)
+- **Next Steps**: Full end-to-end test — all flows with real token/softcert
+- **Completed**: STA thread fix ✓, NullRef fix ✓, expired cert fallback ✓, CertVerifier integrated ✓, NPRA 5-param auth ✓, BPFKCert fix ✓, error codes verified ✓, UI freeze async fix (all 4 ViewModels) ✓, AboutViewModel fire-and-forget pattern reviewed ✓
 - **Known Issues**: None
 
 ## Key Logic Notes
@@ -34,7 +34,19 @@
 
 ## Session History (Last 5)
 
-### 2026-05-08 - UI Freeze Fix (async/await)
+### 2026-05-12 - FaultException Investigation
+- **Changes**: Investigated `FaultException: Version can not be null` from `AutoUpdate.VerseCheck()`. Traced call chain: `VerseCheck()` → `VersionCheckerClient.VersionChecker()` → `callverchecker(vnumber, projectName)`. Checked `App.config` and `bin\Debug` config — both have `VersionNumber = 1.2`. Located installed exe at `C:\Program Files (x86)\Trustgate\MyTrustID\`. User confirmed it was their own error — case closed, no code changes.
+- **Time Spent**: ~15 min
+
+### 2026-05-08 - AboutViewModel Pattern Review
+- **Changes**: Reviewed `AboutViewModel` constructor — confirmed `Task.Run(() => update.VerseCheck())` and `Task.Run(() => update.WSSCheck())` are correct fire-and-forget pattern. No UI freeze risk — both methods have root-level `try/catch` and use `MessageBoxOptions.DefaultDesktopOnly` for thread-safe dialogs. Minor gap noted: `Completed()` callback `MessageBox.Show` missing `DefaultDesktopOnly` (low risk). Pattern documented for reuse in async-wpf-patterns skill.
+- **Time Spent**: ~15 min
+
+### 2026-05-08 - UI Freeze Fix Session 2 (LoginViewModel + SoftCertViewModel)
+- **Changes**: Fixed "Not Responding" on `LoginViewModel` login button — `LoadCertDetail()` → `async Task`, `readtoken.GetTokenCert()` → `await Task.Run()`, added `_isProcessing` + `CanCancel` + `RelayCommand canExecute` + `Mouse.OverrideCursor` try/finally. Fixed same on `SoftCertViewModel` OK button — `LoadCertDetail()` → `async Task`, both `readSCert.GetSoftCert()` branches wrapped in `await Task.Run()`, added `CanLoad` + `CanCancel` + `RelayCommand canExecute`. Explained async/await mechanics to user (how await waits on that line, not at end of method).
+- **Time Spent**: ~30 min
+
+### 2026-05-08 - UI Freeze Fix Session 1 (SelectStorageViewModel + PickupNewCertViewModel)
 - **Changes**: Fixed "Not Responding" hang on `SelectStorageViewModel.LoadTokenType()` — made `async Task`, wrapped `DetectToken.Token()` in `await Task.Run()`, added `_isProcessing` + `CanLoadTokenType` + `CanCancel` + `Mouse.OverrideCursor` with `try/finally`. Fixed same issue on `PickupNewCertViewModel.PickupCert()` — made `async Task`, wrapped 5 blocking calls in `await Task.Run()` (token detect, PKCS#11 init+CSR gen grouped in single Task.Run for thread safety, HTTP call, cert import, cert read), updated `RelayCommand` with `canExecute: _ => !_isProcessing`, removed `StackedCursorOverride`. Created `async-wpf-patterns` Jessy skill capturing the pattern for future use.
 - **Time Spent**: ~45 min
 
@@ -50,10 +62,6 @@
 - **Changes**: Fixed `NullReferenceException` in `AuthServiceNpra` — `cd.UserSN` was null for BPFK certs, replaced `.Equals()` with `string.Equals()`. Fixed expired cert condition in `ReadTokenCert.cs:586` — changed `(CAFlag == false && certcount == 1) || certStatus == "Valid"` to `certStatus == "Valid"` only. Added expired cert fallback logic: loop tracks `latestExpiredCD`, writes it to XML after loop if no valid cert found. Integrated `CertVerifierWSClient` into NPRA auth flow — cert validated via SOAP before UserID comparison, blocks on revoked/expired/invalid.
 - **Time Spent**: ~60 min
 
-### 2026-05-06 - STA Thread Bug Fix
-- **Changes**: Fixed `InvalidOperationException: The calling thread must be STA` in `DetectToken.Token()`. Removed `StackedCursorOverride` wrapper from both 64-bit and 32-bit detection blocks. Root cause: WebSocket service background thread calling WPF UI operation. Removed unused `using MyTrustIDv1.Handler` and `using System.Windows.Input` imports.
-- **Time Spent**: ~15 min
-
 ## Historical Summary
 Earlier sessions (2026-03-31 to 2026-04-21): Project registered into LRU system. Explored full solution structure — confirmed WebSockets external repo at `C:\repos\WebSocketslog4net\WebSockets\`, identified Server\ folder with service classes. Admin testing completed — BNM cert pickup success. STA thread fix, NullRef fix, expired cert fallback, NPRA 5-param auth, BPFKCert single-pass parse fix all delivered across May 6-7 sessions.
 
@@ -62,4 +70,4 @@ Earlier sessions (2026-03-31 to 2026-04-21): Project registered into LRU system.
 - **Key Dependencies**: .NET Framework 4.8, WPF, WebSocket library
 
 ---
-**Last Updated**: 2026-05-08 (Session 5) | **Position**: #1/10 Active
+**Last Updated**: 2026-05-08 (Session 7) | **Position**: #1/10 Active

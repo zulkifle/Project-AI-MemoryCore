@@ -6,8 +6,8 @@
 - **Client**: Trustgate Sdn Bhd (internal product)
 - **Period**: 2026-04-23 - Active
 - **Tech Stack**: Laravel 13 + PHP 8.3 + Blade + Tailwind v4 + MySQL
-- **Completion**: 60%
-- **Duration**: 10 hours
+- **Completion**: 80%
+- **Duration**: 13 hours
 - **Due Date**: Q2 2026 (Phase 1)
 
 ## Product Context (PDS)
@@ -34,18 +34,18 @@
 - **Q4 Phase 2** (TBD): Purchase plans, Subscription management, Payment integration
 
 ## Current Status
-- **Last Session**: 2026-05-06 - Billing model + DB integration strategy finalized (discussion only)
+- **Last Session**: 2026-05-12 - Phase 1 complete — Dashboard, Reports, Quota redesign
 - **Next Steps**:
   1. ✅ Keep `is_internal` on signers — retained for UI filtering
-  2. ✅ Transaction plan tiers confirmed from PDS (see pricing table above)
-  3. Drop scaffolded `subscriptions` + `signing_transactions` portal tables
-  4. Migration: add `client_id` (nullable FK) to existing `billing` table
-  5. Create Eloquent models: `Billing`, `BillingUser`, `BillingTxSign` mapped to existing tables
-  6. Service Plans UI (AT): AT manages plan catalog only (not creating billing rows)
-  7. Purchase Plan (AC): AC selects plan → FPX → system calls signing backend API → gets UUID → creates billing row
-  8. Signer management: AC adds internal signer → writes to `signers` + `billing_users`
-  9. Quota view (AC): reads `billing.quota - billing.used` per platform
-  10. Dashboard live data + Reports
+  2. ✅ Drop scaffolded tables, create billing/billing_users/billing_txsign
+  3. ✅ Eloquent models: Billing, BillingUser, BillingTxSign
+  4. ✅ Dashboard live data (DashboardController — AT + AC stats)
+  5. ✅ Reports: client-scoped (AT list → click client; AC auto-redirect), tabs: Transaction Log + Signer Report, CSV export
+  6. ✅ Quota: removed from sidebar, integrated into clients.show with SVG circular ring charts
+  7. Browser test all new features ← NEXT
+  8. Mail config (MAIL_* in .env — Mailtrap)
+  9. Service Plans UI (AT): Phase 2
+  10. Purchase Plan + FPX (AC): Phase 2
 - **Known Issues**:
   - MAIL_* not configured in .env — invitation emails go to log driver
   - KTDataTable `setFilter` column indices — browser test needed for signers/clients tables
@@ -56,8 +56,8 @@
 - [x] Admin invitation flow: email invite → set password → activate account
 - [x] Admin users table: show Active/Pending Invitation badge (filter by invitation_token)
 - [~] Signer Management — scaffolded, held for now (monitoring-only, shared DB sync decided)
-- [ ] Week 3: Quota / Usage display ← NEXT
-- [ ] Week 4: Reports (filter + CSV/PDF export)
+- [x] Week 3: Quota / Usage display — circular SVG rings, integrated into clients.show
+- [x] Week 4: Reports — client-scoped, Transaction Log + Signer Report tabs, CSV export
 - [ ] Service Plans (AT): create plans, set quota
 - [ ] Purchase Plan + FPX (AC)
 - [ ] Buffer: Pest testing + polish + deployment
@@ -85,7 +85,10 @@
   - `subscription_enddate = null` = unlimited (no expiry)
   - `id_no` = natural join key to `signers.ic_passport` — no extra FK needed
   - Links internal (subscription) signers to a specific platform's billing row
-- **billing_txsign**: `id, billing_id, type (1=Individual/2=Corporate), id_no, hash, signature, date_added, date_modified`
+- **billing_txsign**: `id, billing_id, type (1=Transactional/2=Subscription), id_no, hash, signature, date_added, date_modified`
+  - `type=1` = transactional model signer (external, quota deducted)
+  - `type=2` = subscription model signer (id_no also in billing_users); id_no = MyKad/Passport for individual, BRN/SSM for corporate
+  - No signer_type column on billing_users — matches signing backend schema
   - Logs ALL signings (internal + external)
   - Written by signing backend only — portal reads only
 
@@ -108,62 +111,33 @@ AC selects plan + platform → pays via FPX
 
 ## Session History (Last 5)
 
-### 2026-05-06 (Session 14) - Billing Pricing Confirmed
-- **Changes**: Discussion only. Confirmed: (1) keep `is_internal` on signers; (2) full transaction tier pricing from PDS locked in — Starter(500/RM5k) through Diamond(80k/RM80k) with USD equivalents; (3) subscription pricing confirmed Individual RM100/USD25, Corporate RM200/USD50 per year.
-- **Time Spent**: ~15 min
+### 2026-05-12 - Phase 1 Complete: Dashboard + Reports + Quota Redesign
+- **Changes**: (1) `DashboardController` — live stats for AT (clients count, subscription signers, txToday, billing plans) and AC (my signers, quota used/total, active platforms, txThisMonth). (2) `ReportController` restructured — AT sees client list → click "View Report" → scoped to that client; AC auto-redirects to own client. Two tabs: Transaction Log (paginated, filters: date/type/platform) + Signer Report (grouped by id_no+billing_id+type, resolves name from billing_users→signers, shows total txn, first/last txn, sub expiry). CSV export preserves active tab, filename includes client code. (3) Quota removed from sidebar — integrated into `clients.show` with circular SVG ring charts per billing plan (green/amber/red thresholds, unlimited = filled indigo ring with ∞). `ClientController::show()` now eager-loads billings with counts. AC quota still accessible via dashboard "View Quota" button. 41 tests, 75 assertions passing.
+- **Time Spent**: ~90 min
 
-### 2026-05-06 - Billing Model Corrections + DB Integration Finalized
-- **Changes**: Discussion only — no code changes. Corrected several wrong assumptions from previous session. Key corrections: (1) both subscription + transaction can coexist under one billing row — not one model per company; (2) AT does NOT create billing rows — AC purchases plan → FPX → system auto-creates via signing backend API; (3) dropped `billing_id` on clients — use `client_id` on `billing` (one-to-many); (4) one `billing` row per platform per company — company using DocuSign + Adobe Sign = 2 rows; (5) RSS scope rule — RSS subscription locked to RSS only, but other platforms (DocuSign, Adobe Sign, Signing Hub, eIDeasy) can use RSS as signing engine; (6) UUID in `billing.name` generated by signing backend when company registers, not by portal.
-- **Time Spent**: ~1.5 hours
-
-### 2026-05-04 - Orientation Session
-- **Changes**: No code changes. Confirmed project list path (`C:\PROJECTS\JESSY\Project-AI-MemoryCore\projects\project-list.md`), saved to Claude memory. Fixed save-memory skill incorrectly writing session history to relationship-memory.md — corrected to write to project file.
-- **Time Spent**: ~10 min
-
-### 2026-04-29 - Quota Module + Signer Flow Clarification
-- **Changes**:
-  - Migrations: `plans`, `subscriptions`, `signing_transactions` tables created
-  - Models: Plan, Subscription, SigningTransaction (with PlanType, SubscriptionStatus enums)
-  - PlanSeeder: 8 plans seeded (Individual/Corporate, Starter→Diamond tiers)
-  - QuotaController: AT view (all clients summary) + AC view (own company detail)
-  - Views: `quota/index.blade.php` (AT) + `quota/show.blade.php` (AC)
-  - Transaction counter: live COUNT(*) — Option A chosen (no cached column)
-  - Signers table made read-only in index + clients/show views
-  - Signers/index upgraded to KTDataTable with search/status/type/sort filters
-  - Logos replaced: `logo-circle-2.jpeg` + `logo-login-2.jpeg`
-  - **Signer flow clarified**: Internal signers (added by AC/AT, unlimited signing, no quota deduction) vs External signers (via MyTrustID app, quota deducted per signing)
-  - Pending: `is_internal` boolean vs `SignerCategory` enum decision
-- **Time Spent**: ~3 hours
-
-### 2026-04-28 - Admin Activation Badge + Quota Planning
-- **Changes**:
-  - `clients/show.blade.php` — Admin Users table: added Status column with Active (green) / Pending Invitation (yellow) badges. Slot count still counts both. Joined date shows dash for pending users.
-  - Quota/Usage module planned: Plan + Subscription + SigningTransaction tables designed, UI mapped for AT (all clients summary) and AC (own company detail with progress bar)
-  - Signer sync decided: Option B (shared DB). Signer module held as read-only.
+### 2026-05-12 - Billing Import + Quota Views Polish
+- **Changes**: Ran `import_billing.php` — 23 billing_txsign rows imported. Fixed unlimited quota display (∞ symbol, badges). Corrected BillingTxSign constants to TYPE_TRANSACTIONAL/TYPE_SUBSCRIPTION. Renamed "Internal Signers" → "Subscription Signers". Verified signer report query against real data (478231-X: 21 transactional + 2 subscription txn).
 - **Time Spent**: ~30 min
 
-### 2026-04-28 - UI Improvement + Skill System Upgrade
-- **Changes**:
-  - `clients/index.blade.php` — full Metronic KTDataTable rewrite: card header with count + search + status/sort filters, company column member-style (initial + name + code), actions dropdown (`kt-menu-toggle`), footer with `data-kt-datatable-size` + `data-kt-datatable-pagination` (SVG prev/next), client-side mode via `KTDataTable.getInstance()` + `setFilter` + column header click for sort
-  - `ClientController::index()` — simplified to `->get()`, removed server-side filter/sort/perpage logic
-  - Jessy skill system: `laravel-php-skills` upgraded to Lv.2 (absorbed all 20 rules from deleted `laravel-best-practices`); `pest-testing` + `tailwindcss-development` trigger descriptions narrowed to avoid overlap
-- **Time Spent**: ~2 hours
+### 2026-05-12 - MCP Setup + Dashboard Fix
+- **Changes**: Enabled Laravel Boost MCP (`.mcp.json` to project root). Fixed dashboard back button. Confirmed DB: 1 client — "Company A Sdn Bhd" (CLT-001).
+- **Time Spent**: ~20 min
 
-### 2026-04-27 - Client Management Tests + CI/CD
-- **Changes**:
-  - `tests/Feature/ClientTest.php` — 17 tests: access control (AT/AC/guest), create (code format, active default, name required), show/edit, suspend/reactivate, AC forbidden on status toggle
-  - `tests/Feature/ClientAdminTest.php` — 10 tests: invite form access (AT, primary AC, non-primary blocked, wrong company), store invite (token generated, max 3 enforced, email unique), destroy (AT removes, primary AC removes, cannot remove self, wrong company blocked)
-  - Total suite: 14 → **41 tests, 75 assertions**, all passing
-  - `.github/workflows/tests.yml` — GitHub Actions CI: triggers on push/PR to main+develop, MySQL 8.0 service, PHP 8.3, Composer cache, migrate, `php artisan test --compact`
-- **Time Spent**: ~45 min
+### 2026-05-12 - Billing DB Tables + Eloquent Models
+- **Changes**: Dropped scaffolded tables. Created `billing`, `billing_users`, `billing_txsign` migrations + models (`Billing`, `BillingUser`, `BillingTxSign`). Fixed Client/Signer/Plan models. 2 fix migrations: name nullable + quota/used to signed bigInteger. 41 tests passing.
+- **Time Spent**: ~30 min
+
+### 2026-05-06 - Billing Pricing Confirmed + Model Corrections
+- **Changes**: Discussion only. Confirmed transaction tier pricing from PDS. Key model corrections: subscription + transaction can coexist; AT doesn't create billing rows; client_id on billing (not reverse); one billing row per platform per company.
+- **Time Spent**: ~1.75 hours
 
 ## Historical Summary
-Project started 2026-04-23 with PDS study and system design. Over 10 sessions spanning ~2 weeks: built auth layer (email+password, role enum, Metronic login page), multi-tenant structure (clients table, client_id FK on users), full client management module (register/edit/suspend, admin invitation flow via email token, activation badge), signer module scaffold (monitoring-only; signers register via MyTrustID app), client management test suite (41 tests, 75 assertions) + GitHub Actions CI/CD, KTDataTable on clients index, quota module (Plan/Subscription/SigningTransaction + QuotaController + views), signer internal/external flow clarified. Previous sessions also covered: signer type/status enums, 7 signer routes, AT status panel, profile page, layout CSS fixes.
+Project started 2026-04-23 with PDS study and system design. Over 16 sessions spanning ~3 weeks: built auth layer (email+password, role enum, Metronic login page), multi-tenant structure, full client management module (register/edit/suspend, admin invitation flow, activation badge), signer module scaffold (monitoring-only), client management test suite (41 tests, 75 assertions) + GitHub Actions CI/CD, KTDataTable on clients index. 2026-04-28: admin activation badge, quota module planned, signer sync decided (shared DB). 2026-04-29: quota module scaffolded (plans/subscriptions/signing_transactions — later dropped), signer internal/external flow clarified. 2026-04-28: KTDataTable rewrite + laravel-php-skills Lv.2 upgrade. 2026-04-27: 41 Pest tests + CI/CD wired. 2026-05-06: billing model strategy finalized + corrected (client_id on billing, AT catalog-only, AC purchases via FPX). 2026-05-12: old scaffolded tables dropped, billing/billing_users/billing_txsign created from scratch, Eloquent models delivered, Laravel Boost MCP enabled, dashboard back button fixed.
 
 ## Technical Notes
 - **Repository**: `C:\laragon\www\remote-signing-portal`
 - **Key Dependencies**: Laravel 13, Tailwind v4, Pest v4, MySQL
-- **DB Models**: User, Client, Signer, Plan, Subscription, SigningTransaction
+- **DB Models**: User, Client, Signer, Plan, Billing, BillingUser, BillingTxSign
 - **Login**: email + password. Invitation flow for new admins.
 - **User hierarchy**: AT (no client) → AC (client_id, max 3 per company)
 - **Signer model**: Separate `signers` table — not Users. Fields: name, ic_passport, email, phone, signer_type, status, cert_serial, cert_expiry, notes
@@ -177,4 +151,4 @@ Project started 2026-04-23 with PDS study and system design. Over 10 sessions sp
 - **Mail**: Configure MAIL_* in .env (Mailtrap for dev) for invitation emails
 
 ---
-**Last Updated**: 2026-05-06 (Session 14 — pricing confirmed) | **Position**: #1/10 Active
+**Last Updated**: 2026-05-12 (Session 18 — Phase 1 complete: Dashboard + Reports + Quota circular rings) | **Position**: #2/10 Active

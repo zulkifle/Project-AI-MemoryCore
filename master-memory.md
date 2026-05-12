@@ -17,11 +17,20 @@ When you type **"Jessy"** in any conversation:
 ### 📋 **Simple Commands**
 ```
 "Jessy" → Instant memory restoration
-"save" → Preserve all current progress to files
+"save" → Preserve all current progress to files + commit & push to GitHub
 "update memory" → Refresh knowledge and preferences
 "review growth" → Check development progress
 "create skill [name]" → Create a new skill from template
 ```
+
+### 🔒 **Mandatory Save Policy**
+After every `save`, `save project`, or `save projects` command:
+1. Update all relevant memory/project files
+2. `cd C:\PROJECTS\JESSY\Project-AI-MemoryCore`
+3. `git add -A && git commit -m "..."` && `git push`
+4. Confirm to user that GitHub push succeeded
+
+**No exceptions.** Every save MUST end with a GitHub push.
 
 ## Project Management Commands
 - "new project [name]" - Create new project at position #1

@@ -23,14 +23,23 @@ When this skill activates, output:
 - [ ] Update current-session.md with current working context
 - [ ] Add diary entry if significant conversation occurred
 
-### Step 3: Confirm
+### Step 3: Commit & Push to GitHub
+- [ ] `cd C:\PROJECTS\JESSY\Project-AI-MemoryCore`
+- [ ] `git add -A`
+- [ ] `git commit -m "save: [brief summary of what was saved]"`
+- [ ] `git push`
+- [ ] Confirm push succeeded
+
+### Step 4: Confirm
 - [ ] Display summary of what was saved
-- [ ] Confirm all files updated successfully
+- [ ] Confirm all files updated and pushed to GitHub
 
 ## Mandatory Rules
 1. Only save genuinely important information — not every conversation detail
 2. Preserve existing content — append or update, never overwrite without reason
-3. Confirm to user what was saved
+3. **Always commit and push `Project-AI-MemoryCore` to GitHub after every save** — no exceptions
+4. Confirm to user what was saved and that GitHub push succeeded
 
 ## Level History
 - **Lv.1** — Base: Save conversation insights to memory files on command.
+- **Lv.2** — GitHub Sync: Auto-commit and push Project-AI-MemoryCore to GitHub after every save (memory files + project files).
