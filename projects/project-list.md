@@ -6,7 +6,7 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-05-12 | TBD | 97% | FaultException investigated (user error, no changes) — next: full flow test |
+| 1 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-05-14 | TBD | 98% | Chrome PNA iframe fix done — pending bpfk.gov.my JSP deploy + installer auth.html |
 | 2 | **[RSS Self Service Portal](./active/rss-self-service-portal.md)** | 2026-05-12 | Q2 2026 | 80% | Phase 1 complete — Dashboard + Reports + Quota circular rings — next: browser test |
 | 3 | **[Windows Server Housekeeping](./active/windows-server-housekeeping.md)** | 2026-04-29 | TBD | 0% | New — writing housekeeping.bat |
 
@@ -21,4 +21,4 @@
 ---
 ## System Status
 - **Total Projects**: 6 (3 active + 3 archived)
-- **Last Updated**: 2026-05-12 - Save project: RSS Self Service Portal (Phase 1 complete — Dashboard + Reports + Quota)
+- **Last Updated**: 2026-05-14 - Save project: MyTrustID Desktop (Chrome PNA iframe fix)

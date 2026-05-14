@@ -2,16 +2,16 @@
 *Temporary working memory - resets each session, provides recap when AI restarts*
 
 ## Session RAM Status
-**Current Session**: Saved
-**Last Activity**: 2026-05-06
-**Session Focus**: Billing pricing confirmed from PDS — ready to start implementation
+**Current Session**: Active
+**Last Activity**: 2026-05-14
+**Session Focus**: MyTrustID Desktop — Chrome PNA iframe fix
 
 ## Active Project
 - **Name**: MyTrustID Desktop
-- **Resumed**: 2026-05-06
-- **Last Worked**: 2026-04-21
+- **Resumed**: 2026-05-13
+- **Last Worked**: 2026-05-12
 - **Path**: `C:\repos\MyTrustIDv1_AATL-GENERIC\`
-- **Focus**: STA thread bug fixed in DetectToken.cs — next: Publish Pipeline Redesign (replace old .bat method)
+- **Focus**: Next: Full end-to-end test — all flows with real token/softcert
 
 ## 💭 Session Recap (For AI Restart)
 
@@ -52,9 +52,11 @@
 - 10-day retention, forfiles approach
 - Pending: user to confirm save path for .bat file on server
 
-**MyTrustID Desktop (Active — #3):**
-- Admin testing DONE (2026-04-21) ✓
-- Next: Replace old `.bat` publish method with cleaner implementation
+**MyTrustID Desktop (Active — #1):**
+- Chrome PNA iframe fix DONE (2026-05-14) ✓
+- auth.html deployed to bin\Debug\ web root
+- bpfk.jsp updated with iframe+postMessage + 5-param URL passing
+- Next: bpfk.gov.my server team deploys updated JSP; include auth.html in installer
 
 **jumio-proxy-integration (Archived):**
 - Implementation done — prod deploy pending (5 env vars to configure)
