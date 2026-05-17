@@ -7,7 +7,7 @@
 - **Tech Stack**: C# + WPF + .NET Framework 4.8 + WebSocket
 - **Completion**: 97%
 - **Due Date**: 2026-04-15
-- **Duration**: ~5.75 hours
+- **Duration**: ~8.75 hours
 
 ## Solution Structure
 | Project | Purpose | Path |
@@ -23,43 +23,45 @@
 - Desktop installer via VS installer project
 
 ## Current Status
-- **Last Session**: 2026-05-14 - Chrome PNA fix — iframe+postMessage architecture implemented
-- **Next Steps**: Deploy auth.html to production installer; bpfk.gov.my server team deploys updated JSP with iframe approach; end-to-end Chrome test
-- **Completed**: STA thread fix ✓, NullRef fix ✓, expired cert fallback ✓, CertVerifier integrated ✓, NPRA 5-param auth ✓, BPFKCert fix ✓, error codes verified ✓, UI freeze async fix (all 4 ViewModels) ✓, AboutViewModel fire-and-forget ✓, Chrome PNA iframe fix ✓
-- **Known Issues**: bpfk.gov.my JSP not yet deployed (server team needed); installer does not yet include auth.html
+- **Last Session**: 2026-05-17 - Chrome LNA deep-dive: nested iframe diagnosis, browser instruction box, bpfk findings doc
+- **Next Steps**: bpfk team adds `allow="local-network-access"` to their outer iframe; rebuild MTID Desktop with HttpService.cs headers; deploy updated JSPs to production; include auth.html in installer
+- **Completed**: STA thread fix ✓, NullRef fix ✓, expired cert fallback ✓, CertVerifier integrated ✓, NPRA 5-param auth ✓, BPFKCert fix ✓, error codes verified ✓, UI freeze async fix ✓, Chrome PNA iframe fix ✓, JSON parse bug fixed ✓, LNA instruction box on JSPs ✓
+- **Known Issues**: bpfk outer iframe missing `allow="local-network-access"` — confirmed via Sec-Fetch-Dest + empty MTID header log; MTID Desktop needs rebuild for HttpService.cs LNA headers
 
 ## Key Logic Notes
 - `CheckBNMcert()` in `PickupNewCertViewModel.cs:507` — reads X509 SubjectDN, checks `O=BNM`
 - Returns `isModifiedCka = true` if BNM cert detected → affects how cert is imported via `ImportCertificate()`
+- Chrome LNA silent block signature: TLS opens, 22-sec gap, empty `Header start:` in MTID log, connection closes
 
 ## Session History (Last 5)
 
+### 2026-05-15 to 2026-05-17 - Chrome LNA Nested Iframe Diagnosis & JSP Hardening
+- **Changes**: Diagnosed JSON parse bug in page_auth.jsp — regex `/[ -]+/g` was stripping `"` chars from JSON, breaking JSON.parse silently. Fixed by removing regex, using direct `JSON.parse(msg.data)` + `encodeURIComponent` on all redirect params. Added LNA headers to `HttpService.cs` RespondSuccess() — `Access-Control-Allow-Private-Network: true`, `Permissions-Policy: local-network-access=*`, `Access-Control-Allow-Origin: *`. Added `allow="local-network-access"` to page_auth.jsp iframe. Confirmed production failure: bpfk uses iframe (Sec-Fetch-Dest: iframe), their outer iframe missing `allow` → Chrome does silent TLS probe (22-sec gap, empty header in MTID log). Modified testq3.php to simulate bpfk iframe with `allow="local-network-access"` + `target="pki_frame"`. Fixed error_page_auth.jsp `target="_top"` for callback. Created LNA findings doc (`LNA_Findings_Draft.txt`). Added browser-detecting LNA instruction box (Chrome/Edge > 138 only, soft grey) to page_auth.jsp, page_auth_jnlp.jsp, page_auth_jnlp_ORI.jsp. Drafted bpfk email template.
+- **Time Spent**: ~3 hours
+
 ### 2026-05-14 - Chrome PNA Fix — iframe+postMessage Architecture
-- **Changes**: Diagnosed Chrome Private Network Access (PNA) blocking `wss://mtid.msctrustgate.com/NpraAuth` from `bpfk.gov.my`. Chrome's speculative preconnect confirmed via WARN log (empty header after TLS). Fixed OPTIONS regex in `WebServer.cs` (`^OPTIONS\s+(\S+)\s+HTTP`, any HTTP version) + added warn logging. Created iframe+postMessage architecture: `auth.html` served by MTID Desktop from exe web root (`bin\Debug\`), loads WebSocket from same origin (`mtid.msctrustgate.com→mtid.msctrustgate.com` = local→local, no PNA). Updated `auth.html` to read 5 params from URL query string (`UserID`, `TokenPIN`, `UserFullName`, `UserCompID`, `UserCompName`) and pass to WebSocket. Updated `bpfk.jsp` to load hidden iframe with params encoded in src URL. Copied `auth.html` to `bin\Debug\`. Pending: bpfk server JSP deployment + installer inclusion of auth.html.
+- **Changes**: Diagnosed Chrome PNA blocking `wss://mtid.msctrustgate.com/NpraAuth`. Created iframe+postMessage architecture: `auth.html` served by MTID Desktop, loads WebSocket from same origin. Updated auth.html to read 5 params from URL query string. Updated bpfk.jsp with hidden iframe + params in src URL. Fixed `HttpService.cs` crash (illegal chars in path — query string stripping). Fixed OPTIONS regex in `WebServer.cs`.
 - **Time Spent**: ~2 hours
 
 ### 2026-05-12 - FaultException Investigation
-- **Changes**: Investigated `FaultException: Version can not be null` from `AutoUpdate.VerseCheck()`. Traced call chain to `callverchecker(vnumber, projectName)`. Config correct — user confirmed own error, no code changes.
+- **Changes**: Investigated `FaultException: Version can not be null` from `AutoUpdate.VerseCheck()`. Config correct — user confirmed own error, no code changes.
 - **Time Spent**: ~15 min
 
 ### 2026-05-08 - AboutViewModel Pattern Review
-- **Changes**: Reviewed `AboutViewModel` constructor — confirmed `Task.Run()` fire-and-forget pattern correct. Minor gap: `Completed()` `MessageBox.Show` missing `DefaultDesktopOnly` (low risk). Pattern documented.
+- **Changes**: Reviewed `AboutViewModel` constructor — confirmed `Task.Run()` fire-and-forget pattern correct.
 - **Time Spent**: ~15 min
 
 ### 2026-05-08 - UI Freeze Fix Session 2 (LoginViewModel + SoftCertViewModel)
-- **Changes**: Fixed "Not Responding" on `LoginViewModel` and `SoftCertViewModel` — made `async Task`, wrapped blocking calls in `await Task.Run()`, added `_isProcessing` + `CanCancel` + `RelayCommand canExecute` + `Mouse.OverrideCursor` try/finally.
+- **Changes**: Fixed "Not Responding" on `LoginViewModel` and `SoftCertViewModel` — async/await, `_isProcessing` guard, `RelayCommand canExecute`, `Mouse.OverrideCursor`.
 - **Time Spent**: ~30 min
 
-### 2026-05-08 - UI Freeze Fix Session 1 (SelectStorageViewModel + PickupNewCertViewModel)
-- **Changes**: Fixed "Not Responding" hang on both ViewModels — `async Task`, `await Task.Run()` for all blocking calls, `_isProcessing` guard, `RelayCommand canExecute`. Created `async-wpf-patterns` Jessy skill.
-- **Time Spent**: ~45 min
-
 ## Historical Summary
-Earlier sessions (2026-03-31 to 2026-04-21): Project registered. Full solution explored — WebSockets external repo at `C:\repos\WebSocketslog4net\WebSockets\`. Admin testing completed, BNM cert pickup success. May 6-7: STA thread fix, NullRef fix (`string.Equals`), expired cert fallback loop, CertVerifierWSClient integrated, NPRA 5-param auth (UserCompID/UserCompName), Java AES/CBC/NoPadding decrypt, `userSERIALNUMBER` overwrite bug fixed, BPFKCert single-pass parse fix, 10 error codes audited.
+Earlier sessions (2026-03-31 to 2026-04-21): Project registered. Full solution explored. Admin testing completed, BNM cert pickup success. May 6-7: STA thread fix, NullRef fix, expired cert fallback loop, CertVerifierWSClient integrated, NPRA 5-param auth, Java AES/CBC/NoPadding decrypt, `userSERIALNUMBER` overwrite bug fixed, BPFKCert single-pass parse fix, 10 error codes audited. May 8: UI freeze async fix (SelectStorageViewModel + PickupNewCertViewModel).
 
 ## Technical Notes
 - **Repository**: TBD
 - **Key Dependencies**: .NET Framework 4.8, WPF, WebSocket library
+- **LNA Fix files**: `page_auth.jsp`, `page_auth_jnlp.jsp`, `page_auth_jnlp_ORI.jsp`, `error_page_auth.jsp`, `HttpService.cs`, `testq3.php`
 
 ---
-**Last Updated**: 2026-05-14 (Session 8) | **Position**: #1/10 Active
+**Last Updated**: 2026-05-17 (Session 9) | **Position**: #1/10 Active

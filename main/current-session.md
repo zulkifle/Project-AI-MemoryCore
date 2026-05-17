@@ -4,14 +4,14 @@
 ## Session RAM Status
 **Current Session**: Active
 **Last Activity**: 2026-05-14
-**Session Focus**: MyTrustID Desktop — Chrome PNA iframe fix
+**Session Focus**: MyTrustID Desktop — pending bpfk JSP deploy + installer auth.html inclusion
 
 ## Active Project
 - **Name**: MyTrustID Desktop
-- **Resumed**: 2026-05-13
-- **Last Worked**: 2026-05-12
+- **Resumed**: 2026-05-14
+- **Last Worked**: 2026-05-14
 - **Path**: `C:\repos\MyTrustIDv1_AATL-GENERIC\`
-- **Focus**: Next: Full end-to-end test — all flows with real token/softcert
+- **Focus**: Deploy auth.html in installer; bpfk.gov.my server team deploys updated JSP; end-to-end Chrome test
 
 ## 💭 Session Recap (For AI Restart)
 
