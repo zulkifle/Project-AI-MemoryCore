@@ -45,7 +45,7 @@
 ### Primary Focus Areas
 
 - **Field/Industry**: Government IT / Digital Signing / PKI Infrastructure + Web Application Development
-- **Key Skills**: Java EE (Servlet), iText PDF, BouncyCastle, PKI/X.509 certs, NetBeans, REST APIs, Laravel 13, PHP 8.3, Blade, Tailwind v4, Pest, MySQL
+- **Key Skills**: Java EE (Servlet), iText PDF, BouncyCastle, PKI/X.509 certs, NetBeans, REST APIs, Laravel 13, PHP 8.3, Blade, Tailwind v4, Pest, MySQL, Kubernetes (CKA training 2025)
 - **Current Project**: RSS Self Service Portal — Laravel 13 web portal for Trustgate remote signing services
 - **Learning Goals**: Full-stack Laravel development; deepen signing platform knowledge
 - **Challenges**: Signer sync strategy (API push vs shared DB); UI polish for client-facing portal

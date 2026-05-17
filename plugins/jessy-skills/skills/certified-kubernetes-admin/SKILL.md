@@ -565,7 +565,329 @@ kubectl apply -f myapp.yaml
 
 ---
 
+---
+
+## Horizontal Pod Autoscaler (HPA)
+
+HPA auto-scales pod replicas based on CPU/memory utilization. Requires metrics-server installed.
+
+```bash
+# Install metrics-server first
+kubectl apply -f metrics-server.yaml
+
+# Create HPA imperatively
+kubectl autoscale deployment php-apache --cpu-percent=50 --min=1 --max=10
+
+# Check HPA status
+kubectl get hpa
+kubectl describe hpa php-apache
+```
+
+```yaml
+# HPA v2 — from lab12
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: php-apache
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: php-apache
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50    # scale up when avg CPU > 50%
+```
+
+> Scale-down has a 5-10 min cooldown to prevent flapping on brief spikes.
+
+---
+
+## Custom Resource Definitions (CRD)
+
+CRDs extend the Kubernetes API with custom resource types. Admins create CRDs; developers create CRs.
+
+```yaml
+# Step 1: Define the CRD (admin) — from lab7
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tickets.api.kubepros.com      # must be: plural.group
+spec:
+  group: api.kubepros.com
+  scope: Namespaced                   # or Cluster
+  names:
+    plural: tickets
+    singular: ticket
+    kind: ticket
+    shortNames:
+    - tt
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              origin:
+                type: string
+              destination:
+                type: string
+              image:
+                type: string
+              pax:
+                type: integer
+```
+
+```yaml
+# Step 2: Create a Custom Resource (CR) instance — from lab7
+apiVersion: "api.kubepros.com/v1"
+kind: ticket
+metadata:
+  name: holiday
+spec:
+  origin: "Chicago"
+  destination: "Michigan"
+  image: quay.io/ocp4git/nginx-web
+  pax: 4
+```
+
+```bash
+# List CRDs
+kubectl get crd
+
+# Use short name
+kubectl get tt
+kubectl describe ticket holiday
+```
+
+---
+
+## NFS Dynamic Provisioning (StorageClass)
+
+Dynamic provisioning creates PVs automatically when a PVC is submitted — no manual PV creation needed.
+
+```yaml
+# StorageClass backed by NFS — from lab19
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs-storage
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"   # default SC for all PVCs
+provisioner: k8s-sigs.io/nfs-subdir-external-provisioner  # must match PROVISIONER_NAME env
+parameters:
+  archiveOnDelete: "false"
+```
+
+```yaml
+# NFS Provisioner Deployment — from lab19
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nfs-client-provisioner
+  namespace: storage
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: nfs-client-provisioner
+  template:
+    metadata:
+      labels:
+        app: nfs-client-provisioner
+    spec:
+      serviceAccountName: nfs-client-provisioner
+      containers:
+      - name: nfs-client-provisioner
+        image: registry.k8s.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2
+        env:
+        - name: PROVISIONER_NAME
+          value: k8s-sigs.io/nfs-subdir-external-provisioner
+        - name: NFS_SERVER
+          value: master                # NFS server hostname or IP
+        - name: NFS_PATH
+          value: /exports              # exported NFS path on server
+        volumeMounts:
+        - name: nfs-client-root
+          mountPath: /persistentvolumes
+      volumes:
+      - name: nfs-client-root
+        nfs:
+          server: master
+          path: /exports
+```
+
+```yaml
+# Dynamic PVC — no need to pre-create PV
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-dynamic
+spec:
+  storageClassName: nfs-storage       # references the StorageClass
+  accessModes:
+  - ReadWriteMany                     # NFS supports RWX
+  resources:
+    requests:
+      storage: 1Gi
+```
+
+```bash
+# Check storage classes
+kubectl get sc
+
+# Watch PVC bind automatically
+kubectl get pvc -w
+```
+
+---
+
+## Gateway API (Traefik)
+
+Gateway API is the modern successor to Ingress. Admin manages Gateway; developers manage HTTPRoutes.
+
+```yaml
+# Gateway — created by cluster admin — from lab17
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: mygateway
+  namespace: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"   # auto TLS via cert-manager
+spec:
+  gatewayClassName: traefik
+  listeners:
+  - name: http
+    protocol: HTTP
+    port: 8000
+    allowedRoutes:
+      namespaces:
+        from: All
+  - name: https-myapp
+    hostname: "myapp.example.com"
+    protocol: HTTPS
+    port: 8443
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - name: myapp-tls              # Secret created by cert-manager
+    allowedRoutes:
+      namespaces:
+        from: All
+```
+
+```yaml
+# HTTPRoute — created by developer — from lab17
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: app-route
+  namespace: default
+spec:
+  parentRefs:
+  - name: mygateway
+    namespace: traefik               # must reference the Gateway
+  hostnames:
+  - "myapp.example.com"
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: app-svc
+      port: 80
+```
+
+### Ingress vs Gateway API
+
+| Feature | Ingress | Gateway API |
+|---------|---------|-------------|
+| API version | `networking.k8s.io/v1` | `gateway.networking.k8s.io/v1` |
+| Role separation | No | Yes (admin=Gateway, dev=HTTPRoute) |
+| TLS | Annotation-based | Native in spec |
+| Traffic splitting | Limited | Built-in |
+| Status | Stable (legacy) | Current standard |
+
+---
+
+## Kustomize
+
+Kustomize patches YAML without templating — overlay base configs per environment (dev/prod).
+
+```
+project/
+├── base/
+│   ├── kustomization.yaml
+│   ├── deployment.yaml
+│   └── service.yaml
+└── overlays/
+    ├── dev/
+    │   └── kustomization.yaml      # patches base for dev
+    └── prod/
+        └── kustomization.yaml      # patches base for prod
+```
+
+```yaml
+# base/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- deployment.yaml
+- service.yaml
+```
+
+```yaml
+# overlays/prod/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../../base
+patches:
+- patch: |-
+    - op: replace
+      path: /spec/replicas
+      value: 5
+  target:
+    kind: Deployment
+    name: myapp
+namePrefix: prod-
+commonLabels:
+  env: production
+```
+
+```bash
+# Preview rendered output
+kubectl kustomize overlays/prod/
+
+# Apply directly
+kubectl apply -k overlays/prod/
+
+# Diff before applying
+kubectl diff -k overlays/prod/
+```
+
+---
+
 ## Level History
 - **Lv.1** — Full CKA skill: all 5 exam domains, imperative commands, YAML templates,
   troubleshooting ladder, etcd backup/restore, RBAC, scheduling, storage, networking.
   Exam tips and alias setup included.
+- **Lv.2** — Lab-sourced content from Dejul's CKA Training 2025 (25 labs). Added:
+  HPA v2, CRD + CR pattern, NFS dynamic provisioning, Gateway API (Traefik + HTTPRoute),
+  Kustomize base/overlay pattern. All YAML sourced from real training lab files.
