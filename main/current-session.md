@@ -3,15 +3,14 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-05-14
-**Session Focus**: MyTrustID Desktop — pending bpfk JSP deploy + installer auth.html inclusion
+**Last Activity**: 2026-05-18
+**Session Focus**: Skill system — created certified-kubernetes-admin skill (Lv.2), saved CKA training reference
 
 ## Active Project
-- **Name**: MyTrustID Desktop
-- **Resumed**: 2026-05-14
-- **Last Worked**: 2026-05-14
-- **Path**: `C:\repos\MyTrustIDv1_AATL-GENERIC\`
-- **Focus**: Deploy auth.html in installer; bpfk.gov.my server team deploys updated JSP; end-to-end Chrome test
+- **Name**: Jessy Skill System (maintenance)
+- **Resumed**: 2026-05-18
+- **Last Worked**: 2026-05-18
+- **Focus**: Created CKA skill from training data + enhanced with Dejul's real lab files (lab7, lab12, lab17, lab19)
 
 ## 💭 Session Recap (For AI Restart)
 
