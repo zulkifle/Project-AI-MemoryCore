@@ -13,6 +13,7 @@ Jessy AI companion skill plugins for Claude Code.
 | `laravel-php-skills` | Auto — combined trigger for all Laravel/Pest/Tailwind tasks | Combined full-stack Laravel skill (backend + testing + UI) — single activation covers all three domains |
 | `save-memory` | "save", "save memory", "save progress" | Persists conversation insights to memory files |
 | `async-wpf-patterns` | "screen hang", "not responding", "UI freeze", "async", "Task.Run", blocking call on WPF | Fix UI freezes with async/await, disable buttons + loading cursor in WPF + Caliburn.Micro |
+| `signing-labs` | "signing lab", "signing test", "new hash class", "PDF_prepareHash", "MyTrustPDFSigner_IT5" | iText5 deferred signing lab: hash prep classes, embed classes, test runners, PKIWS integration |
 
 ## Adding New Skills
 
