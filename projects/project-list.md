@@ -6,7 +6,7 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-05-20 | TBD | 97% | Trim fix on PickupNewCertViewModel (UserID + UUID); awaiting bpfk iframe fix |
+| 1 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-05-21 | TBD | 97% | UI lock all screens + bat overhaul + sign.bat; awaiting bpfk iframe fix + SafeNet cert |
 | 2 | **[RSS Self Service Portal](./active/rss-self-service-portal.md)** | 2026-05-12 | Q2 2026 | 80% | Phase 1 complete — Dashboard + Reports + Quota circular rings — next: browser test |
 | 3 | **[Windows Server Housekeeping](./active/windows-server-housekeeping.md)** | 2026-04-29 | TBD | 0% | New — writing housekeeping.bat |
 
@@ -21,4 +21,4 @@
 ---
 ## System Status
 - **Total Projects**: 6 (3 active + 3 archived)
-- **Last Updated**: 2026-05-17 - Save project: MyTrustID Desktop (LNA findings doc revision + auth.html revert)
+- **Last Updated**: 2026-05-21 - Save project: MyTrustID Desktop (no new changes this session)
