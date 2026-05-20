@@ -3,8 +3,8 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-05-18
-**Session Focus**: Skill system — created certified-kubernetes-admin skill (Lv.2), saved CKA training reference
+**Last Activity**: 2026-05-20
+**Session Focus**: MyTrustID Desktop — PickupNewCertViewModel trim fix (UserID + UUID); K8s admin cert renewal (RKE2 context)
 
 ## Active Project
 - **Name**: Jessy Skill System (maintenance)

@@ -35,6 +35,10 @@
 
 ## Session History (Last 5)
 
+### 2026-05-20 - PickupNewCertViewModel Trim Fix
+- **Changes**: Added `UserID = UserID?.Trim()` and `UUID = UUID?.Trim()` in `PickupCert()` at line 184, before `ValidateParam` call. Fixes whitespace issue when users paste activation code from email. Both fields trimmed before validation and all downstream logic.
+- **Time Spent**: ~10 min
+
 ### 2026-05-17 - LNA Findings Doc Revision & auth.html Revert
 - **Changes**: Reverted auth.html iframe+postMessage approach — deleted `auth.html` from `bin\Debug`. Revised `LNA_Findings_Draft.txt`: added JNLP (Gen 1) vs MTID Desktop (Gen 2) background framing; corrected root cause to blame Chrome 142 LNA policy enforcement (not missing attribute — the attribute is the resolution); updated affected components to list both generations; repositioned MTID Desktop as the mitigation plan for JNLP deprecation. Added NOTE ON JNLP clarifying migration to MTID alone does not bypass LNA.
 - **Time Spent**: ~30 min
