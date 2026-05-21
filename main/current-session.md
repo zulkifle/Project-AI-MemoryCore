@@ -7,10 +7,9 @@
 **Session Focus**: MyTrustID Desktop — PickupNewCertViewModel trim fix (UserID + UUID); K8s admin cert renewal (RKE2 context)
 
 ## Active Project
-- **Name**: Jessy Skill System (maintenance)
-- **Resumed**: 2026-05-18
-- **Last Worked**: 2026-05-18
-- **Focus**: Created CKA skill from training data + enhanced with Dejul's real lab files (lab7, lab12, lab17, lab19)
+- **Name**: TG SecureMail
+- **Started**: 2026-05-21
+- **Context**: Chrome Extension MV3 POC — Gmail API + AES client-side encryption/decryption + basic key management. End-to-end flow: compose → encrypt → send → receive → decrypt.
 
 ## 💭 Session Recap (For AI Restart)
 
