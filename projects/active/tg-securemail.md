@@ -7,7 +7,7 @@
 - **Period**: 2026-05-21 - Active
 - **Tech Stack**: Backend: Gmail API (Google) | Frontend: Chrome Extension MV3 + JavaScript | Storage: chrome.storage (local key storage)
 - **Completion**: 0%
-- **Duration**: 30 min
+- **Duration**: 75 min
 - **Due Date**: TBD
 
 ## Current Status
@@ -22,6 +22,10 @@
 - **Known Issues**: None
 
 ## Session History (Last 5)
+
+### 2026-05-21 - Off-Project Debug Session (DigitalSeal + Python Setup)
+- **Changes**: Off-project — debugged DigitalSeal 0-byte output issue (e-Court client PDF with broken font structure: Arial FirstChar=LastChar=32, orphaned FontFile objects). Root cause confirmed via PDF binary analysis. Installed Python 3.12 + pikepdf as debugging toolchain for future PDF investigations.
+- **Time Spent**: ~45 min
 
 ### 2026-05-21 - Project Scoped + Skill System Prepared
 - **Changes**: Project created and full scope defined (Chrome MV3 + Gmail API + AES-256-GCM + key management POC). Absorbed `brainstorming` and `verification-before-completion` skills from superpowers into jessy-skills plugin — ready to use for TG SecureMail design phase. MyTrustID .bat: removed CertData.xml + LicInfo.xml deletion lines.
@@ -41,4 +45,4 @@
 - **Crypto Plan**: MVP uses AES-256-GCM (symmetric, key wrapped via RSA or ECDH). Post-quantum (e.g., Kyber/ML-KEM) planned as a future extension.
 
 ---
-**Last Updated**: 2026-05-21 (Session 2) | **Position**: #1/10 Active
+**Last Updated**: 2026-05-21 (Session 3) | **Position**: #1/10 Active

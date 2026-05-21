@@ -7,7 +7,7 @@
 - **Tech Stack**: C# + WPF + .NET Framework 4.8 + WebSocket
 - **Completion**: 97%
 - **Due Date**: 2026-04-15
-- **Duration**: ~11.75 hours
+- **Duration**: ~12 hours
 
 ## Solution Structure
 | Project | Purpose | Path |
@@ -23,9 +23,9 @@
 - Desktop installer via VS installer project
 
 ## Current Status
-- **Last Session**: 2026-05-21 - page_auth.jsp LNA instruction box — Copy & Open New Tab button
+- **Last Session**: 2026-05-21 - app.manifest UAC elevation — requireAdministrator set
 - **Next Steps**: apply same LNA box changes to page_auth_jnlp.jsp; bpfk team adds `allow="local-network-access"` to their outer iframe; rebuild MTID Desktop with HttpService.cs headers; deploy updated JSPs to production; sign MyTrustID.EXE + MSI with real SafeNet token when cert arrives
-- **Completed**: STA thread fix ✓, NullRef fix ✓, expired cert fallback ✓, CertVerifier integrated ✓, NPRA 5-param auth ✓, BPFKCert fix ✓, error codes verified ✓, UI freeze async fix ✓, JSON parse bug fixed ✓, LNA instruction box on JSPs ✓, LNA findings doc drafted ✓, trim fix (UserID+UUID) ✓, UI lock all screens ✓, installer bat overhaul ✓, page_auth.jsp Copy & Open New Tab ✓
+- **Completed**: STA thread fix ✓, NullRef fix ✓, expired cert fallback ✓, CertVerifier integrated ✓, NPRA 5-param auth ✓, BPFKCert fix ✓, error codes verified ✓, UI freeze async fix ✓, JSON parse bug fixed ✓, LNA instruction box on JSPs ✓, LNA findings doc drafted ✓, trim fix (UserID+UUID) ✓, UI lock all screens ✓, installer bat overhaul ✓, page_auth.jsp Copy & Open New Tab ✓, app.manifest requireAdministrator ✓
 - **Known Issues**: bpfk outer iframe missing `allow="local-network-access"` — confirmed via Sec-Fetch-Dest + empty MTID header log; MTID Desktop needs rebuild for HttpService.cs LNA headers
 
 ## Key Logic Notes
@@ -34,6 +34,10 @@
 - Chrome LNA silent block signature: TLS opens, 22-sec gap, empty `Header start:` in MTID log, connection closes
 
 ## Session History (Last 5)
+
+### 2026-05-21 - app.manifest UAC Elevation
+- **Changes**: Changed `requestedExecutionLevel` from `asInvoker` to `requireAdministrator` in `Properties/app.manifest`. App will now show UAC prompt on every launch (including startup folder shortcut), ensuring it always runs as administrator.
+- **Time Spent**: ~15 min
 
 ### 2026-05-21 - page_auth.jsp LNA Instruction Box Enhancement
 - **Changes**: Replaced non-functional "click here" anchor (blocked by Chrome security) with "Copy & Open New Tab" button. Button copies `chrome://` or `edge://` flags URL to clipboard and opens a blank new tab in one click. Added browser restriction explanatory text. Pending: same changes to `page_auth_jnlp.jsp` (deferred).
@@ -65,4 +69,4 @@ Earlier sessions (2026-03-31 to 2026-04-21): Project registered. Full solution e
 - **SafeNet Token installer**: `C:\PROJECTS\MYTRUSTID DESKTOP\Token\Safenet\Installation` — install this before signing EXE/MSI with real code signing cert
 
 ---
-**Last Updated**: 2026-05-21 (Session 12) | **Position**: #1/10 Active
+**Last Updated**: 2026-05-21 (Session 13) | **Position**: #1/10 Active

@@ -7,9 +7,12 @@
 **Session Focus**: MyTrustID Desktop — PickupNewCertViewModel trim fix (UserID + UUID); K8s admin cert renewal (RKE2 context)
 
 ## Active Project
-- **Name**: TG SecureMail
-- **Started**: 2026-05-21
-- **Context**: Chrome Extension MV3 POC — Gmail API + AES client-side encryption/decryption + basic key management. End-to-end flow: compose → encrypt → send → receive → decrypt.
+- **Name**: MyTrustID Desktop
+- **Resumed**: 2026-05-21
+- **Last Worked**: 2026-05-21
+- **Context**: WPF .NET Framework 4.8 desktop app — Token/SoftCert login & signing. Currently 97% complete.
+- **Recent Progress**: page_auth.jsp Copy & Open New Tab button ✓; trim fix (UserID+UUID) ✓; UI lock all screens ✓
+- **Next Steps**: apply LNA box to page_auth_jnlp.jsp; bpfk team adds `allow="local-network-access"` to outer iframe; rebuild MTID Desktop with HttpService.cs LNA headers; deploy updated JSPs to prod; sign EXE+MSI with SafeNet token
 
 ## 💭 Session Recap (For AI Restart)
 
