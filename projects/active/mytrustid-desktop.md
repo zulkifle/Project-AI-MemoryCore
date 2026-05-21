@@ -5,9 +5,9 @@
 - **Type**: Desktop Application (WPF)
 - **Period**: 2026-03-31 - Active
 - **Tech Stack**: C# + WPF + .NET Framework 4.8 + WebSocket
-- **Completion**: 97%
+- **Completion**: 98%
 - **Due Date**: 2026-04-15
-- **Duration**: ~12 hours
+- **Duration**: ~15 hours
 
 ## Solution Structure
 | Project | Purpose | Path |
@@ -23,10 +23,10 @@
 - Desktop installer via VS installer project
 
 ## Current Status
-- **Last Session**: 2026-05-21 - app.manifest UAC elevation — requireAdministrator set
-- **Next Steps**: apply same LNA box changes to page_auth_jnlp.jsp; bpfk team adds `allow="local-network-access"` to their outer iframe; rebuild MTID Desktop with HttpService.cs headers; deploy updated JSPs to production; sign MyTrustID.EXE + MSI with real SafeNet token when cert arrives
-- **Completed**: STA thread fix ✓, NullRef fix ✓, expired cert fallback ✓, CertVerifier integrated ✓, NPRA 5-param auth ✓, BPFKCert fix ✓, error codes verified ✓, UI freeze async fix ✓, JSON parse bug fixed ✓, LNA instruction box on JSPs ✓, LNA findings doc drafted ✓, trim fix (UserID+UUID) ✓, UI lock all screens ✓, installer bat overhaul ✓, page_auth.jsp Copy & Open New Tab ✓, app.manifest requireAdministrator ✓
-- **Known Issues**: bpfk outer iframe missing `allow="local-network-access"` — confirmed via Sec-Fetch-Dest + empty MTID header log; MTID Desktop needs rebuild for HttpService.cs LNA headers
+- **Last Session**: 2026-05-22 - AutoUpdate overhaul — no admin, IExpress runas, restart fix
+- **Next Steps**: merge fix/autoupdate-elevation → master; apply LNA box to page_auth_jnlp.jsp; bpfk team adds `allow="local-network-access"` to outer iframe; deploy updated JSPs to prod; sign EXE+MSI with SafeNet token when cert arrives
+- **Completed**: STA thread fix ✓, NullRef fix ✓, expired cert fallback ✓, CertVerifier integrated ✓, NPRA 5-param auth ✓, BPFKCert fix ✓, error codes verified ✓, UI freeze async fix ✓, JSON parse bug fixed ✓, LNA instruction box on JSPs ✓, LNA findings doc drafted ✓, trim fix (UserID+UUID) ✓, UI lock all screens ✓, installer bat overhaul ✓, page_auth.jsp Copy & Open New Tab ✓, app.manifest reverted to asInvoker ✓, AutoUpdate overhaul (no admin, IExpress runas, WSSCheck silent, restart mutex fix) ✓
+- **Known Issues**: bpfk outer iframe missing `allow="local-network-access"` — confirmed via Sec-Fetch-Dest + empty MTID header log
 
 ## Key Logic Notes
 - `CheckBNMcert()` in `PickupNewCertViewModel.cs:507` — reads X509 SubjectDN, checks `O=BNM`
@@ -35,8 +35,12 @@
 
 ## Session History (Last 5)
 
-### 2026-05-21 - app.manifest UAC Elevation
-- **Changes**: Changed `requestedExecutionLevel` from `asInvoker` to `requireAdministrator` in `Properties/app.manifest`. App will now show UAC prompt on every launch (including startup folder shortcut), ensuring it always runs as administrator.
+### 2026-05-22 - AutoUpdate Overhaul — No Admin, IExpress, Restart Fix
+- **Changes**: (1) `app.manifest` reverted to `asInvoker` — root cause was runtime writes, not install. (2) `wss.txt` path moved to `C:\Trustgate\MyTrustID\wss.txt` (App.config + Service.cs). (3) `VerseCheck()`: removed admin check, fixed `using` block async bug (WebClient disposed early), launches `MyTrustID.EXE` (IExpress) via `Verb=runas` — UAC one-click. (4) `WSSCheck()`: fully silent cert download + notify popup + clean restart. (5) `Completed()`: added `e.Error`/`e.Cancelled` checks, download path moved to `C:\Trustgate\MyTrustID\`. (6) `RestartApplication()`: fixed cross-thread crash with `Dispatcher.Invoke`; fixed mutex race via `App.IsRestarting` flag — new process starts in `OnExit` after NotifyIcon disposed + mutex released. Branch: `fix/autoupdate-elevation` — tested ✅ pushed ✅.
+- **Time Spent**: ~3 hours
+
+### 2026-05-21 - app.manifest UAC Elevation (Reverted this session)
+- **Changes**: Changed `requestedExecutionLevel` to `requireAdministrator` — later reverted to `asInvoker` after root cause analysis.
 - **Time Spent**: ~15 min
 
 ### 2026-05-21 - page_auth.jsp LNA Instruction Box Enhancement
@@ -52,15 +56,11 @@
 - **Time Spent**: ~10 min
 
 ### 2026-05-17 - LNA Findings Doc Revision & auth.html Revert
-- **Changes**: Reverted auth.html iframe+postMessage approach. Revised `LNA_Findings_Draft.txt`: added JNLP (Gen 1) vs MTID Desktop (Gen 2) framing; corrected root cause to Chrome 142 LNA policy enforcement; repositioned MTID Desktop as mitigation for JNLP deprecation.
+- **Changes**: Reverted auth.html iframe+postMessage approach. Revised `LNA_Findings_Draft.txt`: JNLP (Gen 1) vs MTID Desktop (Gen 2) framing; Chrome 142 LNA root cause; MTID Desktop as mitigation.
 - **Time Spent**: ~30 min
 
-### 2026-05-15 to 2026-05-17 - Chrome LNA Nested Iframe Diagnosis & JSP Hardening
-- **Changes**: Diagnosed JSON parse bug in page_auth.jsp — regex stripping `"` from JSON. Fixed with direct `JSON.parse`. Added LNA headers to `HttpService.cs`. Confirmed bpfk failure: outer iframe missing `allow` → Chrome silent TLS probe (22-sec gap). Added browser-detecting LNA instruction box to page_auth.jsp + page_auth_jnlp.jsp. Created `LNA_Findings_Draft.txt`. Drafted bpfk email template.
-- **Time Spent**: ~3 hours
-
 ## Historical Summary
-Earlier sessions (2026-03-31 to 2026-04-21): Project registered. Full solution explored. Admin testing completed, BNM cert pickup success. May 6-7: STA thread fix, NullRef fix, expired cert fallback loop, CertVerifierWSClient integrated, NPRA 5-param auth, Java AES/CBC/NoPadding decrypt, `userSERIALNUMBER` overwrite bug fixed, BPFKCert single-pass parse fix, 10 error codes audited. May 8: UI freeze async fix (SelectStorageViewModel + PickupNewCertViewModel). May 12: FaultException investigation — user confirmed own error, no code changes. May 14: Chrome PNA investigation — fixed `HttpService.cs` crash (query string stripping), fixed OPTIONS regex in `WebServer.cs`.
+Earlier sessions (2026-03-31 to 2026-04-21): Project registered. Full solution explored. Admin testing completed, BNM cert pickup success. May 6-7: STA thread fix, NullRef fix, expired cert fallback loop, CertVerifierWSClient integrated, NPRA 5-param auth, Java AES/CBC/NoPadding decrypt, `userSERIALNUMBER` overwrite bug fixed, BPFKCert single-pass parse fix, 10 error codes audited. May 8: UI freeze async fix (SelectStorageViewModel + PickupNewCertViewModel). May 12: FaultException investigation — user confirmed own error, no code changes. May 14: Chrome PNA investigation — fixed `HttpService.cs` crash (query string stripping), fixed OPTIONS regex in `WebServer.cs`. May 15-17: Chrome LNA nested iframe diagnosis, JSON parse bug fix, LNA instruction box on JSPs, LNA_Findings_Draft.txt created.
 
 ## Technical Notes
 - **Repository**: TBD
@@ -69,4 +69,4 @@ Earlier sessions (2026-03-31 to 2026-04-21): Project registered. Full solution e
 - **SafeNet Token installer**: `C:\PROJECTS\MYTRUSTID DESKTOP\Token\Safenet\Installation` — install this before signing EXE/MSI with real code signing cert
 
 ---
-**Last Updated**: 2026-05-21 (Session 13) | **Position**: #1/10 Active
+**Last Updated**: 2026-05-22 (Session 14) | **Position**: #1/10 Active

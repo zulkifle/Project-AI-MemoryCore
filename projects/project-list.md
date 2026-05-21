@@ -6,7 +6,7 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-05-21 | TBD | 97% | page_auth.jsp Copy & Open New Tab button; pending page_auth_jnlp.jsp + bpfk iframe fix |
+| 1 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-05-22 | TBD | 98% | AutoUpdate overhaul done — asInvoker, IExpress runas, WSSCheck restart, mutex fix; branch fix/autoupdate-elevation pushed; pending merge + page_auth_jnlp.jsp + sign EXE |
 | 2 | **[TG SecureMail](./active/tg-securemail.md)** | 2026-05-21 | TBD | 0% | Scoped — off-session: DigitalSeal debug + Python 3.12/pikepdf installed; next: scaffold MV3 extension |
 | 3 | **[RSS Self Service Portal](./active/rss-self-service-portal.md)** | 2026-05-12 | Q2 2026 | 80% | Phase 1 complete — Dashboard + Reports + Quota circular rings — next: browser test |
 | 4 | **[Windows Server Housekeeping](./active/windows-server-housekeeping.md)** | 2026-04-29 | TBD | 0% | New — writing housekeeping.bat |
@@ -22,4 +22,4 @@
 ---
 ## System Status
 - **Total Projects**: 7 (4 active + 3 archived)
-- **Last Updated**: 2026-05-21 - Save project: TG SecureMail (off-session: DigitalSeal debug + Python 3.12/pikepdf installed)
+- **Last Updated**: 2026-05-22 - Save project: MyTrustID Desktop — AutoUpdate overhaul (no admin, IExpress runas, restart fix)

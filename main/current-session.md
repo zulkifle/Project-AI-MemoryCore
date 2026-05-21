@@ -3,16 +3,16 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-05-20
-**Session Focus**: MyTrustID Desktop — PickupNewCertViewModel trim fix (UserID + UUID); K8s admin cert renewal (RKE2 context)
+**Last Activity**: 2026-05-22
+**Session Focus**: MyTrustID Desktop — AutoUpdate overhaul (no admin, IExpress runas, WSSCheck restart fix, mutex race fix)
 
 ## Active Project
 - **Name**: MyTrustID Desktop
-- **Resumed**: 2026-05-21
-- **Last Worked**: 2026-05-21
-- **Context**: WPF .NET Framework 4.8 desktop app — Token/SoftCert login & signing. Currently 97% complete.
-- **Recent Progress**: page_auth.jsp Copy & Open New Tab button ✓; trim fix (UserID+UUID) ✓; UI lock all screens ✓
-- **Next Steps**: apply LNA box to page_auth_jnlp.jsp; bpfk team adds `allow="local-network-access"` to outer iframe; rebuild MTID Desktop with HttpService.cs LNA headers; deploy updated JSPs to prod; sign EXE+MSI with SafeNet token
+- **Resumed**: 2026-05-22
+- **Last Worked**: 2026-05-22
+- **Context**: WPF .NET Framework 4.8 desktop app — Token/SoftCert login & signing. Currently 98% complete.
+- **Recent Progress**: AutoUpdate overhaul ✓ — asInvoker manifest, wss.txt→C:\Trustgate\MyTrustID\, VerseCheck IExpress runas, WSSCheck silent+restart, Dispatcher.Invoke fix, App.IsRestarting mutex race fix — branch fix/autoupdate-elevation pushed ✅
+- **Next Steps**: merge fix/autoupdate-elevation → master; apply LNA box to page_auth_jnlp.jsp; bpfk team adds `allow="local-network-access"` to outer iframe; deploy updated JSPs to prod; sign EXE+MSI with SafeNet token
 
 ## 💭 Session Recap (For AI Restart)
 
