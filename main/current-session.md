@@ -3,11 +3,16 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-05-22
-**Session Focus**: MyTrustID Desktop — AutoUpdate overhaul (no admin, IExpress runas, WSSCheck restart fix, mutex race fix)
+**Last Activity**: 2026-05-24
+**Session Focus**: MyTrustSignerXML-MITI — new project created, full source code studied
 
 ## Active Project
-- **Name**: MyTrustID Desktop
+- **Name**: MyTrustSignerXML-MITI
+- **Started**: 2026-05-24
+- **Context**: Java servlet API (Tomcat + MySQL) that signs XML files using XMLDSig standard (Apache Santuario + PKCS12). 3 endpoints: /sign, /verify, /getcertinfo. Currently working at sandbox/pilot. Due: 2026-06-01 (production deploy).
+- **Next Steps**: Setup production environment — mtsa.properties, prod P12 cert, credential.json, MySQL transactions table, WAR deploy, test
+
+## Previous Active Project (carry-over)
 - **Resumed**: 2026-05-22
 - **Last Worked**: 2026-05-22
 - **Context**: WPF .NET Framework 4.8 desktop app — Token/SoftCert login & signing. Currently 98% complete.
@@ -61,9 +66,6 @@
 
 **jumio-proxy-integration (Archived):**
 - Implementation done — prod deploy pending (5 env vars to configure)
-
-**BIMB:**
-- Waiting re-VAPT scheduling
 
 ## Key File Paths
 - RSS Portal: `C:\laragon\www\remote-signing-portal`
