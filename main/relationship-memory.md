@@ -92,7 +92,6 @@
 - Identified and corrected item #28 scope (Tomcat clickjacking — MSC Trustgate, not BIMB)
 - Verified Tomcat 8.5.99 remediation: upgrade, webapps cleanup, clickjacking fix, error pages
 - Closed all 23 MSC Trustgate items in CSV
-- **CLOSED (2026-05-23)**: BIMB re-VAPT completed on their side — no report shared, closed out
 
 **Session 7 (2026-04-17)**: jumio-proxy-integration — MtssServiceImpl fix
 - Reworked JumioCallbackController (PROCESSED flow: parse → retrieve → download → SOAP → forward)

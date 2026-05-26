@@ -6,14 +6,14 @@
 - **Client**: Trustgate Sdn Bhd (Internal)
 - **Period**: 2026-04-29 - Active
 - **Tech Stack**: Windows Batch Script (.bat) + forfiles + Windows Task Scheduler
-- **Completion**: 0%
-- **Duration**: 0 min
+- **Completion**: 100%
+- **Duration**: 30 min
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-04-29 - Project scoped, paths confirmed, approach planned
-- **Next Steps**: Write housekeeping.bat using forfiles — user to provide save path on server, then deliver script
-- **Known Issues**: Save path for the .bat file not yet confirmed by user
+- **Last Session**: 2026-05-25 - Script written and saved ✅
+- **Next Steps**: Copy housekeeping.bat to Trustgate server → schedule via Task Scheduler (daily 2:00 AM)
+- **Known Issues**: None — script ready to deploy
 
 ## Log Paths (4 targets)
 - `C:\wildfly-18.0.1.Final\standalone\log`
@@ -28,6 +28,10 @@
 
 ## Session History (Last 5)
 
+### 2026-05-25 - Script Written & Saved
+- **Changes**: housekeeping.bat written — 4 log paths, 10-day retention, forfiles recursive delete, audit log to C:\Trustgate\housekeeping-report.log. Saved to C:\PROJECTS\ECOURT\SIGN SERVER ARCH DIAGRAM\Release v2 ecourt\
+- **Time Spent**: ~30 min
+
 ### 2026-04-29 - Project Created
 - **Changes**: Initial project setup, log paths defined
 - **Time Spent**: ~0 min
@@ -36,9 +40,10 @@
 [No history yet — this section is populated when session count exceeds 5]
 
 ## Technical Notes
-- **Repository**: TBD (local script, may be placed on server directly)
+- **Repository**: `C:\PROJECTS\ECOURT\SIGN SERVER ARCH DIAGRAM\Release v2 ecourt\housekeeping.bat`
 - **Key Dependencies**: `forfiles` (built-in Windows command), Windows Task Scheduler
-- **Deployment**: Copy .bat to server, schedule via Task Scheduler (daily, off-peak hours)
+- **Deployment**: Copy .bat to server → schedule via Task Scheduler (daily 2:00 AM)
+- **Audit log on server**: `C:\Trustgate\housekeeping-report.log`
 
 ---
 **Last Updated**: 2026-04-29 | **Position**: #1/10 Active
