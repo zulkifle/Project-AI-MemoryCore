@@ -3,21 +3,17 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-05-24
-**Session Focus**: MyTrustSignerXML-MITI — new project created, full source code studied
+**Last Activity**: 2026-05-29
+**Session Focus**: Project review + RKE2 training (VirtualBox fresh install + Rancher)
 
 ## Active Project
-- **Name**: MyTrustSignerXML-MITI
-- **Started**: 2026-05-24
-- **Context**: Java servlet API (Tomcat + MySQL) that signs XML files using XMLDSig standard (Apache Santuario + PKCS12). 3 endpoints: /sign, /verify, /getcertinfo. Currently working at sandbox/pilot. Due: 2026-06-01 (production deploy).
-- **Next Steps**: Setup production environment — mtsa.properties, prod P12 cert, credential.json, MySQL transactions table, WAR deploy, test
+- **Name**: RKE2 Training (Local VirtualBox Lab)
+- **Session**: 2026-05-29
+- **Context**: Setting up RKE2 Kubernetes cluster on VirtualBox VM for training. Installed RKE2 v1.31.13+rke2r1 on single node (4GB RAM). Installing Rancher via Helm — cert-manager up, Rancher pod Running but readiness probe issue (cert-manager-webhook 10 restarts, may resolve on its own).
+- **Next Steps**: Confirm Rancher UI accessible at https://192.168.0.123.sslip.io — if not, debug cert-manager-webhook restart loop
 
 ## Previous Active Project (carry-over)
-- **Resumed**: 2026-05-22
-- **Last Worked**: 2026-05-22
-- **Context**: WPF .NET Framework 4.8 desktop app — Token/SoftCert login & signing. Currently 98% complete.
-- **Recent Progress**: AutoUpdate overhaul ✓ — asInvoker manifest, wss.txt→C:\Trustgate\MyTrustID\, VerseCheck IExpress runas, WSSCheck silent+restart, Dispatcher.Invoke fix, App.IsRestarting mutex race fix — branch fix/autoupdate-elevation pushed ✅
-- **Next Steps**: merge fix/autoupdate-elevation → master; apply LNA box to page_auth_jnlp.jsp; bpfk team adds `allow="local-network-access"` to outer iframe; deploy updated JSPs to prod; sign EXE+MSI with SafeNet token
+**MyTrustID Desktop** — ARCHIVED 2026-05-28. Dev done. External items pending (bpfk team, cert signing). Branch `fix/autoupdate-elevation` held — remind to merge in August 2026.
 
 ## 💭 Session Recap (For AI Restart)
 
@@ -58,11 +54,7 @@
 - 10-day retention, forfiles approach
 - Pending: user to confirm save path for .bat file on server
 
-**MyTrustID Desktop (Active — #1):**
-- Chrome PNA iframe fix DONE (2026-05-14) ✓
-- auth.html deployed to bin\Debug\ web root
-- bpfk.jsp updated with iframe+postMessage + 5-param URL passing
-- Next: bpfk.gov.my server team deploys updated JSP; include auth.html in installer
+**MyTrustID Desktop** — 99% done. Waiting for SafeNet cert to sign EXE+MSI via `sign.bat`. Branch `fix/autoupdate-elevation` on hold — merge reminder: August 2026.
 
 **jumio-proxy-integration (Archived):**
 - Implementation done — prod deploy pending (5 env vars to configure)

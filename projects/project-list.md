@@ -8,7 +8,7 @@
 |-----|---------|--------------|----------|------------|--------|
 | 1 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-05-26 | TBD | 15% | Full design done ✅ — next: Phase 1 scaffold Chrome MV3 extension |
 | 2 | **[MyTrustSignerXML-MITI](./active/mytrustsignerxml-miti.md)** | 2026-05-25 | 2026-06-01 | 70% | Studied + xml-signing skill created — pending production setup: properties, P12, MySQL, WAR deploy |
-| 3 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-05-22 | TBD | 98% | AutoUpdate done ✅ — pending merge + page_auth_jnlp.jsp + sign EXE |
+| 3 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-05-29 | TBD | 99% | Dev done ✅ — pending: sign EXE+MSI with SafeNet token (waiting on cert). Branch fix/autoupdate-elevation on hold — merge Aug 2026 |
 | 4 | **[TGCA](./active/tgca.md)** | 2026-05-25 | TBD | 0% | Registered — pending study (Spring Boot CA mgmt portal: CRL, OCSP, TSA, HSM) |
 | 5 | **[RSS Self Service Portal](./active/rss-self-service-portal.md)** | 2026-05-12 | Q2 2026 | 80% | Phase 1 complete — next: browser test + billing integration |
 | 6 | **[Windows Server Housekeeping](./active/windows-server-housekeeping.md)** | 2026-05-25 | TBD | 100% | ✅ Script written — deploy to server + schedule Task Scheduler |
@@ -24,4 +24,4 @@
 ---
 ## System Status
 - **Total Projects**: 9 (6 active + 3 archived)
-- **Last Updated**: 2026-05-26 - TG SeQureMail design complete, moved to #1
+- **Last Updated**: 2026-05-29 - MyTrustID Desktop cleanup + RKE2 training session

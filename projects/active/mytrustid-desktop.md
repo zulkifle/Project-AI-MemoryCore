@@ -5,8 +5,8 @@
 - **Type**: Desktop Application (WPF)
 - **Period**: 2026-03-31 - Active
 - **Tech Stack**: C# + WPF + .NET Framework 4.8 + WebSocket
-- **Completion**: 98%
-- **Due Date**: 2026-04-15
+- **Completion**: 99% (pending: sign EXE+MSI with SafeNet token)
+- **Due Date**: TBD (waiting for cert)
 - **Duration**: ~15 hours
 
 ## Solution Structure
@@ -24,7 +24,9 @@
 
 ## Current Status
 - **Last Session**: 2026-05-22 - AutoUpdate overhaul — no admin, IExpress runas, restart fix
-- **Next Steps**: merge fix/autoupdate-elevation → master; apply LNA box to page_auth_jnlp.jsp; bpfk team adds `allow="local-network-access"` to outer iframe; deploy updated JSPs to prod; sign EXE+MSI with SafeNet token when cert arrives
+- **Next Steps**: Sign EXE+MSI with SafeNet token when cert arrives — use `sign.bat` (`signtool /a`)
+- **Decided**: LNA box NOT applied to `page_auth_jnlp.jsp` — skipped by decision
+- **Pending merge**: `fix/autoupdate-elevation` → master — HOLD until master is stable; remind August 2026
 - **Completed**: STA thread fix ✓, NullRef fix ✓, expired cert fallback ✓, CertVerifier integrated ✓, NPRA 5-param auth ✓, BPFKCert fix ✓, error codes verified ✓, UI freeze async fix ✓, JSON parse bug fixed ✓, LNA instruction box on JSPs ✓, LNA findings doc drafted ✓, trim fix (UserID+UUID) ✓, UI lock all screens ✓, installer bat overhaul ✓, page_auth.jsp Copy & Open New Tab ✓, app.manifest reverted to asInvoker ✓, AutoUpdate overhaul (no admin, IExpress runas, WSSCheck silent, restart mutex fix) ✓
 - **Known Issues**: bpfk outer iframe missing `allow="local-network-access"` — confirmed via Sec-Fetch-Dest + empty MTID header log
 
