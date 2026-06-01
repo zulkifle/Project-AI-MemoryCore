@@ -7,7 +7,7 @@
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
 | 1 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-05-26 | TBD | 15% | Full design done ✅ — next: Phase 1 scaffold Chrome MV3 extension |
-| 2 | **[MyTrustSignerXML-MITI](./active/mytrustsignerxml-miti.md)** | 2026-05-25 | 2026-06-01 | 70% | Studied + xml-signing skill created — pending production setup: properties, P12, MySQL, WAR deploy |
+| 2 | **[MyTrustSignerXML-MITI](./active/mytrustsignerxml-miti.md)** | 2026-05-29 | 2026-06-01 | 95% | Production deployed ✅ — /sign + /verify tested OK. Pending: MITI client E2E test, fix sign.java:140 cosmetic bug |
 | 3 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-05-29 | TBD | 99% | Dev done ✅ — pending: sign EXE+MSI with SafeNet token (waiting on cert). Branch fix/autoupdate-elevation on hold — merge Aug 2026 |
 | 4 | **[TGCA](./active/tgca.md)** | 2026-05-25 | TBD | 0% | Registered — pending study (Spring Boot CA mgmt portal: CRL, OCSP, TSA, HSM) |
 | 5 | **[RSS Self Service Portal](./active/rss-self-service-portal.md)** | 2026-05-12 | Q2 2026 | 80% | Phase 1 complete — next: browser test + billing integration |
@@ -24,4 +24,4 @@
 ---
 ## System Status
 - **Total Projects**: 9 (6 active + 3 archived)
-- **Last Updated**: 2026-05-29 - MyTrustID Desktop cleanup + RKE2 training session
+- **Last Updated**: 2026-05-29 - MyTrustSignerXML-MITI production deployed + tested

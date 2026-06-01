@@ -6,14 +6,14 @@
 - **Client**: MITI (Ministry of Investment, Trade and Industry of Malaysia)
 - **Period**: 2026-05-24 - Active
 - **Tech Stack**: Java 8 (Servlet) + Tomcat + MySQL
-- **Completion**: 70%
-- **Duration**: 30 min
+- **Completion**: 95%
+- **Duration**: 2 hours
 - **Due Date**: 2026-06-01
 
 ## Current Status
-- **Last Session**: 2026-05-24 - Project created, full source studied, xml-signing skill created
-- **Next Steps**: Setup production environment — properties files, credential.json, MySQL DB, WAR deploy
-- **Known Issues**: Pending production setup — currently only at sandbox/pilot; no prod properties file yet
+- **Last Session**: 2026-05-29 - Production deployed + tested, deployment guide written
+- **Next Steps**: MITI client end-to-end test with correct URL; fix sign.java:140 misleading verify log (cosmetic)
+- **Known Issues**: sign.java:140 uses wrong verify call (`verifySignature(signatureValue, digestValue.getBytes())`) — should use `verifySignedInfoSignature()`. Harmless — does not affect signed XML output.
 
 ## Architecture
 
@@ -138,18 +138,26 @@ TestSignXML/
 ```
 
 ## Production Deployment Checklist
-- [ ] Create `/opt/miti/properties/mtsa.properties` with prod `kspath`, `kspass`, DB creds
-- [ ] Place production `.p12` signing cert at `kspath`
-- [ ] Create `credential.json` with authorized client credentials
-- [ ] Create MySQL `transactions` table
-- [ ] Update `config.properties` → `app.stage=production`
-- [ ] Build WAR: `mvn clean package`
-- [ ] Deploy WAR to Tomcat `webapps/`
-- [ ] Test `/getcertinfo` first (GET, validates P12 + config)
-- [ ] Test `/sign` with sample XML
-- [ ] Test `/verify` with signed XML output
+- [x] Create `/opt/mtsa/properties/mtsa.properties` with prod `kspath`, `kspass`, DB creds
+- [x] Place production `.p12` signing cert at `kspath`
+- [x] Create `credential.json` with authorized client credentials
+- [x] Create MySQL `transactions` table (auto via init.sql + docker compose)
+- [x] Update `config.properties` → `app.stage=production`
+- [x] Build WAR + deploy via Docker (`docker compose up -d`)
+- [x] Test `/getcertinfo` ✅
+- [x] Test `/sign` ✅ — statusCode 000, signed XML produced
+- [x] Test `/verify` ✅ — signed XML verified successfully
+- [ ] MITI client end-to-end test (with correct URL)
+- [ ] Fix sign.java:140 — replace `verifySignature()` with `verifySignedInfoSignature()` (cosmetic)
+
+**Deployment Guide**: `C:\PROJECTS\MITI\Deployment\PRODUCTION\DEPLOYMENT_GUIDE.txt`
+**Docker Compose**: `C:\PROJECTS\MITI\Deployment\PRODUCTION\MTSAXML_PROD_20260529\docker-compose.yaml`
 
 ## Session History (Last 5)
+
+### 2026-05-29 - Production Deployed + Tested + Deployment Guide Written
+- **Changes**: (1) Diagnosed `verify signature: false` log in sign.java:140 — confirmed harmless bug (wrong data passed to verify check; uses digestValue.getBytes() instead of canonicalized SignedInfo). (2) Confirmed signing correct via /verify endpoint — statusCode 000. (3) Root cause of "error" was wrong URL used during testing. (4) Generated DEPLOYMENT_GUIDE.txt covering: package structure, host dir setup, docker compose up, DB verification, endpoint tests, troubleshooting. Saved to `C:\PROJECTS\MITI\Deployment\PRODUCTION\DEPLOYMENT_GUIDE.txt`.
+- **Time Spent**: ~90 min
 
 ### 2026-05-24 - Project Created, Studied & Skill Built
 - **Changes**: Studied full project source (sign.java, verify.java, getcertinfo.java, XmlHandler, SignUsingP12, ReadConfig, DBUtil, Credential, pom.xml, web.xml, sample XMLs). Documented full architecture, signing flow, verify flow, config system, DB schema, API contracts. Created `xml-signing` skill (Lv.1) for XMLDSig/Apache Santuario knowledge base.
@@ -166,4 +174,4 @@ TestSignXML/
 - **Digest Algorithm**: SHA-256
 
 ---
-**Last Updated**: 2026-05-24 | **Position**: #1/10 Active
+**Last Updated**: 2026-05-29 | **Position**: #2/10 Active

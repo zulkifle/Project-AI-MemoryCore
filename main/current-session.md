@@ -7,10 +7,10 @@
 **Session Focus**: Project review + RKE2 training (VirtualBox fresh install + Rancher)
 
 ## Active Project
-- **Name**: RKE2 Training (Local VirtualBox Lab)
+- **Name**: MyTrustSignerXML-MITI
 - **Session**: 2026-05-29
-- **Context**: Setting up RKE2 Kubernetes cluster on VirtualBox VM for training. Installed RKE2 v1.31.13+rke2r1 on single node (4GB RAM). Installing Rancher via Helm — cert-manager up, Rancher pod Running but readiness probe issue (cert-manager-webhook 10 restarts, may resolve on its own).
-- **Next Steps**: Confirm Rancher UI accessible at https://192.168.0.123.sslip.io — if not, debug cert-manager-webhook restart loop
+- **Context**: Production deployed via Docker Compose. /sign + /verify tested OK. Known cosmetic bug: sign.java:140 uses wrong verify check (harmless). Deployment guide written.
+- **Next Steps**: MITI client E2E test with correct URL; fix sign.java:140 (replace verifySignature() with verifySignedInfoSignature())
 
 ## Previous Active Project (carry-over)
 **MyTrustID Desktop** — ARCHIVED 2026-05-28. Dev done. External items pending (bpfk team, cert signing). Branch `fix/autoupdate-elevation` held — remind to merge in August 2026.
