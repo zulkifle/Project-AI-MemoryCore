@@ -7,10 +7,10 @@
 **Session Focus**: Project review + RKE2 training (VirtualBox fresh install + Rancher)
 
 ## Active Project
-- **Name**: MyTrustSignerXML-MITI
-- **Session**: 2026-05-29
-- **Context**: Production deployed via Docker Compose. /sign + /verify tested OK. Known cosmetic bug: sign.java:140 uses wrong verify check (harmless). Deployment guide written.
-- **Next Steps**: MITI client E2E test with correct URL; fix sign.java:140 (replace verifySignature() with verifySignedInfoSignature())
+- **Name**: RSS Self Service Portal
+- **Session**: 2026-06-01
+- **Context**: MyTrustSignerXML-MITI fully complete (E2E test passed, sign.java:140 fix done). Returning focus to RSS portal — billing model integration next.
+- **Next Steps**: Drop scaffolded tables, add client_id to billing, build Billing/BillingUser/BillingTxSign models
 
 ## Previous Active Project (carry-over)
 **MyTrustID Desktop** — ARCHIVED 2026-05-28. Dev done. External items pending (bpfk team, cert signing). Branch `fix/autoupdate-elevation` held — remind to merge in August 2026.
