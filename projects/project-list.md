@@ -24,4 +24,4 @@
 ---
 ## System Status
 - **Total Projects**: 9 (6 active + 3 archived)
-- **Last Updated**: 2026-05-29 - MyTrustSignerXML-MITI production deployed + tested
+- **Last Updated**: 2026-06-01 - MyTrustSignerXML-MITI sign.java:140 fix + cert expiry analysis

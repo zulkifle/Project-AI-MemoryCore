@@ -7,13 +7,13 @@
 - **Period**: 2026-05-24 - Active
 - **Tech Stack**: Java 8 (Servlet) + Tomcat + MySQL
 - **Completion**: 95%
-- **Duration**: 2 hours
+- **Duration**: 2.5 hours
 - **Due Date**: 2026-06-01
 
 ## Current Status
-- **Last Session**: 2026-05-29 - Production deployed + tested, deployment guide written
-- **Next Steps**: MITI client end-to-end test with correct URL; fix sign.java:140 misleading verify log (cosmetic)
-- **Known Issues**: sign.java:140 uses wrong verify call (`verifySignature(signatureValue, digestValue.getBytes())`) — should use `verifySignedInfoSignature()`. Harmless — does not affect signed XML output.
+- **Last Session**: 2026-06-01 - Fixed sign.java:140 verify bug + cert expiry analysis
+- **Next Steps**: MITI client end-to-end test with correct URL; rebuild + redeploy WAR with sign.java:140 fix
+- **Known Issues**: None — sign.java:140 bug fixed
 
 ## Architecture
 
@@ -148,12 +148,16 @@ TestSignXML/
 - [x] Test `/sign` ✅ — statusCode 000, signed XML produced
 - [x] Test `/verify` ✅ — signed XML verified successfully
 - [ ] MITI client end-to-end test (with correct URL)
-- [ ] Fix sign.java:140 — replace `verifySignature()` with `verifySignedInfoSignature()` (cosmetic)
+- [x] Fix sign.java:140 — replaced `verifySignature(signatureValue, digestValue.getBytes())` with `verifySignedInfoSignature(signedInfo, signatureValue, canonAlgoUri)` ✅
 
 **Deployment Guide**: `C:\PROJECTS\MITI\Deployment\PRODUCTION\DEPLOYMENT_GUIDE.txt`
 **Docker Compose**: `C:\PROJECTS\MITI\Deployment\PRODUCTION\MTSAXML_PROD_20260529\docker-compose.yaml`
 
 ## Session History (Last 5)
+
+### 2026-06-01 - sign.java:140 Fix + Cert Expiry Analysis
+- **Changes**: (1) Fixed sign.java:140 — replaced `verifySignature(signatureValue, digestValue.getBytes())` with `verifySignedInfoSignature(signedInfo, signatureValue, canonAlgoUri)`. Verify log now correctly reflects actual signature validity. (2) Analyzed cert expiry handling — `SignUsingP12` is instantiated per request, so replacing P12 file at `kspath` takes effect immediately on next request. No container restart or code change needed when cert expires.
+- **Time Spent**: ~15 min
 
 ### 2026-05-29 - Production Deployed + Tested + Deployment Guide Written
 - **Changes**: (1) Diagnosed `verify signature: false` log in sign.java:140 — confirmed harmless bug (wrong data passed to verify check; uses digestValue.getBytes() instead of canonicalized SignedInfo). (2) Confirmed signing correct via /verify endpoint — statusCode 000. (3) Root cause of "error" was wrong URL used during testing. (4) Generated DEPLOYMENT_GUIDE.txt covering: package structure, host dir setup, docker compose up, DB verification, endpoint tests, troubleshooting. Saved to `C:\PROJECTS\MITI\Deployment\PRODUCTION\DEPLOYMENT_GUIDE.txt`.
@@ -174,4 +178,4 @@ TestSignXML/
 - **Digest Algorithm**: SHA-256
 
 ---
-**Last Updated**: 2026-05-29 | **Position**: #2/10 Active
+**Last Updated**: 2026-06-01 | **Position**: #2/10 Active
