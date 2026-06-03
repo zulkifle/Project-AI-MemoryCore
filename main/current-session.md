@@ -3,10 +3,16 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-05-29
-**Session Focus**: Project review + RKE2 training (VirtualBox fresh install + Rancher)
+**Last Activity**: 2026-06-03
+**Session Focus**: MyTrustID SafeNet token signing + Petronas Legacy C++ Dockerize project created
 
 ## Active Project
+- **Name**: Petronas Legacy C++ Dockerize
+- **Started**: 2026-06-03
+- **Context**: Legacy C++ app — FTP download → sign → FTP upload (runs every morning). Due 2026-06-05 ⚠️ URGENT. Source not yet retrieved from server.
+- **Next Steps**: Dejul to share source code from server, then write Dockerfile with BCC + Makefile
+
+## Previous Active Project
 - **Name**: RSS Self Service Portal
 - **Session**: 2026-06-01
 - **Context**: MyTrustSignerXML-MITI fully complete (E2E test passed, sign.java:140 fix done). Returning focus to RSS portal — billing model integration next.
