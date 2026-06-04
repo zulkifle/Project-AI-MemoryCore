@@ -9,7 +9,7 @@
 | 1 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-06-03 | 2026-06-05 ⚠️ | 0% | Project created — source not yet retrieved from server |
 | 2 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-05-26 | TBD | 15% | Full design done ✅ — next: Phase 1 scaffold Chrome MV3 extension |
 | 3 | **[MyTrustSignerXML-MITI](./active/mytrustsignerxml-miti.md)** | 2026-05-29 | 2026-06-01 | 95% | Production deployed ✅ — /sign + /verify tested OK. Pending: MITI client E2E test, fix sign.java:140 cosmetic bug |
-| 4 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-05-29 | TBD | 99% | Dev done ✅ — pending: sign EXE+MSI with SafeNet token (waiting on cert). Branch fix/autoupdate-elevation on hold — merge Aug 2026 |
+| 4 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-06-03 | TBD | 100% ✅ | EXE + MSI signed with SafeNet token ✅ — Branch fix/autoupdate-elevation on hold — merge Aug 2026 |
 | 5 | **[TGCA](./active/tgca.md)** | 2026-05-25 | TBD | 0% | Registered — pending study (Spring Boot CA mgmt portal: CRL, OCSP, TSA, HSM) |
 | 6 | **[RSS Self Service Portal](./active/rss-self-service-portal.md)** | 2026-05-12 | Q2 2026 | 80% | Phase 1 complete — next: browser test + billing integration |
 | 7 | **[Windows Server Housekeeping](./active/windows-server-housekeeping.md)** | 2026-05-25 | TBD | 100% | ✅ Script written — deploy to server + schedule Task Scheduler |

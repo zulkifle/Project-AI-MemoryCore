@@ -5,8 +5,8 @@
 - **Type**: Desktop Application (WPF)
 - **Period**: 2026-03-31 - Active
 - **Tech Stack**: C# + WPF + .NET Framework 4.8 + WebSocket
-- **Completion**: 99% (pending: sign EXE+MSI with SafeNet token)
-- **Due Date**: TBD (waiting for cert)
+- **Completion**: 100% ✅
+- **Due Date**: TBD
 - **Duration**: ~15 hours
 
 ## Solution Structure
@@ -23,8 +23,8 @@
 - Desktop installer via VS installer project
 
 ## Current Status
-- **Last Session**: 2026-05-22 - AutoUpdate overhaul — no admin, IExpress runas, restart fix
-- **Next Steps**: Sign EXE+MSI with SafeNet token when cert arrives — use `sign.bat` (`signtool /a`)
+- **Last Session**: 2026-06-03 - EXE + MSI signed with SafeNet token (zulkifle@msctrustgate.com) ✅
+- **Next Steps**: Merge `fix/autoupdate-elevation` → master (August 2026 — hold until bpfk team done)
 - **Decided**: LNA box NOT applied to `page_auth_jnlp.jsp` — skipped by decision
 - **Pending merge**: `fix/autoupdate-elevation` → master — HOLD until master is stable; remind August 2026
 - **Completed**: STA thread fix ✓, NullRef fix ✓, expired cert fallback ✓, CertVerifier integrated ✓, NPRA 5-param auth ✓, BPFKCert fix ✓, error codes verified ✓, UI freeze async fix ✓, JSON parse bug fixed ✓, LNA instruction box on JSPs ✓, LNA findings doc drafted ✓, trim fix (UserID+UUID) ✓, UI lock all screens ✓, installer bat overhaul ✓, page_auth.jsp Copy & Open New Tab ✓, app.manifest reverted to asInvoker ✓, AutoUpdate overhaul (no admin, IExpress runas, WSSCheck silent, restart mutex fix) ✓
