@@ -3,7 +3,7 @@
 
 ## Project Overview
 - **Type**: Desktop Application (WPF)
-- **Period**: 2026-03-31 - Active
+- **Period**: 2026-03-31 - 2026-06-03
 - **Tech Stack**: C# + WPF + .NET Framework 4.8 + WebSocket
 - **Completion**: 100% ✅
 - **Due Date**: TBD
