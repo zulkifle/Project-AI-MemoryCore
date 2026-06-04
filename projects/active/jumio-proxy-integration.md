@@ -3,11 +3,11 @@
 
 ## Project Overview
 - **Type**: Web Service / Proxy API (Spring Boot)
-- **Period**: 2026-04-16 - 2026-04-22
+- **Period**: 2026-04-16 - Active
 - **Tech Stack**: Java 17 + Spring Boot 3.0.9 + OpenFeign + Maven + Docker + Kubernetes
-- **Completion**: 100%
+- **Completion**: 85%
 - **Duration**: ~3 sessions
-- **Status**: Completed — dev done, pending production deployment (5 env vars to update manually)
+- **Status**: Reactivated 2026-06-04 — new scope: support multiple projects (multi-tenant)
 
 ## Project Context
 - **Client**: Adacash Sdn Bhd
@@ -23,8 +23,8 @@
 6. On non-`PROCESSED` status (e.g. `SESSION_EXPIRED`): skip MTSS, forward to Adacash directly
 
 ## Current Status
-- **Last Session**: 2026-05-11 - SESSION_EXPIRED callback bug fixed, built and deployed to pilot
-- **Next Steps**: Await Adacash/Jumio team UAT retest confirmation for SESSION_EXPIRED. Then proceed with prod deploy (5 env vars).
+- **Last Session**: 2026-06-04 - Reactivated — brainstorm multi-project support
+- **Next Steps**: Brainstorm architecture for supporting multiple projects/clients in one proxy instance
 - **Known Issues**: None
 
 ## Pending Production Values (deployment-prod.yaml)
