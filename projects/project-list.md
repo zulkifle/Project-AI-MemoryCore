@@ -6,7 +6,7 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-06-04 | TBD | 85% | Reactivated — brainstorm multi-project support |
+| 1 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-06-05 | TBD | 70% | Multi-project code done — 404 nginx path issue pending, needs rebuild + redeploy |
 | 2 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-06-03 | 2026-06-05 ⚠️ | 0% | Source not yet retrieved from server |
 | 3 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-05-26 | TBD | 15% | Full design done ✅ — next: Phase 1 scaffold Chrome MV3 extension |
 | 4 | **[TGCA](./active/tgca.md)** | 2026-05-25 | TBD | 0% | Registered — pending study (Spring Boot CA mgmt portal: CRL, OCSP, TSA, HSM) |
@@ -25,4 +25,4 @@
 ---
 ## System Status
 - **Total Projects**: 10 (6 active + 4 archived)
-- **Last Updated**: 2026-06-04 - Reactivated jumio-proxy-integration (multi-project scope)
+- **Last Updated**: 2026-06-05 - save project: jumio-proxy-integration multi-project implementation
