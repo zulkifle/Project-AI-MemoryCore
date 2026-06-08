@@ -4,16 +4,16 @@
 ## Project Overview
 - **Type**: API
 - **Client**: MITI (Ministry of Investment, Trade and Industry of Malaysia)
-- **Period**: 2026-05-24 - Active
+- **Period**: 2026-05-24 - Active (reactivated 2026-06-05)
 - **Tech Stack**: Java 8 (Servlet) + Tomcat + MySQL
 - **Completion**: 100%
 - **Duration**: 2.5 hours
 - **Due Date**: 2026-06-01
 
 ## Current Status
-- **Last Session**: 2026-06-01 - MITI client E2E test passed — project complete
-- **Next Steps**: None — project complete
-- **Known Issues**: None
+- **Last Session**: 2026-06-05 - Monthly billing feature implemented
+- **Next Steps**: Build WAR in NetBeans → copy to webapps → `docker compose -f docker-compose-pilot.yaml build --no-cache && up` → test `GET http://localhost:8080/MyTrustSignerXMLPilot/billing` via Postman → if email received at `zulkifle@msctrustgate.com`, restore recipients to all 4 → copy to PROD, run DEPLOYMENT_CHECKLIST.txt
+- **Known Issues**: Pilot WAR not yet built/copied — billing.class not in webapps yet
 
 ## Architecture
 
@@ -149,11 +149,33 @@ TestSignXML/
 - [x] Test `/verify` ✅ — signed XML verified successfully
 - [x] MITI client end-to-end test (with correct URL) ✅
 - [x] Fix sign.java:140 — replaced `verifySignature(signatureValue, digestValue.getBytes())` with `verifySignedInfoSignature(signedInfo, signatureValue, canonAlgoUri)` ✅
+- [x] Add `/billing` servlet — monthly CSV email via crond (production only) ✅ (code done)
+- [ ] Build WAR + copy to PILOT webapps → test `/billing` endpoint → restore recipients to all 4
+- [ ] Copy built WAR to PROD deployment folder → run DEPLOYMENT_CHECKLIST.txt → redeploy
 
 **Deployment Guide**: `C:\PROJECTS\MITI\Deployment\PRODUCTION\DEPLOYMENT_GUIDE.txt`
 **Docker Compose**: `C:\PROJECTS\MITI\Deployment\PRODUCTION\MTSAXML_PROD_20260529\docker-compose.yaml`
 
 ## Session History (Last 5)
+
+### 2026-06-05 - Monthly Billing Feature (billing.java + cron)
+- **New Feature**: `/billing` servlet — crond triggers on 1st of every month at 08:00 MYT, queries successful transactions for previous month, generates CSV, emails to recipients via SMTP (Gmail app password)
+- **Dev changes** (`C:\PROJECTS\MITI\Development\MyTrustSignerXML`):
+  - `Dockerfile` — added `cron` + `curl` install, `COPY crontab`, `COPY entrypoint.sh`, replaced `CMD` with `ENTRYPOINT ["/entrypoint.sh"]`
+  - `crontab` — new file: `0 8 1 * *` curl to `/billing`
+  - `entrypoint.sh` — new file: `service cron start` then `catalina.sh run`
+  - `mtsa-pilot.properties` — DB_URL changed from `localhost` to `mysql` (compose service name); added `billing.recipients`, `smtp.*`; testing: recipients set to `zulkifle@msctrustgate.com` only
+  - `billing.java` — (1) production-only guard: returns `{"status":"SKIPPED"}` if `stage != production`; (2) email subject hardcoded to `MITI PRODUCTION Monthly Billing Report — {monthLabel}`
+- **PILOT deployment changes** (`C:\PROJECTS\MITI\Deployment\PILOT\MTSAXML_PILOT`):
+  - `mtsa-pilot.properties` — fixed DB_URL + added SMTP/billing config
+  - `docker-compose.yaml` — added `networks: default: bridge`
+- **PROD deployment changes** (`C:\PROJECTS\MITI\Deployment\PRODUCTION\MTSAXML_PROD`):
+  - `mtsa.properties` — fixed DB_URL (`mysql`), added SMTP/billing config
+  - `crontab` — removed duplicate pilot line
+  - `docker-compose.yaml` — added `networks: default: bridge`
+  - `DEPLOYMENT_CHECKLIST.txt` — new file: 9-section pre-deployment checklist (reusable for other projects)
+- **Pending**: WAR not yet rebuilt/copied to either deployment folder (billing.class missing)
+- **Time Spent**: ~2.5 hours
 
 ### 2026-06-01 - sign.java:140 Fix + Cert Expiry Analysis
 - **Changes**: (1) Fixed sign.java:140 — replaced `verifySignature(signatureValue, digestValue.getBytes())` with `verifySignedInfoSignature(signedInfo, signatureValue, canonAlgoUri)`. Verify log now correctly reflects actual signature validity. (2) Analyzed cert expiry handling — `SignUsingP12` is instantiated per request, so replacing P12 file at `kspath` takes effect immediately on next request. No container restart or code change needed when cert expires.
