@@ -31,7 +31,7 @@
   3. Once confirmed, merge `feature/multitenant-support` → master
   4. Update live pilot to use new multi-tenant image + nginx regex location
 - **Known Issues**:
-  - Jumio portal callback URL not yet registered for pilot-v2 workflow — pending Jumio portal access
+  - Jumio browser eKYC flow failed — callback URL not yet registered in Jumio portal for pilot-v2 workflow. Will retry after registration.
   - Production URL prefix for nginx not yet confirmed (assumed `/jumioproxy`)
 
 ## Session History (Last 5)
