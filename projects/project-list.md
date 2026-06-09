@@ -7,7 +7,7 @@
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
 | 1 | **[MyTrustSignerXML-MITI](./active/mytrustsignerxml-miti.md)** | 2026-06-08 | 2026-06-01 | 95% | Billing feature coded — WAR not yet built/tested |
-| 2 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-06-09 | TBD | 85% | master clean single-tenant ✅ — pilot-v2 ready, build JAR + deploy to test |
+| 2 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-06-10 | TBD | 90% | pilot-v2 deployed ✅ API works — pending Jumio portal callback registration + E2E test |
 | 3 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-06-03 | 2026-06-05 ⚠️ | 0% | Source not yet retrieved from server |
 | 4 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-05-26 | TBD | 15% | Full design done ✅ — next: Phase 1 scaffold Chrome MV3 extension |
 | 5 | **[TGCA](./active/tgca.md)** | 2026-05-25 | TBD | 0% | Registered — pending study |
@@ -26,4 +26,4 @@
 ---
 ## System Status
 - **Total Projects**: 11 (7 active + 4 archived)
-- **Last Updated**: 2026-06-09 - Saved jumio-proxy-integration: master restored clean single-tenant, feature branch upstream fixed
+- **Last Updated**: 2026-06-10 - Saved jumio-proxy-integration: pilot-v2 deployed, API working, pending E2E test

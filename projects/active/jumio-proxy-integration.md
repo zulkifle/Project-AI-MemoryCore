@@ -6,8 +6,8 @@
 - **Client**: Adacash Sdn Bhd
 - **Period**: 2026-04-16 - Active
 - **Tech Stack**: Java 17 + Spring Boot 3.0.9 + OpenFeign + Maven + Docker + Kubernetes
-- **Completion**: 85%
-- **Duration**: ~9 hours
+- **Completion**: 90%
+- **Duration**: ~10 hours
 - **Due Date**: TBD
 
 ## Project Context
@@ -24,55 +24,53 @@
 6. On non-`PROCESSED` status (e.g. `SESSION_EXPIRED`): skip MTSS, forward to Adacash directly
 
 ## Current Status
-- **Last Session**: 2026-06-09 - Git cleanup: master restored to clean single-tenant, feature branch upstream fixed
+- **Last Session**: 2026-06-10 - pilot-v2 deployed, API working, pending Jumio portal callback registration
 - **Next Steps**:
-  1. Build JAR from `feature/multitenant-support` branch → place in `pilot-v2/`
-  2. Docker build + push on K8s server: `docker build -t localhost:30445/jumioproxy-pilot-v2:1.01 .`
-  3. Apply to K8s: `kubectl apply -f configmap.yaml -n jumioproxy-pilot && kubectl apply -f deployment.yaml -n jumioproxy-pilot`
-  4. Update nginx — replace old `location /jumioproxy_pilot/adacash` with regex blocks from `pilot-v2/nginx/nginx-multi-tenant.conf`
-  5. Test end-to-end with Adacash on pilot-v2 (NodePort 30242)
-  6. Once confirmed, merge `feature/multitenant-support` → master
+  1. Register new callback URL in Jumio portal (workflow key 10164): `https://digitalid.msctrustgate.com/jumioproxy_pilotv2/adacash/api/v1/jumio/callback`
+  2. Full end-to-end test — trigger eKYC session, complete on Jumio, verify callback → MTSS SOAP → Adacash forward
+  3. Once confirmed, merge `feature/multitenant-support` → master
+  4. Update live pilot to use new multi-tenant image + nginx regex location
 - **Known Issues**:
-  - Nginx upstream `jumioproxyPilotV2` (NodePort 30242) not yet defined — need to add upstream block before applying nginx config
+  - Jumio portal callback URL not yet registered for pilot-v2 workflow — pending Jumio portal access
   - Production URL prefix for nginx not yet confirmed (assumed `/jumioproxy`)
 
 ## Session History (Last 5)
 
+### 2026-06-10 - pilot-v2 deployed, API working
+- **Changes**: Built JAR from `feature/multitenant-support`, docker build + push to registry. Applied ConfigMap + Deployment to K8s namespace `jumioproxy-pilot`. Resolved NodePort 30242 conflict (killed old namespace). Added `namespace: jumioproxy-pilot` explicitly to all yaml files. Removed `config/application.yml` (kept only `configmap.yaml` as single source of truth). Updated nginx — added `jumioproxyPilotV2` upstream (NodePort 30242) + new regex location `/jumioproxy_pilotv2/`. Updated callback URL to `/jumioproxy_pilotv2/adacash/api/v1/jumio/callback`. Session API endpoint confirmed working ✅. Pending: Jumio portal callback registration + E2E test.
+- **Time Spent**: ~1 hour
+
 ### 2026-06-09 (Session 2) - Git cleanup: master restored to clean single-tenant
-- **Changes**: Discovered master was missing MTSS calls — previous revert also wiped original working code. Manually rewrote all single-tenant versions: `JumioCallbackController` (no `{projectId}`, MTSS + SESSION_EXPIRED + image compression kept), `JumioSessionController`, `JumioRetrievalController`, `JumioClient` (single `volatile CachedToken`), `MtssServiceImpl` (`@Value` injected MTSS config), `MtssService` interface (removed `ProjectMtssProperties` param), `application.yml` (flat single-tenant config). Deleted `ProjectRegistry`, `ProjectProperties`, `ProjectJumioProperties`, `ProjectMtssProperties`, `ProjectsConfigProperties`. Pushed clean master to remote. Fixed `feature/multitenant-support` upstream tracking (GitHub Desktop "Publish branch" issue — `git branch --set-upstream-to`).
+- **Changes**: Manually rewrote all single-tenant versions — controllers (no `{projectId}`), `JumioClient` (single token cache), `MtssServiceImpl` (`@Value` injected), `application.yml` (flat config). Deleted multi-tenant config classes. Pushed clean master. Fixed `feature/multitenant-support` upstream tracking.
 - **Time Spent**: ~1.5 hours
 
 ### 2026-06-09 (Session 1) - Multi-tenant architecture finalized + pilot-v2 setup
-- **Changes**: Diagnosed 404 root cause — nginx location `/jumioproxy_pilot/adacash` consumes `adacash` before forwarding to Spring. Fixed with regex nginx rewrite capturing `{projectId}` dynamically. Renamed context path `/adacash-jumio-proxy` → `/jumio-proxy`. Created `pilot-v2/` self-contained folder: `configmap.yaml`, `deployment.yaml` (NodePort 30242), `Dockerfile`, `nginx/nginx-multi-tenant.conf`. Cleaned git branches: master reverted, `feature/multitenant-support` created and pushed.
+- **Changes**: Diagnosed 404 root cause — nginx consumes `adacash` before forwarding. Fixed with regex nginx rewrite. Renamed context path to `/jumio-proxy`. Created `pilot-v2/` self-contained folder with `configmap.yaml`, `deployment.yaml`, `Dockerfile`, nginx configs. Cleaned git branches.
 - **Time Spent**: ~2.5 hours
 
 ### 2026-06-05 - Multi-Project Support Implementation
-- **Changes**: Full code for path-based tenant routing. New: `ProjectJumioProperties`, `ProjectMtssProperties`, `ProjectProperties`, `ProjectsConfigProperties`, `ProjectRegistry`, `AppConfig`. Modified all 3 controllers with `{projectId}`, `JumioClient` per-project token cache, `MtssServiceImpl` per-project props. Deleted `AdacashCallbackFeignClient`. Design doc written. 404 nginx path mismatch hit after deploy.
+- **Changes**: Full code for path-based tenant routing. New config classes, modified all 3 controllers with `{projectId}`, `JumioClient` per-project token cache, `MtssServiceImpl` per-project props. Design doc written. 404 nginx mismatch hit.
 - **Time Spent**: ~3 hours
 
 ### 2026-05-11 - SESSION_EXPIRED Bug Fix
-- **Changes**: Fixed `JumioCallbackController` — non-PROCESSED statuses not forwarded to Adacash. Extracted `forwardToAdacash()`; MTSS SOAP only on PROCESSED. Built and deployed to pilot.
+- **Changes**: Fixed `JumioCallbackController` — non-PROCESSED statuses not forwarded to Adacash. MTSS SOAP only on PROCESSED. Deployed to pilot.
 - **Time Spent**: ~20 min
 
-### 2026-04-21 - Image Compression Implementation
-- **Changes**: Added `ImageCompressionUtil` + Scalr, wired into callback controller flow before MTSS SOAP call.
-- **Time Spent**: ~1 hour
-
 ## Historical Summary
-Project started 2026-04-16 as Trustgate proxy layer between Adacash and Jumio eKYC API. Key milestones: full callback flow implemented (MTSS SOAP, image download, Adacash forward), image compression added, SESSION_EXPIRED bug fixed and deployed. Reactivated 2026-06-04 for multi-tenant support — path-based routing designed, coded, and git-organized. Master restored to clean single-tenant (MTSS, SESSION_EXPIRED, image compression — no multi-tenant). pilot-v2 deployment folder fully prepared. Awaiting JAR build + K8s deploy + nginx update to go live.
+Project started 2026-04-16 as Trustgate proxy layer between Adacash and Jumio eKYC API. Key milestones: full callback flow implemented (MTSS SOAP, image download, Adacash forward), image compression added, SESSION_EXPIRED bug fixed. Reactivated 2026-06-04 for multi-tenant support — path-based routing designed and coded. Master restored to clean single-tenant. pilot-v2 deployed to K8s (namespace `jumioproxy-pilot`, NodePort 30242), nginx updated. Session API confirmed working. Pending E2E test after Jumio portal callback URL registration.
 
 ## Technical Notes
 - **Repository**: `C:\PROJECTS\DOCKER GITLAB\docker\jumio-proxy\app\jumio-proxy\`
 - **Artifact ID**: `adacash-trustgate-jumio-proxy` v0.0.1
 - **Git branches**: `master` (single-tenant, MTSS working), `feature/multitenant-support` (full multi-tenant code)
 - **pilot-v2 folder**: `C:\PROJECTS\DOCKER GITLAB\docker\jumio-proxy\pilot-v2\`
-- **Live pilot**: `pilot/deployment.yaml` — image `jumioproxy-pilot:1.07`, nodePort 30241
-- **pilot-v2**: `pilot-v2/deployment.yaml` — image `jumioproxy-pilot-v2:1.01`, nodePort 30242
-- **Prod yaml**: `production/deployment-prod.yaml` — image `jumioproxy:1.0`, nodePort 30240
-- **Nginx fix**: regex location blocks in `pilot-v2/nginx/nginx-multi-tenant.conf` — captures `{projectId}` dynamically
-- **ConfigMap**: per-tenant config in `pilot-v2/configmap.yaml` — add tenant = edit ConfigMap + rollout restart, no rebuild
-- **Spring config**: `SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/` mounts ConfigMap into pod
-- **Context path (multi-tenant)**: `/jumio-proxy` | **Context path (master/live)**: `/adacash-jumio-proxy`
+- **Live pilot**: NodePort 30241 — image `jumioproxy-pilot:1.07`, context path `/adacash-jumio-proxy`
+- **pilot-v2**: NodePort 30242 — image `jumioproxy-pilot-v2:1.01`, context path `/jumio-proxy`, namespace `jumioproxy-pilot`
+- **Prod yaml**: `production/deployment-prod.yaml` — NodePort 30240
+- **Nginx pilot-v2**: `upstream jumioproxyPilotV2 { server 127.0.0.1:30242; }` + location `~ ^/jumioproxy_pilotv2/([^/]+)/api/v1/(.*)$`
+- **ConfigMap**: `pilot-v2/configmap.yaml` — single source of truth, no `config/application.yml`
+- **Callback URL (pilot-v2)**: `https://digitalid.msctrustgate.com/jumioproxy_pilotv2/adacash/api/v1/jumio/callback`
+- **Test endpoint**: `POST https://digitalid.msctrustgate.com/jumioproxy_pilotv2/adacash/api/v1/jumio/session`
 
 ---
-**Last Updated**: 2026-06-09 | **Position**: #1/10 Active
+**Last Updated**: 2026-06-10 | **Position**: #1/10 Active
