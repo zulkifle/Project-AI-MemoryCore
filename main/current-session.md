@@ -3,14 +3,14 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-06-03
-**Session Focus**: MyTrustID SafeNet token signing + Petronas Legacy C++ Dockerize project created
+**Last Activity**: 2026-06-09
+**Session Focus**: Created `mtsa-container-packaging` skill + packaged SENA PILOT deployment
 
 ## Active Project
-- **Name**: Petronas Legacy C++ Dockerize
-- **Started**: 2026-06-03
-- **Context**: Legacy C++ app — FTP download → sign → FTP upload (runs every morning). Due 2026-06-05 ⚠️ URGENT. Source not yet retrieved from server.
-- **Next Steps**: Dejul to share source code from server, then write Dockerfile with BCC + Makefile
+- **Name**: MTSA Container Packaging (SENA PILOT)
+- **Completed**: 2026-06-09
+- **Context**: Packaged `C:\PROJECTS\HEALTHCARE PROJECT\SENA\Deployment\PILOT\20260109-PILOT` into Docker-ready ZIP. Created Dockerfile, STEP.txt, organized mtsa\ + webapps\, output: `MTSA-PILOT_SENA.zip` (41 MB).
+- **Next Steps**: Replace `<DOMAIN>` in STEP.txt with real server URL before handover
 
 ## Previous Active Project
 - **Name**: RSS Self Service Portal

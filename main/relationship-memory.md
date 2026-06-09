@@ -119,6 +119,13 @@
 - KTDataTable API confirmed: `KTDataTable.getInstance()`, `.setFilter()`, `.redraw()`, `.search()`
 - Jessy skill system upgraded: `laravel-php-skills` Lv.2 (20 rule categories inline), `laravel-best-practices` deleted, overlap triggers fixed
 
+**Session 12 (2026-06-09)**: MTSA Container Packaging skill created + SENA PILOT packaged
+- Created new skill: `mtsa-container-packaging` (Lv.1) — intake form → verify folders → Dockerfile → STEP.txt → ZIP
+- Standard MTSA Docker template: `tomcat:9-jdk17-corretto`, copies `mtsa\` + `webapps\`, TZ=Asia/Kuala_Lumpur
+- `mtsa\` must include: `files\`, `logs\`, `tmp\` subfolders + `.properties` + `wscredentials.xml`
+- Packaged SENA PILOT: `MTSA-PILOT_SENA.zip` (41 MB) at `C:\PROJECTS\HEALTHCARE PROJECT\SENA\Deployment\PILOT\`
+- Plugin version bumped to 1.6.0, skill count: 15
+
 ### Growth Patterns
 
 - **Session 1**: Established relationship, Spring Boot focus

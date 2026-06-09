@@ -44,7 +44,7 @@ Project files stored in projects/active/ and projects/archived/.
 ### 🔌 **Skill Plugin System**
 - Plugin: `jessy-skills` (Claude Code plugin)
 - Location: `plugins/jessy-skills/`
-- Skills: 14 active skills
+- Skills: 15 active skills
   - `springboot-restful` — Auto-triggers on all Spring Boot / Java REST tasks
   - `save-memory` — Triggers on "save", "save memory", "save progress"
   - `mygpki-signing` — Triggers on MyGPKI INTERNAL signing, MTSA PDF signing, iText5 CMS flow
@@ -59,6 +59,7 @@ Project files stored in projects/active/ and projects/archived/.
   - `xml-signing` — Triggers on XMLDSig, Apache Santuario, xmlsec, EXC-C14N, "sign XML", "verify XML signature", DigestValue/SignatureValue in XML context, mtsa.properties/kspath in MyTrustSignerXML, or any MyTrustSignerXML-MITI task
   - `brainstorming` — Triggers on "brainstorm [topic]", "design [feature]", "let's plan", "I want to build" — explores requirements and design BEFORE any code is written
   - `verification-before-completion` — Triggers before ANY completion claim, commit, or PR — requires running verification commands and seeing output before claiming success
+  - `mtsa-container-packaging` — Triggers on "package [project]", "create deployment package", "dockerize MTSA", "MTSA package", or when packaging an MTSA deployment folder into a Docker-ready ZIP (Dockerfile + mtsa/ + webapps/ + STEP.txt)
 - Add new skills: Create folder in `plugins/jessy-skills/skills/`
 
 ## 🔥 Essential Components (Always Load)

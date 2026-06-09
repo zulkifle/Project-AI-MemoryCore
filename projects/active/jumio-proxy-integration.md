@@ -6,8 +6,8 @@
 - **Client**: Adacash Sdn Bhd
 - **Period**: 2026-04-16 - Active
 - **Tech Stack**: Java 17 + Spring Boot 3.0.9 + OpenFeign + Maven + Docker + Kubernetes
-- **Completion**: 70%
-- **Duration**: ~5 hours
+- **Completion**: 80%
+- **Duration**: ~7.5 hours
 - **Due Date**: TBD
 
 ## Project Context
@@ -24,53 +24,55 @@
 6. On non-`PROCESSED` status (e.g. `SESSION_EXPIRED`): skip MTSS, forward to Adacash directly
 
 ## Current Status
-- **Last Session**: 2026-06-05 - Multi-project support — full implementation done, 404 issue pending
+- **Last Session**: 2026-06-09 - Multi-tenant architecture finalized, pilot-v2 ready for deployment
 - **Next Steps**:
-  1. Resolve 404 issue — understand nginx path forwarding, adjust controller paths to match
-  2. Build new JAR + new Docker image with updated code
-  3. Deploy new image to pilot and test end-to-end
-  4. Update production deployment.yaml when pilot is confirmed
+  1. Build JAR from `feature/multitenant-support` branch → place in `pilot-v2/`
+  2. Docker build + push on K8s server: `docker build -t localhost:30445/jumioproxy-pilot-v2:1.01 .`
+  3. Apply to K8s: `kubectl apply -f configmap.yaml -n jumioproxy-pilot && kubectl apply -f deployment.yaml -n jumioproxy-pilot`
+  4. Update nginx — replace old `location /jumioproxy_pilot/adacash` with regex blocks from `pilot-v2/nginx/nginx-multi-tenant.conf`
+  5. Test end-to-end with Adacash on pilot-v2 (NodePort 30242)
+  6. Once confirmed, merge `feature/multitenant-support` → master, deploy to live pilot
 - **Known Issues**:
-  - 404 on `/jumioproxy_pilot/adacash/api/v1/jumio/session` — nginx path forwarding vs Spring controller path mismatch. Context path reverted to `/adacash-jumio-proxy` but controller now has `{projectId}` in path which nginx doesn't forward. Need to clarify nginx rewrite rules before finalizing controller path structure.
-  - deployment.yaml reverted to original env var format (no ConfigMap) — ConfigMap approach deferred
+  - Nginx upstream `jumioproxyPilotV2` (NodePort 30242) not yet defined — need to add upstream block before applying nginx config
+  - Production URL prefix for nginx not yet confirmed (assumed `/jumioproxy`)
 
 ## Session History (Last 5)
 
+### 2026-06-09 - Multi-tenant architecture finalized + pilot-v2 setup
+- **Changes**: Diagnosed 404 root cause — nginx location `/jumioproxy_pilot/adacash` consumes the `adacash` segment before forwarding to Spring. Fixed with regex nginx rewrite that captures `{projectId}` dynamically. Renamed context path `/adacash-jumio-proxy` → `/jumio-proxy` for tenant neutrality. Created `pilot-v2/` as self-contained deployment folder: `configmap.yaml` (per-tenant config, separate from deployment), `deployment.yaml` (Deployment + Service, NodePort 30242), `Dockerfile` (copies JAR from same folder), `nginx/nginx-multi-tenant.conf` (regex location blocks for pilot + prod). Cleaned git: master reverted to pre-multi-tenant state, `feature/multitenant-support` branch created with full multi-tenant code. Pushed SESSION_EXPIRED fix (May 2026, was unpushed). Old `feature/multi-tenant-context-path` branch deleted.
+- **Time Spent**: ~2.5 hours
+
 ### 2026-06-05 - Multi-Project Support Implementation
-- **Changes**: Full code implementation for path-based tenant routing. New classes: `ProjectJumioProperties`, `ProjectMtssProperties`, `ProjectProperties`, `ProjectsConfigProperties`, `ProjectRegistry`, `AppConfig` (RestTemplate bean). Modified: `JumioClient` (per-project token cache via `ConcurrentHashMap`), `MtssService`/`MtssServiceImpl` (accept `ProjectMtssProperties` per call), `JumioSessionController` + `JumioCallbackController` + `JumioRetrievalController` (add `{projectId}` path variable), `AdacashTrustgateJumioProxyApplication` (register `ProjectsConfigProperties`). Deleted: `AdacashCallbackFeignClient` (replaced by RestTemplate for dynamic URL), `MtssProperties` (replaced by `ProjectMtssProperties`). Design doc written: `docs/specs/2026-06-04-multi-project-support-design.md`. Updated `application.yml` with `projects:` map. Attempted ConfigMap approach in `deployment.yaml` — reverted by user, back to original env var format. 404 issue hit after deploy — context path + nginx path mismatch, not yet resolved.
+- **Changes**: Full code implementation for path-based tenant routing. New classes: `ProjectJumioProperties`, `ProjectMtssProperties`, `ProjectProperties`, `ProjectsConfigProperties`, `ProjectRegistry`, `AppConfig` (RestTemplate bean). Modified all 3 controllers with `{projectId}` path variable, `JumioClient` per-project token cache, `MtssServiceImpl` accept per-project props. Deleted `AdacashCallbackFeignClient`. Design doc written. 404 nginx path mismatch hit after deploy.
 - **Time Spent**: ~3 hours
 
 ### 2026-05-11 - SESSION_EXPIRED Bug Fix
-- **Changes**: Fixed `JumioCallbackController` — non-PROCESSED statuses (SESSION_EXPIRED etc.) were not forwarded to Adacash. Extracted `forwardToAdacash()` method; now ALL statuses forward to Adacash, MTSS SOAP only runs for PROCESSED. Built and deployed to pilot.
+- **Changes**: Fixed `JumioCallbackController` — non-PROCESSED statuses not forwarded to Adacash. Extracted `forwardToAdacash()`; now ALL statuses forward, MTSS SOAP only on PROCESSED. Built and deployed to pilot.
 - **Time Spent**: ~20 min
 
 ### 2026-04-22 - Production Review & Archive
-- **Changes**: Reviewed deployment-prod.yaml vs pilot yaml, identified 5 env vars needing production values. Same .jar/image confirmed reusable across environments.
+- **Changes**: Reviewed deployment-prod.yaml vs pilot yaml, identified 5 env vars needing production values.
 - **Time Spent**: ~15 min
 
 ### 2026-04-21 - Image Compression Implementation
 - **Changes**: Added ImageCompressionUtil + Scalr, wired into callback controller flow before MTSS SOAP call.
-- **Time Spent**: ~1 session
-
-### 2026-04-17 - Implementation Complete
-- **Changes**: Full Trustgate integration — JumioCallbackController reworked, MTSS SOAP wired, images download, JAX-WS stubs generated.
-- **Time Spent**: ~1 session
+- **Time Spent**: ~1 hour
 
 ## Historical Summary
-Project started 2026-04-16 as Trustgate proxy layer between Adacash and Jumio eKYC API. Key milestones: full callback flow implemented (MTSS SOAP, image download, Adacash forward), image compression added before SOAP call, SESSION_EXPIRED bug fixed. Pilot deployed and tested. Reactivated 2026-06-04 for multi-project (multi-tenant) support — path-based tenant routing designed and coded. Production deployment pending after 404 nginx issue resolved.
+Project started 2026-04-16 as Trustgate proxy layer between Adacash and Jumio eKYC API. Key milestones: full callback flow implemented (MTSS SOAP, image download, Adacash forward), image compression added, SESSION_EXPIRED bug fixed and deployed. Reactivated 2026-06-04 for multi-tenant support — path-based routing designed, coded, and git-organized. pilot-v2 deployment folder fully prepared. Awaiting JAR build + K8s deploy + nginx update to go live.
 
 ## Technical Notes
 - **Repository**: `C:\PROJECTS\DOCKER GITLAB\docker\jumio-proxy\app\jumio-proxy\`
 - **Artifact ID**: `adacash-trustgate-jumio-proxy` v0.0.1
-- **Pilot yaml**: `pilot/deployment.yaml` — image `jumioproxy-pilot:1.07`, nodePort 30241
+- **Git branches**: `master` (stable, pre-multi-tenant), `feature/multitenant-support` (full multi-tenant code)
+- **pilot-v2 folder**: `C:\PROJECTS\DOCKER GITLAB\docker\jumio-proxy\pilot-v2\`
+- **Live pilot**: `pilot/deployment.yaml` — image `jumioproxy-pilot:1.07`, nodePort 30241
+- **pilot-v2**: `pilot-v2/deployment.yaml` — image `jumioproxy-pilot-v2:1.01`, nodePort 30242
 - **Prod yaml**: `production/deployment-prod.yaml` — image `jumioproxy:1.0`, nodePort 30240
-- **Deploy command**: `kubectl apply -f deployment.yaml -n jumioproxy-pilot`
-- **Rollout restart**: `kubectl rollout restart deployment/jumioproxy-pilot -n jumioproxy-pilot`
-- **Key Dependencies**: Spring Boot 3.0.9, OpenFeign 4.0.3, Lombok, Commons Lang3
-- **SOAP Integration**: MTSS CallbackJumio API (downstream)
-- **Auth**: Jumio Basic Auth → OAuth 2.0 Bearer token flow
-- **Nginx**: location `/jumioproxy_pilot` proxies to K8s NodePort 30241. Exact rewrite rule unknown — need to check before finalizing controller path structure.
-- **Design doc**: `app/jumio-proxy/docs/specs/2026-06-04-multi-project-support-design.md`
+- **Nginx fix**: regex location blocks in `pilot-v2/nginx/nginx-multi-tenant.conf` — captures `{projectId}` dynamically, no project name hardcoded
+- **ConfigMap**: per-tenant config in `pilot-v2/configmap.yaml` — add tenant = edit ConfigMap + rollout restart, no rebuild
+- **Spring config**: `SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/` mounts ConfigMap into pod
+- **Context path**: `/jumio-proxy` (neutral, not client-specific)
 
 ---
-**Last Updated**: 2026-06-05 | **Position**: #1/10 Active
+**Last Updated**: 2026-06-09 | **Position**: #1/10 Active
