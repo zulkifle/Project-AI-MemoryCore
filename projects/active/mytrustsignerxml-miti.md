@@ -11,9 +11,9 @@
 - **Due Date**: 2026-06-01
 
 ## Current Status
-- **Last Session**: 2026-06-05 - Monthly billing feature implemented
-- **Next Steps**: Build WAR in NetBeans → copy to webapps → `docker compose -f docker-compose-pilot.yaml build --no-cache && up` → test `GET http://localhost:8080/MyTrustSignerXMLPilot/billing` via Postman → if email received at `zulkifle@msctrustgate.com`, restore recipients to all 4 → copy to PROD, run DEPLOYMENT_CHECKLIST.txt
-- **Known Issues**: Pilot WAR not yet built/copied — billing.class not in webapps yet
+- **Last Session**: 2026-06-11 - Project resumed; PILOT billing test done, awaiting client confirmation before PROD
+- **Next Steps**: ⏸️ BLOCKED ON CLIENT — pilot `/billing` built, deployed & tested OK. Waiting for MITI to confirm pilot test is successful. Once confirmed → copy built WAR to PROD deployment folder → run DEPLOYMENT_CHECKLIST.txt → redeploy
+- **Known Issues**: None on our side — PROD deploy gated on client's pilot sign-off
 
 ## Architecture
 
@@ -150,13 +150,18 @@ TestSignXML/
 - [x] MITI client end-to-end test (with correct URL) ✅
 - [x] Fix sign.java:140 — replaced `verifySignature(signatureValue, digestValue.getBytes())` with `verifySignedInfoSignature(signedInfo, signatureValue, canonAlgoUri)` ✅
 - [x] Add `/billing` servlet — monthly CSV email via crond (production only) ✅ (code done)
-- [ ] Build WAR + copy to PILOT webapps → test `/billing` endpoint → restore recipients to all 4
-- [ ] Copy built WAR to PROD deployment folder → run DEPLOYMENT_CHECKLIST.txt → redeploy
+- [x] Build WAR + copy to PILOT webapps → test `/billing` endpoint → restore recipients to all 4 ✅
+- [ ] Copy built WAR to PROD deployment folder → run DEPLOYMENT_CHECKLIST.txt → redeploy ⏸️ (awaiting MITI pilot sign-off)
 
 **Deployment Guide**: `C:\PROJECTS\MITI\Deployment\PRODUCTION\DEPLOYMENT_GUIDE.txt`
 **Docker Compose**: `C:\PROJECTS\MITI\Deployment\PRODUCTION\MTSAXML_PROD_20260529\docker-compose.yaml`
 
 ## Session History (Last 5)
+
+### 2026-06-11 - PILOT Billing Verified — PROD Blocked on Client
+- **Changes**: Confirmed steps 1-4 complete — WAR built, billing.class deployed to PILOT, `/billing` endpoint tested OK, recipients restored to all 4. Project now effectively done on our side.
+- **Status**: PROD deploy is the only remaining task, gated on MITI confirming the pilot test is successful. No action on our side until client responds.
+- **Time Spent**: ~10 min
 
 ### 2026-06-05 - Monthly Billing Feature (billing.java + cron)
 - **New Feature**: `/billing` servlet — crond triggers on 1st of every month at 08:00 MYT, queries successful transactions for previous month, generates CSV, emails to recipients via SMTP (Gmail app password)
@@ -200,4 +205,4 @@ TestSignXML/
 - **Digest Algorithm**: SHA-256
 
 ---
-**Last Updated**: 2026-06-01 | **Status**: COMPLETE ✅
+**Last Updated**: 2026-06-11 | **Status**: PILOT done ✅ — PROD blocked on MITI pilot sign-off ⏸️

@@ -7,10 +7,10 @@
 **Session Focus**: Created `mtsa-container-packaging` skill + packaged SENA PILOT deployment
 
 ## Active Project
-- **Name**: MTSA Container Packaging (SENA PILOT)
-- **Completed**: 2026-06-09
-- **Context**: Packaged `C:\PROJECTS\HEALTHCARE PROJECT\SENA\Deployment\PILOT\20260109-PILOT` into Docker-ready ZIP. Created Dockerfile, STEP.txt, organized mtsa\ + webapps\, output: `MTSA-PILOT_SENA.zip` (41 MB).
-- **Next Steps**: Replace `<DOMAIN>` in STEP.txt with real server URL before handover
+- **Name**: MyTrustSignerXML-MITI
+- **Resumed**: 2026-06-11
+- **Context**: XML Digital Signing API for MITI (Java 8 Servlet + Tomcat + MySQL). 95% complete. Monthly billing feature (`/billing` servlet + cron) coded but WAR not yet built/tested.
+- **Next Steps**: Build WAR in NetBeans → copy to PILOT webapps → `docker compose -f docker-compose-pilot.yaml build --no-cache && up` → test `GET /MyTrustSignerXMLPilot/billing` via Postman → if email received, restore recipients to all 4 → copy to PROD, run DEPLOYMENT_CHECKLIST.txt
 
 ## Previous Active Project
 - **Name**: RSS Self Service Portal
