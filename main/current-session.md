@@ -9,8 +9,8 @@
 ## Active Project
 - **Name**: MyTrustSignerXML-MITI
 - **Resumed**: 2026-06-11
-- **Context**: Fixed duplicate `tx_id` race (SQLIntegrityConstraintViolationException seen in PILOT logs). Code-level fix in `DBUtil.getTXID()` (now AtomicLong seq) + `sign.java` (txid/db moved off shared servlet instance fields, txSaved guard). No DB change. `mvn compile` clean.
-- **Next Steps**: Rebuild WAR + redeploy to PILOT for fix to take effect. Then PROD deploy when MITI signs off pilot.
+- **Context**: Fixed duplicate `tx_id` race (DBUtil.getTXID → AtomicLong seq; sign.java txid/db moved off shared servlet fields + txSaved guard; no DB change; mvn compile clean). Then prepped PROD package (`Deployment\PRODUCTION\MTSAXML_PROD`): verified fix compiled in, DB_URL localhost→mysql, image tag→1.1, removed leaked UKM WAR + 2 .filepart leftovers.
+- **Next Steps**: Dejul to zip + deploy. On server: update DB_URL on host `/opt/mtsa/properties/mtsa.properties` (volume override), `docker compose build --no-cache`. PROD go-live gated on MITI pilot sign-off.
 - **Repo**: `C:\PROJECTS\MITI\Development\MyTrustSignerXML`
 
 ## Previous Active Project

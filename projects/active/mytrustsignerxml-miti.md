@@ -222,4 +222,4 @@ Project started 2026-05-24: studied full source, documented architecture (sign/v
 - **Digest Algorithm**: SHA-256
 
 ---
-**Last Updated**: 2026-06-11 | **Status**: Duplicate tx_id fixed (code) ✅ — pending WAR rebuild+redeploy; PROD blocked on MITI pilot sign-off ⏸️
+**Last Updated**: 2026-06-11 | **Status**: tx_id fix in PROD package ✅ (DB_URL→mysql, v1.1, UKM purged) — Dejul to zip+deploy; PROD blocked on MITI pilot sign-off ⏸️
