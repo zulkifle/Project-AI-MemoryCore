@@ -7,7 +7,7 @@
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
 | 1 | **[MyTrustSignerXML-MITI](./active/mytrustsignerxml-miti.md)** | 2026-06-11 | 2026-06-01 | 95% | Duplicate tx_id race fixed (code) ✅ — pending WAR rebuild+redeploy; PROD blocked on MITI sign-off ⏸️ |
-| 2 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-06-11 | TBD | 15% | Full design done ✅ — next: Phase 1 scaffold Chrome MV3 extension |
+| 2 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-06-11 | TBD | 18% | SDD formalised ✅ (Mermaid HLD/LLD + Section 0 + consistency fixes) — next: Phase 1 scaffold Chrome MV3 extension |
 | 3 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-06-10 | TBD | 90% | pilot-v2 deployed ✅ API works — pending Jumio portal callback registration + E2E test |
 | 4 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-06-03 | 2026-06-05 ⚠️ | 0% | Source not yet retrieved from server |
 | 5 | **[TGCA](./active/tgca.md)** | 2026-05-25 | TBD | 0% | Registered — pending study |
@@ -26,4 +26,4 @@
 ---
 ## System Status
 - **Total Projects**: 11 (7 active + 4 archived)
-- **Last Updated**: 2026-06-11 - Saved MyTrustSignerXML-MITI (duplicate tx_id race fix); moved to #1
+- **Last Updated**: 2026-06-11 - Saved TG SeQureMail (SDD formalised: Mermaid HLD/LLD + Section 0 + consistency fixes)

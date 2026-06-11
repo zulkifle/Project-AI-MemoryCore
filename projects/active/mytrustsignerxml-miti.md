@@ -12,7 +12,7 @@
 
 ## Current Status
 - **Last Session**: 2026-06-11 - Fixed duplicate `tx_id` race condition (DBUtil + sign.java), code-level only
-- **Next Steps**: (1) Rebuild WAR with the tx_id fix → redeploy to PILOT (manual WAR replace + env script). (2) ⏸️ BLOCKED ON CLIENT — pilot `/billing` built, deployed & tested OK; once MITI confirms pilot sign-off → copy built WAR to PROD deployment folder → run DEPLOYMENT_CHECKLIST.txt → redeploy
+- **Next Steps**: PROD package prepared & verified (tx_id fix compiled in, DB_URL→mysql, v1.1, UKM artifacts purged). Dejul to zip + deploy. ⏸️ Go-live gated on MITI pilot sign-off. On deploy: update `DB_URL` on host `/opt/mtsa/properties/mtsa.properties` + `docker compose build --no-cache`
 - **Known Issues**: None open. Duplicate `tx_id` (SQLIntegrityConstraintViolationException, seen in PILOT logs 2026-06-05) fixed in dev source — pending WAR rebuild + redeploy to take effect
 
 ## Architecture
@@ -167,8 +167,14 @@ TestSignXML/
   - `DBUtil.java`: `getTXID()` now uses a process-wide `AtomicLong` sequence (`currentTimeMillis + %06d seq`) — cannot collide in-process. Added dedicated `SQLIntegrityConstraintViolationException` catch for clear logging.
   - `sign.java`: moved `txid`/`db` to request-local vars; added `txSaved` guard so catch blocks never re-insert; null-guarded catch saves (also fixes latent NPE when exception fires before `db` created).
 - **Verified**: `mvn compile` → EXIT=0.
-- **Pending**: rebuild WAR + redeploy to PILOT for the fix to take effect.
-- **Time Spent**: ~30 min
+- **PROD package prep** (`Deployment\PRODUCTION\MTSAXML_PROD`): Dejul rebuilt WAR (DBUtil/sign .class stamped today, confirmed `AtomicLong` + constraint-catch compiled in). Reviewed package vs `DEPLOYMENT_CHECKLIST.txt`:
+  - Fixed `mtsa.properties` `DB_URL` `localhost` → `mysql` (compose service name — would've failed DB connect inside container).
+  - Bumped image tag `mtsa-miti-prod:1.` → `1.1` in docker-compose.yaml.
+  - Removed leaked UKM artifacts from webapps (`SandboxAPI#MTSAPilotUKM.war` + 2 `.filepart` leftovers, ~75 MB).
+  - Left default Tomcat apps (docs/examples/manager/host-manager/ROOT) in place per Dejul's call.
+- **Deploy caveat**: compose mounts `/opt/mtsa/properties` from host → host's `mtsa.properties` overrides baked-in copy; must update `DB_URL` on the server host too. Rebuild with `docker compose build --no-cache`.
+- **Pending**: Dejul to zip package + deploy. PROD go-live still gated on MITI pilot sign-off.
+- **Time Spent**: ~45 min
 
 ### 2026-06-11 - PILOT Billing Verified — PROD Blocked on Client
 - **Changes**: Confirmed steps 1-4 complete — WAR built, billing.class deployed to PILOT, `/billing` endpoint tested OK, recipients restored to all 4. Project now effectively done on our side.
