@@ -11,9 +11,9 @@
 - **Due Date**: 2026-06-01
 
 ## Current Status
-- **Last Session**: 2026-06-11 - Project resumed; PILOT billing test done, awaiting client confirmation before PROD
-- **Next Steps**: ⏸️ BLOCKED ON CLIENT — pilot `/billing` built, deployed & tested OK. Waiting for MITI to confirm pilot test is successful. Once confirmed → copy built WAR to PROD deployment folder → run DEPLOYMENT_CHECKLIST.txt → redeploy
-- **Known Issues**: None on our side — PROD deploy gated on client's pilot sign-off
+- **Last Session**: 2026-06-11 - Fixed duplicate `tx_id` race condition (DBUtil + sign.java), code-level only
+- **Next Steps**: (1) Rebuild WAR with the tx_id fix → redeploy to PILOT (manual WAR replace + env script). (2) ⏸️ BLOCKED ON CLIENT — pilot `/billing` built, deployed & tested OK; once MITI confirms pilot sign-off → copy built WAR to PROD deployment folder → run DEPLOYMENT_CHECKLIST.txt → redeploy
+- **Known Issues**: None open. Duplicate `tx_id` (SQLIntegrityConstraintViolationException, seen in PILOT logs 2026-06-05) fixed in dev source — pending WAR rebuild + redeploy to take effect
 
 ## Architecture
 
@@ -87,7 +87,7 @@ WEB-INF/classes/config.properties
 ### Database (MySQL)
 ```sql
 transactions (
-  tx_id           VARCHAR,   -- epoch millis + microseconds
+  tx_id           VARCHAR,   -- NOT NULL UNIQUE; epoch millis + 6-digit AtomicLong seq
   digest_value    VARCHAR,
   signature_value VARCHAR,
   status          VARCHAR,   -- "Success" | "Failed" | error msg
@@ -158,6 +158,18 @@ TestSignXML/
 
 ## Session History (Last 5)
 
+### 2026-06-11 - Fixed Duplicate tx_id Race Condition
+- **Trigger**: PILOT log (2026-06-05) showed `SQLIntegrityConstraintViolationException: Duplicate entry '1780630985393827669' for key 'tx_id'`. Dejul asked if it was fixed / would recur.
+- **Root cause (two independent paths)**:
+  1. `DBUtil.getTXID()` built the id from `currentTimeMillis + (nanoTime/1000)%1e6`. Two threads reading `nanoTime` within ~1µs produce the same micro portion → same id under concurrency.
+  2. `sign.java` held `txid` and `db` as **servlet instance fields**. Servlets are singletons, so concurrent requests shared them — request B's `getTXID()` overwrote request A's `txid` before A saved → both saved the same id. Plus catch blocks re-saved the same `txid` (third path).
+- **Fix (code-level only, NO DB change — `UNIQUE` constraint kept as backstop)**:
+  - `DBUtil.java`: `getTXID()` now uses a process-wide `AtomicLong` sequence (`currentTimeMillis + %06d seq`) — cannot collide in-process. Added dedicated `SQLIntegrityConstraintViolationException` catch for clear logging.
+  - `sign.java`: moved `txid`/`db` to request-local vars; added `txSaved` guard so catch blocks never re-insert; null-guarded catch saves (also fixes latent NPE when exception fires before `db` created).
+- **Verified**: `mvn compile` → EXIT=0.
+- **Pending**: rebuild WAR + redeploy to PILOT for the fix to take effect.
+- **Time Spent**: ~30 min
+
 ### 2026-06-11 - PILOT Billing Verified — PROD Blocked on Client
 - **Changes**: Confirmed steps 1-4 complete — WAR built, billing.class deployed to PILOT, `/billing` endpoint tested OK, recipients restored to all 4. Project now effectively done on our side.
 - **Status**: PROD deploy is the only remaining task, gated on MITI confirming the pilot test is successful. No action on our side until client responds.
@@ -190,9 +202,8 @@ TestSignXML/
 - **Changes**: (1) Diagnosed `verify signature: false` log in sign.java:140 — confirmed harmless bug (wrong data passed to verify check; uses digestValue.getBytes() instead of canonicalized SignedInfo). (2) Confirmed signing correct via /verify endpoint — statusCode 000. (3) Root cause of "error" was wrong URL used during testing. (4) Generated DEPLOYMENT_GUIDE.txt covering: package structure, host dir setup, docker compose up, DB verification, endpoint tests, troubleshooting. Saved to `C:\PROJECTS\MITI\Deployment\PRODUCTION\DEPLOYMENT_GUIDE.txt`.
 - **Time Spent**: ~90 min
 
-### 2026-05-24 - Project Created, Studied & Skill Built
-- **Changes**: Studied full project source (sign.java, verify.java, getcertinfo.java, XmlHandler, SignUsingP12, ReadConfig, DBUtil, Credential, pom.xml, web.xml, sample XMLs). Documented full architecture, signing flow, verify flow, config system, DB schema, API contracts. Created `xml-signing` skill (Lv.1) for XMLDSig/Apache Santuario knowledge base.
-- **Time Spent**: ~30 min
+## Historical Summary
+Project started 2026-05-24: studied full source, documented architecture (sign/verify/getcertinfo flows, config, DB schema, API contracts), and created the `xml-signing` skill (Lv.1) for XMLDSig/Apache Santuario. Reached 100% functional completion by end of May — production deployed & tested, DEPLOYMENT_GUIDE written. Key milestones since: sign.java:140 verify fix, monthly `/billing` servlet (cron-driven CSV email), PILOT billing verified, and the duplicate-tx_id race fix.
 
 ## Technical Notes
 - **Repository**: C:\PROJECTS\MITI\Development\MyTrustSignerXML
@@ -205,4 +216,4 @@ TestSignXML/
 - **Digest Algorithm**: SHA-256
 
 ---
-**Last Updated**: 2026-06-11 | **Status**: PILOT done ✅ — PROD blocked on MITI pilot sign-off ⏸️
+**Last Updated**: 2026-06-11 | **Status**: Duplicate tx_id fixed (code) ✅ — pending WAR rebuild+redeploy; PROD blocked on MITI pilot sign-off ⏸️

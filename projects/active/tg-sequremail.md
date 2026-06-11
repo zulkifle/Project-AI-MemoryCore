@@ -11,7 +11,7 @@
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-05-26 - Full system design brainstormed + design doc written
+- **Last Session**: 2026-06-11 - Project resumed (moved to #1); ready to start Phase 1 scaffold
 - **Next Steps**:
   1. Phase 1 — Scaffold Chrome Extension (MV3 structure: manifest.json, background.js, content_script.js, popup, crypto.js)
   2. Phase 2 — Auth + Key Lookup (Google OAuth2 via chrome.identity, /auth/token, /keys/lookup + cert chain validation)
@@ -55,4 +55,4 @@
 - **Email Envelope**: Plain JSON block between `--BEGIN SEQREMAIL--` / `--END SEQREMAIL--` markers, sent as Gmail body text
 
 ---
-**Last Updated**: 2026-05-26 | **Position**: #1/10 Active
+**Last Updated**: 2026-06-11 | **Position**: #1/10 Active

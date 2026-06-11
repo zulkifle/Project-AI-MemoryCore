@@ -9,8 +9,15 @@
 ## Active Project
 - **Name**: MyTrustSignerXML-MITI
 - **Resumed**: 2026-06-11
-- **Context**: XML Digital Signing API for MITI (Java 8 Servlet + Tomcat + MySQL). 95% complete. Monthly billing feature (`/billing` servlet + cron) coded but WAR not yet built/tested.
-- **Next Steps**: Build WAR in NetBeans → copy to PILOT webapps → `docker compose -f docker-compose-pilot.yaml build --no-cache && up` → test `GET /MyTrustSignerXMLPilot/billing` via Postman → if email received, restore recipients to all 4 → copy to PROD, run DEPLOYMENT_CHECKLIST.txt
+- **Context**: Fixed duplicate `tx_id` race (SQLIntegrityConstraintViolationException seen in PILOT logs). Code-level fix in `DBUtil.getTXID()` (now AtomicLong seq) + `sign.java` (txid/db moved off shared servlet instance fields, txSaved guard). No DB change. `mvn compile` clean.
+- **Next Steps**: Rebuild WAR + redeploy to PILOT for fix to take effect. Then PROD deploy when MITI signs off pilot.
+- **Repo**: `C:\PROJECTS\MITI\Development\MyTrustSignerXML`
+
+## Previous Active Project
+- **Name**: TG SeQureMail
+- **Context**: Chrome MV3 extension POC for E2E encrypted Gmail (AES-256-GCM + RSA-OAEP, TGCA-signed keys, SeQureMail Key API + HSM). 15% — full design approved, ready for Phase 1 scaffold.
+- **Next Steps**: Phase 1 — scaffold Chrome MV3 structure (manifest.json, background.js, content_script.js, popup, crypto.js)
+- **Design doc**: `C:\PROJECTS\SEQURE MAIL\Documentation\Others\2026-05-26-seqremail-design.md`
 
 ## Previous Active Project
 - **Name**: RSS Self Service Portal
