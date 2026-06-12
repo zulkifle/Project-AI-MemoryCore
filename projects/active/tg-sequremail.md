@@ -6,12 +6,12 @@
 - **Client**: Any Gmail user (external-facing POC)
 - **Period**: 2026-05-21 - Active
 - **Tech Stack**: Frontend: Chrome Extension MV3 + Web Crypto API (AES-256-GCM, RSA-OAEP) | Backend: SeQureMail Key API (Trustgate) + HSM (PKCS#11) + MySQL Key Directory | Auth: Gmail OAuth2 → SeQureMail JWT (15 min) | Trust: TGCA (Trustgate CA) signs all public keys
-- **Completion**: 18%
-- **Duration**: 3.5 hours
+- **Completion**: 20%
+- **Duration**: 4 hours
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-06-11 - Reviewed design; generated Mermaid diagrams; created SDD Section 0 + fixed cross-section inconsistencies
+- **Last Session**: 2026-06-11 - Created bare-minimum POC design (Level 0 "Shared Passphrase", no backend); next: scaffold the 4 POC files
 - **Next Steps**:
   1. Phase 1 — Scaffold Chrome Extension (MV3 structure: manifest.json, background.js, content_script.js, popup, crypto.js)
   2. Phase 2 — Auth + Key Lookup (Google OAuth2 via chrome.identity, /auth/token, /keys/lookup + cert chain validation)
@@ -22,6 +22,14 @@
 - **Known Issues**: None — design approved, ready for implementation
 
 ## Session History (Last 5)
+
+### 2026-06-11 - POC Design (Level 0 "Shared Passphrase", zero backend)
+- **Changes**: Scoped a bare-minimum POC to prove only the core: encrypt body in browser → ride normal Gmail → decrypt in browser, server never sees plaintext. Stripped all backend (HSM, TGCA, OAuth2, JWT, Key API, Key Directory).
+- **POC Level 0 design**: shared passphrase (agreed offline) → `PBKDF2 → AES-256-GCM`; simplified `poc-v0` envelope (salt, iv, ciphertext — no keyId/DEK); manual Send (no Gmail API); 4 files only (`manifest.json`, `content_script.js`, `crypto.js`, `icon.png`); minimal perms (`storage` + `mail.google.com`)
+- **New file**: `C:\PROJECTS\SEQURE MAIL\Documentation\POC\seqremail-poc-design.md` — full POC design w/ Mermaid architecture + flows, demo/test plan, acceptance criteria, limitations→Level 1→full path
+- **Level 1 (optional next)**: in-browser RSA keypairs + static public-key file/Gist — demos hybrid RSA-OAEP+AES envelope, still serverless
+- **Next**: scaffold the 4 POC files (proposed location `C:\PROJECTS\SEQURE MAIL\seqremail-poc\`)
+- **Time Spent**: ~30 min
 
 ### 2026-06-11 - SDD Formalised: Mermaid Diagrams + Section 0 + Consistency Fixes
 - **Changes**: Reviewed full design (5 proposal sections + companion design.md). Generated 12 Mermaid diagrams and appended them into the matching proposal section files at `C:\PROJECTS\SEQURE MAIL\Documentation\Others\`:
@@ -64,4 +72,4 @@
 - **Email Envelope**: Plain JSON block between `--BEGIN SEQREMAIL--` / `--END SEQREMAIL--` markers, sent as Gmail body text
 
 ---
-**Last Updated**: 2026-06-11 | **Position**: #2/10 Active
+**Last Updated**: 2026-06-12 | **Position**: #2/10 Active
