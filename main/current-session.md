@@ -7,17 +7,17 @@
 **Session Focus**: Created `mtsa-container-packaging` skill + packaged SENA PILOT deployment
 
 ## Active Project
-- **Name**: MyTrustSignerXML-MITI
-- **Resumed**: 2026-06-11
-- **Context**: Fixed duplicate `tx_id` race (DBUtil.getTXID → AtomicLong seq; sign.java txid/db moved off shared servlet fields + txSaved guard; no DB change; mvn compile clean). Then prepped PROD package (`Deployment\PRODUCTION\MTSAXML_PROD`): verified fix compiled in, DB_URL localhost→mysql, image tag→1.1, removed leaked UKM WAR + 2 .filepart leftovers.
-- **Next Steps**: Dejul to zip + deploy. On server: update DB_URL on host `/opt/mtsa/properties/mtsa.properties` (volume override), `docker compose build --no-cache`. PROD go-live gated on MITI pilot sign-off.
-- **Repo**: `C:\PROJECTS\MITI\Development\MyTrustSignerXML`
+- **Name**: TG SeQureMail
+- **Resumed**: 2026-06-15
+- **Context**: POC redesigned to Level 1 (RSA-OAEP keypair, no passphrase, Gmail API). Full code scaffold complete — 9 files at `C:\PROJECTS\SEQURE MAIL\Development\seqremail-poc-v1\`. Design doc v2 (v1.3) at `Documentation\POC\seqremail-poc-design-v2.md`. UX: auto-keygen on install, 🔒 Encrypt toggle in compose, Send intercept → modal, Gmail API send+read, Decrypt banner, auto-save sender pubkey.
+- **Next Steps**: 1) Google Cloud Console — enable Gmail API + create OAuth2 client ID → paste into manifest.json. 2) Load unpacked in Chrome → test E2E flow. 3) Fix any Gmail DOM selector issues.
+- **Repo**: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-poc-v1\`
 
 ## Previous Active Project
-- **Name**: TG SeQureMail
-- **Context**: Chrome MV3 extension POC for E2E encrypted Gmail (AES-256-GCM + RSA-OAEP, TGCA-signed keys, SeQureMail Key API + HSM). 15% — full design approved, ready for Phase 1 scaffold.
-- **Next Steps**: Phase 1 — scaffold Chrome MV3 structure (manifest.json, background.js, content_script.js, popup, crypto.js)
-- **Design doc**: `C:\PROJECTS\SEQURE MAIL\Documentation\Others\2026-05-26-seqremail-design.md`
+- **Name**: MyTrustSignerXML-MITI
+- **Context**: Fixed duplicate `tx_id` race (DBUtil.getTXID → AtomicLong seq; sign.java txid/db moved off shared servlet fields + txSaved guard). PROD package verified at `Deployment\PRODUCTION\MTSAXML_PROD`. Go-live gated on MITI pilot sign-off.
+- **Next Steps**: Dejul to zip + deploy. On server: update DB_URL on host `/opt/mtsa/properties/mtsa.properties`, `docker compose build --no-cache`. Awaiting MITI pilot sign-off.
+- **Repo**: `C:\PROJECTS\MITI\Development\MyTrustSignerXML`
 
 ## Previous Active Project
 - **Name**: RSS Self Service Portal

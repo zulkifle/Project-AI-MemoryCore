@@ -6,22 +6,30 @@
 - **Client**: Any Gmail user (external-facing POC)
 - **Period**: 2026-05-21 - Active
 - **Tech Stack**: Frontend: Chrome Extension MV3 + Web Crypto API (AES-256-GCM, RSA-OAEP) | Backend: SeQureMail Key API (Trustgate) + HSM (PKCS#11) + MySQL Key Directory | Auth: Gmail OAuth2 → SeQureMail JWT (15 min) | Trust: TGCA (Trustgate CA) signs all public keys
-- **Completion**: 20%
+- **Completion**: 40%
 - **Duration**: 4 hours
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-06-11 - Created bare-minimum POC design (Level 0 "Shared Passphrase", no backend); next: scaffold the 4 POC files
+- **Last Session**: 2026-06-15 - POC redesigned to Level 1 (RSA keypair, no passphrase, Gmail API) + full code scaffold complete
 - **Next Steps**:
-  1. Phase 1 — Scaffold Chrome Extension (MV3 structure: manifest.json, background.js, content_script.js, popup, crypto.js)
-  2. Phase 2 — Auth + Key Lookup (Google OAuth2 via chrome.identity, /auth/token, /keys/lookup + cert chain validation)
-  3. Phase 3 — Encrypt Flow (DEK gen, AES-256-GCM, RSA-OAEP, envelope JSON, body replace)
-  4. Phase 4 — Decrypt Flow (/keys/unwrap → HSM, AES-256-GCM browser decrypt)
-  5. Phase 5 — Registration + Key Management (Key API backend, HSM PKCS#11, Key Directory DB)
+  1. Google Cloud Console — enable Gmail API, create OAuth2 client ID (Chrome Extension type), paste into manifest.json
+  2. Load unpacked in Chrome → copy Extension ID → register in Google Cloud
+  3. Test end-to-end: auto-keygen → Share My Key → Encrypt & Send → Decrypt
+  4. Verify Gmail API send + read working (check DevTools network tab)
+  5. Fix any Gmail DOM selector issues (compose toolbar, message body selectors)
   6. Phase 6 — End-to-end POC test
 - **Known Issues**: None — design approved, ready for implementation
 
 ## Session History (Last 5)
+
+### 2026-06-15 - POC Redesigned to Level 1 + Full Code Scaffold
+- **Changes**: Redesigned POC from Level 0 (shared passphrase) to Level 1 (RSA-OAEP keypair, no passphrase, Gmail API). UX redesigned: keypair auto-generates silently on first Gmail load (background.js). Compose toolbar gets 🔒 Encrypt toggle. Send intercept → modal (Encrypt & Send / Send as Plaintext / Cancel). Gmail API used for both send (`messages.send`) and read (`messages.get`). Decrypt banner auto-appears on encrypted emails. Sender public key auto-saved from envelope on decrypt (enables seamless reply).
+- **Design doc v2**: `C:\PROJECTS\SEQURE MAIL\Documentation\POC\seqremail-poc-design-v2.md` (v1.3)
+- **Code scaffold**: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-poc-v1\` — 9 files: manifest.json, background.js, crypto.js, keystore.js, gmail-api.js, content_script.js, popup.html, popup.js, icon.png + SETUP.md
+- **Key design decisions**: `extractable:false` private key in IndexedDB (HSM simulation), `senderPublicKey` embedded in envelope (auto key exchange on first decrypt), `chrome.identity` bridged via background.js (not available in content scripts)
+- **Next**: Set up Google Cloud OAuth2 client ID → load unpacked → test E2E
+- **Time Spent**: ~3 hours
 
 ### 2026-06-11 - POC Design (Level 0 "Shared Passphrase", zero backend)
 - **Changes**: Scoped a bare-minimum POC to prove only the core: encrypt body in browser → ride normal Gmail → decrypt in browser, server never sees plaintext. Stripped all backend (HSM, TGCA, OAuth2, JWT, Key API, Key Directory).
@@ -60,8 +68,9 @@
 [No history yet — this section is populated when session count exceeds 5]
 
 ## Technical Notes
-- **Repository**: TBD — C:\PROJECTS\SEQURE MAIL\ (local working directory)
-- **Design Doc**: `C:\PROJECTS\SEQURE MAIL\Documentation\Others\2026-05-26-seqremail-design.md`
+- **Repository**: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-poc-v1\` (local, unpacked Chrome extension)
+- **Design Doc (POC)**: `C:\PROJECTS\SEQURE MAIL\Documentation\POC\seqremail-poc-design-v2.md` (v1.3 — current)
+- **Design Doc (Full SDD)**: `C:\PROJECTS\SEQURE MAIL\Documentation\Others\2026-05-26-seqremail-design.md`
 - **Key Dependencies**: Chrome Extension MV3, Gmail API (OAuth2), Web Crypto API, TGCA (Trustgate CA), HSM (PKCS#11), MySQL
 - **Scope**: POC only — validate end-to-end flow (compose → encrypt → send → receive → decrypt)
 - **Crypto Plan**:
