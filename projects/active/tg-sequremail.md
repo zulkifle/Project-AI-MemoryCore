@@ -11,16 +11,18 @@
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-06-15 - SeQureMail Key API backend scaffolded (Spring Boot + MySQL + Flyway) + extension updated to auto-lookup/register keys
+- **Last Session**: 2026-06-15 - Key API live via docker compose, extension bugs fixed (double toggle + JSON parse error)
 - **Next Steps**:
-  1. Start Key API: `cd seqremail-key-api && docker compose up -d`
-  2. Open popup → enter Gmail address → click Register (extension self-registers)
-  3. Load unpacked extension in Chrome → open Gmail → test encrypt to a registered recipient
-  4. Verify auto-lookup (no manual key paste) → end-to-end test encrypt + decrypt
-  5. Update SETUP.md (currently references old Google Cloud flow)
-- **Known Issues**: Need Maven wrapper (mvnw) to build — generate via `mvn wrapper:wrapper` if not present
+  1. Reload extension in Chrome → open Gmail → popup → register `kiflezul94@gmail.com`
+  2. End-to-end test: Compose → Encrypt → Send → Decrypt
+  3. Update SETUP.md (currently references old Google Cloud flow)
+- **Known Issues**: None — both bugs fixed this session
 
 ## Session History (Last 5)
+
+### 2026-06-15 (2) - Key API Live + Bug Fixes
+- **Changes**: API confirmed working via docker compose (MySQL port 3307, Flyway runs V1 on startup). Fixed Dockerfile to use Maven Docker image (no mvnw needed). Two extension bugs fixed: (1) double Encrypt toggle — moved `sqmDone='true'` to top of `injectEncryptToggle` before retry timer; (2) decrypt JSON error — Gmail converts `"` to smart quotes corrupting the envelope — fixed by base64-encoding entire payload with `btoa()` and decoding with `atob()` in `parseEnvelope`.
+- **Time Spent**: ~1 hour
 
 ### 2026-06-15 - Key API Backend + Extension Auto-Lookup
 - **Changes**: Scaffolded `seqremail-key-api` — Spring Boot 3.2 + MySQL + Flyway. Full layered architecture: Controller → Service → Repository → Entity. Two endpoints: `POST /api/keys/register` (upsert own public key) and `GET /api/keys/lookup?email=x` (fetch recipient key). CORS open for Chrome extension. Docker + docker-compose included. Extension updated: content_script now calls API before manual paste; popup gets email input for one-time registration. Manifest adds `http://localhost:8080/*` host permission. No manual key sharing needed — extension auto-fetches from API.

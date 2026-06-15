@@ -3,15 +3,20 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-06-09
-**Session Focus**: Created `mtsa-container-packaging` skill + packaged SENA PILOT deployment
+**Last Activity**: 2026-06-15
+**Session Focus**: TG SeQureMail — Key API backend deployed + Chrome extension bug fixes
 
 ## Active Project
 - **Name**: TG SeQureMail
 - **Resumed**: 2026-06-15
-- **Context**: POC redesigned to Level 1 (RSA-OAEP keypair, no passphrase, Gmail API). Full code scaffold complete — 9 files at `C:\PROJECTS\SEQURE MAIL\Development\seqremail-poc-v1\`. Design doc v2 (v1.3) at `Documentation\POC\seqremail-poc-design-v2.md`. UX: auto-keygen on install, 🔒 Encrypt toggle in compose, Send intercept → modal, Gmail API send+read, Decrypt banner, auto-save sender pubkey.
-- **Next Steps**: 1) Google Cloud Console — enable Gmail API + create OAuth2 client ID → paste into manifest.json. 2) Load unpacked in Chrome → test E2E flow. 3) Fix any Gmail DOM selector issues.
-- **Repo**: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-poc-v1\`
+- **Context**: Key API (Spring Boot 3.2 + MySQL + Flyway) scaffolded and running via `docker compose up`. Chrome extension updated to auto-lookup/register keys via API. Two bugs fixed: double Encrypt toggle (sqmDone flag timing) + JSON parse error (Gmail smart-quote corruption → fixed by base64-encoding envelope payload).
+- **Next Steps**:
+  1. Reload extension in Chrome (`chrome://extensions` → ↻ refresh)
+  2. Open Gmail → extension popup → enter `kiflezul94@gmail.com` → Register
+  3. Test end-to-end: Compose → 🔒 Encrypt toggle → Send → Decrypt
+  4. Verify no double toggle, no JSON error on decrypt
+- **Repo**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-poc-v1\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-key-api\`
+- **API**: `http://localhost:8080` — run via `docker compose up` in `seqremail-key-api\`
 
 ## Previous Active Project
 - **Name**: MyTrustSignerXML-MITI
@@ -19,73 +24,50 @@
 - **Next Steps**: Dejul to zip + deploy. On server: update DB_URL on host `/opt/mtsa/properties/mtsa.properties`, `docker compose build --no-cache`. Awaiting MITI pilot sign-off.
 - **Repo**: `C:\PROJECTS\MITI\Development\MyTrustSignerXML`
 
-## Previous Active Project
-- **Name**: RSS Self Service Portal
-- **Session**: 2026-06-01
-- **Context**: MyTrustSignerXML-MITI fully complete (E2E test passed, sign.java:140 fix done). Returning focus to RSS portal — billing model integration next.
-- **Next Steps**: Drop scaffolded tables, add client_id to billing, build Billing/BillingUser/BillingTxSign models
-
 ## Previous Active Project (carry-over)
 **MyTrustID Desktop** — ARCHIVED 2026-05-28. Dev done. External items pending (bpfk team, cert signing). Branch `fix/autoupdate-elevation` held — remind to merge in August 2026.
 
 ## 💭 Session Recap (For AI Restart)
 
-### RSS Self Service Portal (Active — #1)
+### TG SeQureMail (Active — #1)
+**Stack**: Chrome Extension MV3 + Web Crypto API (RSA-OAEP + AES-256-GCM) + Spring Boot 3.2 + MySQL 8 + Flyway
+**Completion**: 65%
+**Repo**: `C:\PROJECTS\SEQURE MAIL\Development\`
+
+**Architecture (DOM-based, no Gmail API):**
+- Send: intercepts Gmail Send button → encrypts body → re-triggers Gmail's own send
+- Read: MutationObserver scans for `--BEGIN SEQREMAIL--` → injects Decrypt banner
+- Key API: `POST /api/keys/register`, `GET /api/keys/lookup?email=x`
+- Envelope: base64-encoded JSON between markers (avoids Gmail smart-quote corruption)
+- Private key: IndexedDB (extractable:false — HSM simulation)
+
+**Bugs fixed this session:**
+- Double Encrypt toggle → moved `sqmDone = 'true'` to top of `injectEncryptToggle`
+- JSON parse error on decrypt → base64-encode envelope payload before sending, base64-decode in `parseEnvelope`
+
+**To start API:** `cd seqremail-key-api && docker compose up`
+**DB creds:** host=localhost:3307, db=seqremail_db, user=seqremail, pass=seqremail123
+
+### RSS Self Service Portal (Active — #2)
 **Stack**: Laravel 13 + PHP 8.3 + Blade + Tailwind v4 + MySQL + Pest
 **Completion**: 60%
 **Repo**: `C:\laragon\www\remote-signing-portal`
 
-**Billing model finalized (session 2026-05-06):**
-- Subscription model: per signer/yr (Individual RM100, Corporate RM200), unlimited signing, added by AC/AT in portal
-- Transaction model: per company shared quota block, deducts 1 per signing, signers via MyTrustID app
-- One company = one model only (not simultaneous)
-- Integrating with existing `billing`/`billing_users`/`billing_txsign` tables (shared with signing backend)
-- Drop portal-scaffolded `subscriptions` + `signing_transactions` tables
-- Only change to existing DB: add `client_id` to `billing` table
-- Join key: `signers.ic_passport = billing_users.id_no`
-- AT creates `billing` row manually; `billing.used` = external signings only; `billing_txsign` = all signings
-
 **Next Steps (in order):**
-1. ✅ Keep `is_internal` on signers
-2. ✅ Transaction tiers confirmed — Starter(500/RM5k) → Diamond(80k/RM80k); Subscription: Individual RM100/USD25, Corporate RM200/USD50
-3. Drop scaffolded `subscriptions` + `signing_transactions` tables
-4. Migration: add `client_id` to `billing`, add `billing_id` to `clients`
-5. Create Eloquent models: `Billing`, `BillingUser`, `BillingTxSign`
-6. Service Plans UI (AT): AT creates billing row, sets quota
-7. Signer management: AC adds internal signer → writes to `signers` + `billing_users`
-8. Quota view (AC): `billing.quota - billing.used`
-9. Dashboard live data + Reports
-
-**Known issues / pending config:**
-- Mail: MAIL_* not configured in .env — invitation emails go to log driver
-- KTDataTable setFilter column indices — browser test needed for signers/clients tables
-
-### Carry-over
-
-**Windows Server Housekeeping (Active — #1):**
-- 4 log paths: wildfly log, MyTrustSignServer logs/rsc/logs/DigitalSeal/log
-- 10-day retention, forfiles approach
-- Pending: user to confirm save path for .bat file on server
-
-**MyTrustID Desktop** — 99% done. Waiting for SafeNet cert to sign EXE+MSI via `sign.bat`. Branch `fix/autoupdate-elevation` on hold — merge reminder: August 2026.
-
-**jumio-proxy-integration (Archived):**
-- Implementation done — prod deploy pending (5 env vars to configure)
+1. Drop scaffolded `subscriptions` + `signing_transactions` tables
+2. Migration: add `client_id` to `billing`, add `billing_id` to `clients`
+3. Create Eloquent models: `Billing`, `BillingUser`, `BillingTxSign`
+4. Service Plans UI, Signer management, Quota view, Dashboard
 
 ## Key File Paths
+- SeQureMail Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-poc-v1\`
+- SeQureMail Key API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-key-api\`
 - RSS Portal: `C:\laragon\www\remote-signing-portal`
-- MTSA Dev: `C:\PROJECTS\MyGPKI-SKALA\Development\mtsa\`
-- MTSA Deployment PILOT: `C:\PROJECTS\MyGPKI-SKALA\Deployment\PILOT\`
-- MTSA Deployment PRODUCTION: `C:\PROJECTS\MyGPKI-SKALA\Deployment\PRODUCTION\`
 - MyTrustID: `C:\repos\MyTrustIDv1_AATL-GENERIC\`
-- Jumio Proxy: `C:\PROJECTS\DOCKER GITLAB\docker\jumio-proxy\app\jumio-proxy\`
-- switch-env: `C:\PROJECTS\MyGPKI-SKALA\Deployment\switch-env.ps1`
-- Metronic template: `C:\PROJECTS\DOCUSIGN\Development\metronic-v9.4.9\metronic-tailwind-html-demos\dist\html\demo6\`
 
 ### Rules
 - NEVER make code changes without Dejul's explicit permission first
 - Always change development source files FIRST, then deployment copies
-- MTSA JKR deployment: manually replace extracted .war → run `change env url .bat`
 
 ## 🔄 Auto-Reset Protocol
 *Clear this file at start of next session after loading recap*
