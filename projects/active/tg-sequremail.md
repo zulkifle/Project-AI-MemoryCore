@@ -5,23 +5,28 @@
 - **Type**: Chrome Extension (Manifest V3)
 - **Client**: Any Gmail user (external-facing POC)
 - **Period**: 2026-05-21 - Active
-- **Tech Stack**: Frontend: Chrome Extension MV3 + Web Crypto API (AES-256-GCM, RSA-OAEP) | Backend: SeQureMail Key API (Trustgate) + HSM (PKCS#11) + MySQL Key Directory | Auth: Gmail OAuth2 → SeQureMail JWT (15 min) | Trust: TGCA (Trustgate CA) signs all public keys
-- **Completion**: 40%
+- **Tech Stack**: Frontend: Chrome Extension MV3 + Web Crypto API (AES-256-GCM, RSA-OAEP), DOM-based (no Gmail API) | Backend: SeQureMail Key API (Spring Boot 3.2 + MySQL + Flyway) | Auth: none for POC (open Key API) | Trust: planned TGCA for production
+- **Completion**: 65%
 - **Duration**: 4 hours
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-06-15 - POC redesigned to Level 1 (RSA keypair, no passphrase, Gmail API) + full code scaffold complete
+- **Last Session**: 2026-06-15 - SeQureMail Key API backend scaffolded (Spring Boot + MySQL + Flyway) + extension updated to auto-lookup/register keys
 - **Next Steps**:
-  1. Google Cloud Console — enable Gmail API, create OAuth2 client ID (Chrome Extension type), paste into manifest.json
-  2. Load unpacked in Chrome → copy Extension ID → register in Google Cloud
-  3. Test end-to-end: auto-keygen → Share My Key → Encrypt & Send → Decrypt
-  4. Verify Gmail API send + read working (check DevTools network tab)
-  5. Fix any Gmail DOM selector issues (compose toolbar, message body selectors)
-  6. Phase 6 — End-to-end POC test
-- **Known Issues**: None — design approved, ready for implementation
+  1. Start Key API: `cd seqremail-key-api && docker compose up -d`
+  2. Open popup → enter Gmail address → click Register (extension self-registers)
+  3. Load unpacked extension in Chrome → open Gmail → test encrypt to a registered recipient
+  4. Verify auto-lookup (no manual key paste) → end-to-end test encrypt + decrypt
+  5. Update SETUP.md (currently references old Google Cloud flow)
+- **Known Issues**: Need Maven wrapper (mvnw) to build — generate via `mvn wrapper:wrapper` if not present
 
 ## Session History (Last 5)
+
+### 2026-06-15 - Key API Backend + Extension Auto-Lookup
+- **Changes**: Scaffolded `seqremail-key-api` — Spring Boot 3.2 + MySQL + Flyway. Full layered architecture: Controller → Service → Repository → Entity. Two endpoints: `POST /api/keys/register` (upsert own public key) and `GET /api/keys/lookup?email=x` (fetch recipient key). CORS open for Chrome extension. Docker + docker-compose included. Extension updated: content_script now calls API before manual paste; popup gets email input for one-time registration. Manifest adds `http://localhost:8080/*` host permission. No manual key sharing needed — extension auto-fetches from API.
+- **Backend path**: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-key-api\` (19 files)
+- **Extension changes**: manifest.json (host_permissions), content_script.js (apiLookup/apiRegister/tryAutoRegister), popup.html (email section), popup.js (register flow)
+- **Time Spent**: ~1 hour
 
 ### 2026-06-15 - POC Redesigned to Level 1 + Full Code Scaffold
 - **Changes**: Redesigned POC from Level 0 (shared passphrase) to Level 1 (RSA-OAEP keypair, no passphrase, Gmail API). UX redesigned: keypair auto-generates silently on first Gmail load (background.js). Compose toolbar gets 🔒 Encrypt toggle. Send intercept → modal (Encrypt & Send / Send as Plaintext / Cancel). Gmail API used for both send (`messages.send`) and read (`messages.get`). Decrypt banner auto-appears on encrypted emails. Sender public key auto-saved from envelope on decrypt (enables seamless reply).
@@ -68,7 +73,7 @@
 [No history yet — this section is populated when session count exceeds 5]
 
 ## Technical Notes
-- **Repository**: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-poc-v1\` (local, unpacked Chrome extension)
+- **Repository**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-poc-v1\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-key-api\`
 - **Design Doc (POC)**: `C:\PROJECTS\SEQURE MAIL\Documentation\POC\seqremail-poc-design-v2.md` (v1.3 — current)
 - **Design Doc (Full SDD)**: `C:\PROJECTS\SEQURE MAIL\Documentation\Others\2026-05-26-seqremail-design.md`
 - **Key Dependencies**: Chrome Extension MV3, Gmail API (OAuth2), Web Crypto API, TGCA (Trustgate CA), HSM (PKCS#11), MySQL
@@ -81,4 +86,4 @@
 - **Email Envelope**: Plain JSON block between `--BEGIN SEQREMAIL--` / `--END SEQREMAIL--` markers, sent as Gmail body text
 
 ---
-**Last Updated**: 2026-06-12 | **Position**: #2/10 Active
+**Last Updated**: 2026-06-15 | **Position**: #2/10 Active
