@@ -7,13 +7,13 @@
 - **Period**: 2026-05-24 - Active (reactivated 2026-06-05)
 - **Tech Stack**: Java 8 (Servlet) + Tomcat + MySQL
 - **Completion**: 100%
-- **Duration**: 2.5 hours
+- **Duration**: 3 hours
 - **Due Date**: 2026-06-01
 
 ## Current Status
-- **Last Session**: 2026-06-11 - Fixed duplicate `tx_id` race condition (DBUtil + sign.java), code-level only
-- **Next Steps**: PROD package prepared & verified (tx_id fix compiled in, DB_URL→mysql, v1.1, UKM artifacts purged). Dejul to zip + deploy. ⏸️ Go-live gated on MITI pilot sign-off. On deploy: update `DB_URL` on host `/opt/mtsa/properties/mtsa.properties` + `docker compose build --no-cache`
-- **Known Issues**: None open. Duplicate `tx_id` (SQLIntegrityConstraintViolationException, seen in PILOT logs 2026-06-05) fixed in dev source — pending WAR rebuild + redeploy to take effect
+- **Last Session**: 2026-06-18 - Project closed. MITI confirmed pilot OK, PROD package handed over, MITI self-deploys.
+- **Next Steps**: None — fully handed over. MITI owns deployment.
+- **Known Issues**: None. All bugs fixed and compiled into PROD package.
 
 ## Architecture
 
@@ -151,12 +151,16 @@ TestSignXML/
 - [x] Fix sign.java:140 — replaced `verifySignature(signatureValue, digestValue.getBytes())` with `verifySignedInfoSignature(signedInfo, signatureValue, canonAlgoUri)` ✅
 - [x] Add `/billing` servlet — monthly CSV email via crond (production only) ✅ (code done)
 - [x] Build WAR + copy to PILOT webapps → test `/billing` endpoint → restore recipients to all 4 ✅
-- [ ] Copy built WAR to PROD deployment folder → run DEPLOYMENT_CHECKLIST.txt → redeploy ⏸️ (awaiting MITI pilot sign-off)
+- [x] PROD package handed over to MITI ✅ — MITI self-deploys (2026-06-18)
 
 **Deployment Guide**: `C:\PROJECTS\MITI\Deployment\PRODUCTION\DEPLOYMENT_GUIDE.txt`
 **Docker Compose**: `C:\PROJECTS\MITI\Deployment\PRODUCTION\MTSAXML_PROD_20260529\docker-compose.yaml`
 
 ## Session History (Last 5)
+
+### 2026-06-18 - Chain Bug Traced + Project Closed
+- **Changes**: MITI confirmed pilot OK. Reviewed unrecorded chain fix (June 8 session): `SignUsingP12` changed from `getCertificate(alias)` → `getCertificateChain(alias)[0]` — production P12 has a full cert chain embedded; old code could return wrong cert causing "signature invalid". Fix was compiled into PROD package (June 11). PROD package handed over to MITI — they self-deploy. Project fully closed on our side.
+- **Time Spent**: ~15 min
 
 ### 2026-06-11 - Fixed Duplicate tx_id Race Condition
 - **Trigger**: PILOT log (2026-06-05) showed `SQLIntegrityConstraintViolationException: Duplicate entry '1780630985393827669' for key 'tx_id'`. Dejul asked if it was fixed / would recur.
@@ -222,4 +226,4 @@ Project started 2026-05-24: studied full source, documented architecture (sign/v
 - **Digest Algorithm**: SHA-256
 
 ---
-**Last Updated**: 2026-06-11 | **Status**: tx_id fix in PROD package ✅ (DB_URL→mysql, v1.1, UKM purged) — Dejul to zip+deploy; PROD blocked on MITI pilot sign-off ⏸️
+**Last Updated**: 2026-06-18 | **Status**: ✅ CLOSED — All fixes delivered. PROD package handed over. MITI self-deploys.

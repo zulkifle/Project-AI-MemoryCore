@@ -6,7 +6,7 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[MyTrustSignerXML-MITI](./active/mytrustsignerxml-miti.md)** | 2026-06-11 | 2026-06-01 | 95% | tx_id fix in PROD package ✅ (DB_URL→mysql, v1.1, UKM artifacts purged) — Dejul to zip+deploy; PROD blocked on MITI sign-off ⏸️ |
+| 1 | **[MyTrustSignerXML-MITI](./active/mytrustsignerxml-miti.md)** | 2026-06-18 | 2026-06-01 | 100% | ✅ CLOSED — All fixes delivered. PROD package handed over to MITI (self-deploy). |
 | 2 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-06-12 | TBD | 20% | POC design done ✅ (Level 0 shared-passphrase, zero backend) — next: scaffold the 4 POC files |
 | 3 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-06-18 | TBD | 95% | callbackUrl feature live ✅ v1 migrated to v2 JAR ✅ — pending nginx reload + E2E test |
 | 4 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-06-03 | 2026-06-05 ⚠️ | 0% | Source not yet retrieved from server |
@@ -26,4 +26,4 @@
 ---
 ## System Status
 - **Total Projects**: 11 (7 active + 4 archived)
-- **Last Updated**: 2026-06-18 - Saved jumio-proxy-integration (callbackUrl feature + v1 migration)
+- **Last Updated**: 2026-06-18 - Saved MyTrustSignerXML-MITI (closed — PROD handed over to MITI)
