@@ -19,11 +19,11 @@
 | Project | Completed | Status |
 |---------|-----------|--------|
 | **[MyTrustID Desktop](./archived/mytrustid-desktop.md)** | 2026-06-03 | Completed ✅ — EXE+MSI signed. Merge fix/autoupdate-elevation → master Aug 2026 |
-| **[MTSA v1.0.8.2-JKR](./archived/mtsa-v1082-jkr.md)** | 2026-04-22 | Completed — Delivered to client |
+| **[MTSA v1.0.8.2-JKR](./archived/mtsa-v1082-jkr.md)** | 2026-06-18 | Completed — OTP expiry updated to 60s (JKR meeting 2026-06-18) |
 | **[signingDemoPortal](./archived/signingdemoporatal.md)** | 2026-04-10 | Completed |
 | **[jumio-proxy-integration (v1)](./archived/jumio-proxy-integration.md)** | 2026-05-11 | SESSION_EXPIRED bug fixed — archived, reactivated as active #2 |
 
 ---
 ## System Status
 - **Total Projects**: 11 (7 active + 4 archived)
-- **Last Updated**: 2026-06-12 - Saved TG SeQureMail (POC Level 0 design — shared-passphrase, zero backend)
+- **Last Updated**: 2026-06-18 - Saved MTSA v1.0.8.2-JKR (OTP expiry 300s → 60s, JKR meeting)

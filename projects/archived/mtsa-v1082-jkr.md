@@ -6,15 +6,23 @@
 - **Period**: 2026-03-17 - 2026-04-22
 - **Tech Stack**: Java 17 + iText5 + BouncyCastle + NetBeans + Tomcat
 - **Completion**: 100%
-- **Duration**: ~6.5 hours
+- **Duration**: ~7 hours
 - **Status**: Completed — Delivered to client 2026-04-22
 
 ## Current Status
-- **Last Session**: 2026-04-22 - deploy.sh improved (directory checks, copy_if_missing helper, validator properties)
-- **Next Steps**: None — project delivered
+- **Last Session**: 2026-06-18 - JKR meeting: OTP expiry changed 300s → 60s per client recommendation
+- **Next Steps**: Client to update `/opt/mtsa_jkr/config/gpki.properties` on server then run `./deploy.sh restart`
 - **Known Issues**: None
 
 ## Session History (Last 5)
+
+### 2026-06-18 - JKR Meeting: OTP Expiry Config Change
+- **Changes**:
+  - JKR client meeting — recalled full project history and signing flow
+  - Changed `gpki.otp.expiry` from `300` → `60` seconds in both PILOT and PRODUCTION `gpki.properties` (per JKR/MAMPU recommendation: 1 min recommended, 2 min max)
+  - Confirmed no WAR rebuild needed — config is Docker volume-mounted; client only needs to edit `/opt/mtsa_jkr/config/gpki.properties` on server then run `./deploy.sh restart`
+  - Clarified signed document naming convention: `{signedDocsPath}/{transactionRef}/{pdfRefId}.pdf`
+- **Time Spent**: ~30 min
 
 ### 2026-04-22 - deploy.sh Improvements & Delivery
 - **Changes**:
@@ -60,4 +68,4 @@ Project started 2026-03-17 as MTSA signing platform maintenance for JKR client. 
 - **Env Switch**: `switch-env.ps1 localhost|sandbox|production`
 
 ---
-**Last Updated**: 2026-04-22 | **Status**: Completed — Archived
+**Last Updated**: 2026-06-18 | **Status**: Completed — Archived (config update 2026-06-18)
