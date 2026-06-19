@@ -6,8 +6,8 @@
 - **Client**: Adacash Sdn Bhd
 - **Period**: 2026-04-16 - Active
 - **Tech Stack**: Java 17 + Spring Boot 3.0.9 + OpenFeign + Maven + Docker + Kubernetes
-- **Completion**: 95%
-- **Duration**: ~12 hours
+- **Completion**: 98%
+- **Duration**: ~12.75 hours
 - **Due Date**: TBD
 
 ## Project Context
@@ -24,15 +24,18 @@
 6. On non-`PROCESSED` status (e.g. `SESSION_EXPIRED`): skip MTSS, forward to Adacash directly
 
 ## Current Status
-- **Last Session**: 2026-06-18 - per-session callbackUrl feature + pilot v1 migration to v2 JAR + nginx actuator fix
+- **Last Session**: 2026-06-19 - callbackUrl v1 debug — imagePullPolicy fix, both pilots confirmed working
 - **Next Steps**:
-  1. Apply updated nginx blocks on server (`nginx -t && nginx -s reload`)
-  2. Test v1 session endpoint via Postman: `POST /jumioproxy_pilot/adacash/api/v1/jumio/session` with `callbackUrl`
-  3. Full E2E test — trigger eKYC session, complete on Jumio, verify callback → MTSS SOAP → Adacash forward
-  4. Merge `feature/per-session-callback-url` → `feature/multitenant-support` after E2E confirmed
-- **Known Issues**: None blocking — nginx update pending on server
+  1. Adacash to re-test with fresh session (pass `callbackUrl` in create-session request)
+  2. Merge `feature/per-session-callback-url` → `feature/multitenant-support` after Adacash confirms E2E
+  3. Tag and close project when Adacash release testing passes
+- **Known Issues**: None — both v1 and v2 pilots live and working
 
 ## Session History (Last 5)
+
+### 2026-06-19 - callbackUrl debug + imagePullPolicy fix
+- **Changes**: Diagnosed v1 pilot not forwarding to per-session `callbackUrl` — root cause was `imagePullPolicy: IfNotPresent` causing K8s to use cached old image (built from `feature/multitenant-support`, no SessionCallbackStore) instead of new image with callbackUrl feature. Fix: set `imagePullPolicy: Always`, cycled tag 1.07 → 1.08 to force fresh pull. Both v1 (NodePort 30241) and v2 (NodePort 30242) confirmed working end-to-end — MTSS SOAP success, forward to Adacash `callbackUrl` success.
+- **Time Spent**: ~45 min
 
 ### 2026-06-18 - per-session callbackUrl feature + v1 pilot migration
 - **Changes**: Implemented `callbackUrl` feature on `feature/per-session-callback-url` branch — new `SessionCallbackStore` (ConcurrentHashMap), added optional `callbackUrl` to `CreateSessionRequest`, `resolveCallbackUrl()` in callback controller (falls back to ConfigMap URL). Tested on v2 — confirmed working. Migrated pilot v1 to use v2 JAR (multi-tenant + callbackUrl): updated `pilot/deployment.yaml` (image `1.08`, context `/jumio-proxy`, ConfigMap volume), `pilot/configmap.yaml` (fixed callback-base-url to `jumioproxy_pilot`). Updated nginx `nginx-multi-tenant.conf` for both pilot and pilot-v2 — combined API + actuator into single location block with dual rewrite directives.
@@ -61,7 +64,7 @@ Project started 2026-04-16 as Trustgate proxy layer between Adacash and Jumio eK
 - **Repository**: `C:\PROJECTS\DOCKER GITLAB\docker\jumio-proxy\app\jumio-proxy\`
 - **Artifact ID**: `adacash-trustgate-jumio-proxy` v0.0.1
 - **Git branches**: `master` (single-tenant), `feature/multitenant-support` (multi-tenant), `feature/per-session-callback-url` (callbackUrl feature — based on multitenant)
-- **pilot folder**: `C:\PROJECTS\DOCKER GITLAB\docker\jumio-proxy\pilot\` — NodePort 30241, image `jumioproxy-pilot:1.08`, context `/jumio-proxy`
+- **pilot folder**: `C:\PROJECTS\DOCKER GITLAB\docker\jumio-proxy\pilot\` — NodePort 30241, image `jumioproxy-pilot:1.08` (`imagePullPolicy: Always`), context `/jumio-proxy`
 - **pilot-v2 folder**: `C:\PROJECTS\DOCKER GITLAB\docker\jumio-proxy\pilot-v2\` — NodePort 30242, image `jumioproxy-pilot-v2:1.02`, context `/jumio-proxy`
 - **Prod yaml**: `production/deployment-prod.yaml` — NodePort 30240
 - **Nginx**: Combined location block handles both `/api/v1/` and `/actuator/` via dual rewrite directives
@@ -72,4 +75,4 @@ Project started 2026-04-16 as Trustgate proxy layer between Adacash and Jumio eK
 - **Session endpoint (pilot-v2)**: `POST https://digitalid.msctrustgate.com/jumioproxy_pilotv2/adacash/api/v1/jumio/session`
 
 ---
-**Last Updated**: 2026-06-18 | **Position**: #1/10 Active
+**Last Updated**: 2026-06-19 | **Position**: #1/10 Active
