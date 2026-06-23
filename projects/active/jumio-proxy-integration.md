@@ -6,8 +6,8 @@
 - **Client**: Adacash Sdn Bhd
 - **Period**: 2026-04-16 - Active
 - **Tech Stack**: Java 17 + Spring Boot 3.0.9 + OpenFeign + Maven + Docker + Kubernetes
-- **Completion**: 98%
-- **Duration**: ~12.75 hours
+- **Completion**: 99%
+- **Duration**: ~13.5 hours
 - **Due Date**: TBD
 
 ## Project Context
@@ -24,14 +24,21 @@
 6. On non-`PROCESSED` status (e.g. `SESSION_EXPIRED`): skip MTSS, forward to Adacash directly
 
 ## Current Status
-- **Last Session**: 2026-06-19 - callbackUrl v1 debug — imagePullPolicy fix, both pilots confirmed working
+- **Last Session**: 2026-06-23 - PROD deployment YAML prep — configmap, deployment, nginx snippet ready
 - **Next Steps**:
-  1. Adacash to re-test with fresh session (pass `callbackUrl` in create-session request)
-  2. Merge `feature/per-session-callback-url` → `feature/multitenant-support` after Adacash confirms E2E
-  3. Tag and close project when Adacash release testing passes
-- **Known Issues**: None — both v1 and v2 pilots live and working
+  1. Build & push Docker image: `docker build -t localhost:30445/jumioproxy:1.0 . && docker push localhost:30445/jumioproxy:1.0`
+  2. `kubectl create namespace jumioproxy`
+  3. `kubectl apply -f configmap.yaml && kubectl apply -f deployment.yaml`
+  4. Add nginx upstream `jumioproxyProd` (port 30240) + location block from `nginx-prod.conf`, reload nginx
+  5. Adacash to re-test on PROD URL
+  6. Merge `feature/per-session-callback-url` → `feature/multitenant-support` after PROD confirmed
+- **Known Issues**: None
 
 ## Session History (Last 5)
+
+### 2026-06-23 - PROD deployment YAML prep
+- **Changes**: Prepared full production deployment package — rewrote `production/deployment.yaml` (namespace `jumioproxy`, image `jumioproxy:1.0`, `imagePullPolicy: Always`, NodePort 30240, prod API keys). Updated `production/configmap.yaml` (prod namespace, prod callback-base-url, prod MTSS endpoint `MyTrustSignerService`, MTSS creds: `RockWingEL_prod`/`RockWing`, Adacash client-callback-url `https://jumio.adacash.my/api/v2/postback`). Created `production/nginx/nginx-prod.conf` (location block + upstream `jumioproxyProd`). Clarified API key design — global list, not per-project; new tenant = new key appended to comma-separated env var. Confirmed via `ApiKeyFilter.java`.
+- **Time Spent**: ~45 min
 
 ### 2026-06-19 - callbackUrl debug + imagePullPolicy fix
 - **Changes**: Diagnosed v1 pilot not forwarding to per-session `callbackUrl` — root cause was `imagePullPolicy: IfNotPresent` causing K8s to use cached old image (built from `feature/multitenant-support`, no SessionCallbackStore) instead of new image with callbackUrl feature. Fix: set `imagePullPolicy: Always`, cycled tag 1.07 → 1.08 to force fresh pull. Both v1 (NodePort 30241) and v2 (NodePort 30242) confirmed working end-to-end — MTSS SOAP success, forward to Adacash `callbackUrl` success.
@@ -66,13 +73,16 @@ Project started 2026-04-16 as Trustgate proxy layer between Adacash and Jumio eK
 - **Git branches**: `master` (single-tenant), `feature/multitenant-support` (multi-tenant), `feature/per-session-callback-url` (callbackUrl feature — based on multitenant)
 - **pilot folder**: `C:\PROJECTS\DOCKER GITLAB\docker\jumio-proxy\pilot\` — NodePort 30241, image `jumioproxy-pilot:1.08` (`imagePullPolicy: Always`), context `/jumio-proxy`
 - **pilot-v2 folder**: `C:\PROJECTS\DOCKER GITLAB\docker\jumio-proxy\pilot-v2\` — NodePort 30242, image `jumioproxy-pilot-v2:1.02`, context `/jumio-proxy`
-- **Prod yaml**: `production/deployment-prod.yaml` — NodePort 30240
+- **Prod folder**: `production/` — `deployment.yaml` + `configmap.yaml` + `nginx/nginx-prod.conf` — all ready ✅
+- **Prod image**: `localhost:30445/jumioproxy:1.0` — needs build + push
+- **Prod namespace**: `jumioproxy` — needs `kubectl create namespace jumioproxy`
 - **Nginx**: Combined location block handles both `/api/v1/` and `/actuator/` via dual rewrite directives
 - **ConfigMap**: single source of truth for per-project Jumio + MTSS + clientCallbackUrl config
+- **API key design**: Global list (`JUMIO_PROXY_API_KEYS`), not per-project. New tenant = append new key. Validated by `ApiKeyFilter.java` against `X-Api-Key` header.
 - **Callback URL (pilot)**: `https://digitalid.msctrustgate.com/jumioproxy_pilot/adacash/api/v1/jumio/callback`
 - **Callback URL (pilot-v2)**: `https://digitalid.msctrustgate.com/jumioproxy_pilotv2/adacash/api/v1/jumio/callback`
-- **Session endpoint (pilot)**: `POST https://digitalid.msctrustgate.com/jumioproxy_pilot/adacash/api/v1/jumio/session`
-- **Session endpoint (pilot-v2)**: `POST https://digitalid.msctrustgate.com/jumioproxy_pilotv2/adacash/api/v1/jumio/session`
+- **Callback URL (prod)**: `https://digitalid.msctrustgate.com/jumioproxy/adacash/api/v1/jumio/callback`
+- **Session endpoint (prod)**: `POST https://digitalid.msctrustgate.com/jumioproxy/adacash/api/v1/jumio/session`
 
 ---
-**Last Updated**: 2026-06-19 | **Position**: #1/10 Active
+**Last Updated**: 2026-06-23 | **Position**: #3/10 Active

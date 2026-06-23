@@ -8,7 +8,7 @@
 |-----|---------|--------------|----------|------------|--------|
 | 1 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-06-18 | TBD | 75% | ECDH P-256 migration complete ✅ forward secrecy live — next: E2E re-test with new EC keys |
 | 2 | **[MyTrustSignerXML-MITI](./active/mytrustsignerxml-miti.md)** | 2026-06-18 | 2026-06-01 | 100% | ✅ CLOSED — All fixes delivered. PROD package handed over to MITI (self-deploy). |
-| 3 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-06-19 | TBD | 98% | v1 + v2 pilots live ✅ imagePullPolicy fixed ✅ — pending Adacash E2E confirmation |
+| 3 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-06-23 | TBD | 99% | PROD YAMLs ready ✅ — pending Docker build + K8s deploy + nginx update |
 | 4 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-06-03 | 2026-06-05 ⚠️ | 0% | Source not yet retrieved from server |
 | 5 | **[TGCA](./active/tgca.md)** | 2026-05-25 | TBD | 0% | Registered — pending study |
 | 6 | **[RSS Self Service Portal](./active/rss-self-service-portal.md)** | 2026-05-12 | Q2 2026 | 80% | Phase 1 complete — next: browser test + billing integration |
@@ -26,4 +26,4 @@
 ---
 ## System Status
 - **Total Projects**: 11 (7 active + 4 archived)
-- **Last Updated**: 2026-06-19 - Saved jumio-proxy-integration (imagePullPolicy fix, both pilots confirmed working)
+- **Last Updated**: 2026-06-23 - Saved jumio-proxy-integration (PROD YAMLs ready — configmap, deployment, nginx snippet)
