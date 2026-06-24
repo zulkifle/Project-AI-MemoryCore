@@ -8,14 +8,14 @@
 
 ## Active Project
 - **Name**: TG SeQureMail
-- **Resumed**: 2026-06-15
-- **Context**: Key API (Spring Boot 3.2 + MySQL + Flyway) scaffolded and running via `docker compose up`. Chrome extension updated to auto-lookup/register keys via API. Two bugs fixed: double Encrypt toggle (sqmDone flag timing) + JSON parse error (Gmail smart-quote corruption → fixed by base64-encoding envelope payload).
+- **Resumed**: 2026-06-23
+- **Context**: ECDH P-256 + AES-256-GCM migration complete (v2.0). Forward secrecy live. Stale RSA key migration auto-handled. Docs updated (design-v2.md v1.5 + SETUP.md rewritten).
 - **Next Steps**:
   1. Reload extension in Chrome (`chrome://extensions` → ↻ refresh)
-  2. Open Gmail → extension popup → enter `kiflezul94@gmail.com` → Register
-  3. Test end-to-end: Compose → 🔒 Encrypt toggle → Send → Decrypt
-  4. Verify no double toggle, no JSON error on decrypt
-- **Repo**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-poc-v1\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-key-api\`
+  2. Confirm ECDH keypair auto-generated (no RSA artifacts in storage)
+  3. Register new EC public key via popup (`kiflezul94@gmail.com`)
+  4. E2E re-test: Compose → 🔒 Encrypt → Send → Decrypt (with attachment)
+- **Repo**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-poc-v1\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\`
 - **API**: `http://localhost:8080` — run via `docker compose up` in `seqremail-key-api\`
 
 ## Previous Active Project
@@ -61,7 +61,7 @@
 
 ## Key File Paths
 - SeQureMail Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-poc-v1\`
-- SeQureMail Key API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-key-api\`
+- SeQureMail Key API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\`
 - RSS Portal: `C:\laragon\www\remote-signing-portal`
 - MyTrustID: `C:\repos\MyTrustIDv1_AATL-GENERIC\`
 
