@@ -5,57 +5,53 @@
 - **Type**: Chrome Extension (Manifest V3)
 - **Client**: Any Gmail user (external-facing POC)
 - **Period**: 2026-05-21 - Active
-- **Tech Stack**: Frontend: Chrome Extension MV3 (thin client, no local crypto) | Backend: SeQureMail Key API (Spring Boot 3.2 + MySQL + Flyway) — acts as Software HSM | Crypto: ECDH P-256 + AES-256-GCM (server-side, pure JDK) | Auth: OTP email verification (JavaMailSender)
-- **Completion**: 94%
-- **Duration**: 11.5 hours
+- **Tech Stack**: Frontend: Chrome Extension MV3 (thin client) | Backend: SeQureMail Key API (Spring Boot 3.2 + MySQL + Flyway) — Software HSM | Crypto: ECDH P-256 + AES-256-GCM double-envelope (server-side, pure JDK) | Auth: OTP email verification (JavaMailSender)
+- **Completion**: 97%
+- **Duration**: 14 hours
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-06-24 (session 4) - Auto-provision receiver keypair on first encrypt
+- **Last Session**: 2026-06-25 (session 5) - Double-envelope + claimed flag (full security model complete)
 - **Next Steps**:
-  1. Reload extension in `chrome://extensions`
-  2. Test OTP registration → server generates keypair (verify popup shows "Registered")
-  3. E2E: Compose → Encrypt (server, auto-provisions receiver if new) → Send → Decrypt (server)
-- **Known Issues**: None
+  1. Truncate DB + reload extension → full E2E test (register sender → send → receiver registers via OTP → both decrypt)
+  2. Verify `getCurrentGmailEmail()` correctly picks sender vs receiver block on same browser
+- **Known Issues**: None — security model complete
 
 ## Session History (Last 5)
 
+### 2026-06-25 (Session 5) - Double-Envelope + Claimed Flag
+- **Changes**: **Double-envelope**: `CryptoServiceImpl.encrypt()` now encrypts plaintext TWICE — `recipient` block (receiver's public key + ephemeral) and `sender` block (sender's public key + ephemeral). Each party decrypts with their own private key. `EncryptRequest` + `CryptoService.encrypt()` signature updated to include `senderEmail`. `CryptoController.encrypt()` passes both emails. `crypto.js` + `content_script.js` updated to pass `senderEmail` from `sqmEmail`. **Block selection**: `handleDecrypt` uses `getCurrentGmailEmail()` (reads `document.title` — format: "Inbox - email@gmail.com - Gmail") to detect active Gmail account; compares against `envelope.from` to pick sender or recipient block. **Claimed flag**: V4 Flyway migration (`claimed BOOLEAN DEFAULT FALSE`), `UserKey.claimed` field, `CryptoService.claimKeyPair()` + `CryptoServiceImpl` implementation. Auto-provisioned keys have `claimed=false` — decrypt blocked until OTP registration sets `claimed=true`. `CryptoController.generate()` calls `claimKeyPair()` after keypair creation. `decrypt()` rejects unclaimed keys with 400. **Other fixes**: sender-registration guard in encrypt onclick, modal text updated ("Server-side HSM"), `generateKeyPair()` made idempotent (existing keypair returns unchanged). All verified: receiver blocked before claim ✅, receiver decrypts after OTP ✅, sender decrypts via sender block ✅, stranger blocked ✅.
+- **Time Spent**: ~2.5 hours
+
 ### 2026-06-24 (Session 4) - Auto-Provision Receiver Keypair
-- **Changes**: `CryptoServiceImpl.encrypt()` no longer throws 404 when recipient has no key. Instead: auto-generates EC P-256 keypair for recipient, stores it in `user_keys`, then encrypts normally. Sends a best-effort notification email to recipient ("You have a secure message waiting — install SeQureMail to read it"). Notification failure is non-fatal (caught + logged as WARN). Added `JavaMailSender` + `@Value fromEmail` injection. Fixed compile error (missing `OtpException` import after refactor). Docker rebuilt + round-trip verified: encrypt to brand-new email → auto-provision → decrypt ✅.
+- **Changes**: `CryptoServiceImpl.encrypt()` auto-generates EC P-256 keypair for unregistered recipients, sends best-effort notification email. `generateKeyPair()` made idempotent (returns existing if complete keypair present). Fixed missing `OtpException` import. Docker rebuilt + verified.
 - **Time Spent**: ~30 min
 
 ### 2026-06-24 (Session 3) - Server-Side HSM Architecture
-- **Changes**: Full architectural pivot — all ECDH P-256 + AES-256-GCM crypto moved to Key API server (private key never touches browser). **Backend**: V3 Flyway migration (`private_key TEXT` column on `user_keys`), `UserKey.java` updated (`privateKey` field), `CryptoService` interface + `CryptoServiceImpl` (pure JDK — `KeyPairGenerator` EC secp256r1, `KeyAgreement` ECDH, SHA-256 key derivation, AES-256-GCM), `CryptoController` (`POST /api/crypto/generate`, `/encrypt`, `/decrypt`), `EncryptRequest` + `DecryptRequest` DTOs. **Extension**: `background.js` simplified (thin client, no local crypto), `keystore.js` stripped to contacts-only (no keypair storage), `crypto.js` rewritten as API wrapper (`encryptMessage`→server, `decryptMessage`→server, `encryptFile`/`decryptFile` remain local for file attachments), `content_script.js` (4 edits: removed tryAutoRegister, encrypt uses email not JWK, decrypt calls API directly, removed sender-key auto-save), `popup.js` (calls `/api/crypto/generate` after OTP verify — no browser key; Share button fetches public key from `/api/keys/lookup`; status reflects registered vs unregistered). Docker rebuilt — V3 migration applied. E2E API verified: generate ✅ encrypt ✅ decrypt ✅ (round-trip "Hello SeQureMail server-side HSM!" confirmed).
+- **Changes**: Full pivot — all crypto moved to Key API server. V3 migration (`private_key TEXT`), `CryptoService` + `CryptoServiceImpl` (pure JDK ECDH P-256 + AES-256-GCM), `CryptoController` (generate/encrypt/decrypt). Extension rewritten as thin client: `background.js`, `keystore.js`, `crypto.js`, `content_script.js`, `popup.js`. Docker rebuilt + E2E verified.
 - **Time Spent**: ~2.5 hours
 
-### 2026-06-24 (Session 2) - OTP Email Verification (Full Implementation)
-- **Changes**: Completed full OTP email verification feature for Key API. **Backend**: `OtpService` + `OtpServiceImpl` (JavaMailSender, SecureRandom 6-digit code, cooldown guard, upsert, token generation on verify), `OtpRequest`/`OtpVerifyRequest` DTOs, `KeyController` updated with `POST /api/keys/request-otp` + `POST /api/keys/verify-otp`, `GlobalExceptionHandler` updated (`OtpException` → 400, `TooManyRequestsException` → 429). Docker rebuilt (port conflict with old `seqremail-key-api` containers resolved). All 4 endpoints tested: register ✅, lookup ✅, request-otp ✅, cooldown 429 ✅, wrong OTP 400 ✅. **Extension**: `popup.js` + `popup.html` — 3-step OTP registration flow. Fixed popup-close state loss by persisting `sqmOtpPending` to `chrome.storage.local`.
+### 2026-06-24 (Session 2) - OTP Email Verification
+- **Changes**: Full OTP flow — `OtpService` + `OtpServiceImpl` (JavaMailSender, SecureRandom, cooldown, upsert, UUID token). `KeyController` + `GlobalExceptionHandler` updated. Extension: 3-step popup flow, `sqmOtpPending` persisted to storage for popup-close recovery.
 - **Time Spent**: ~2 hours
 
-### 2026-06-18 - ECDH P-256 Migration + Documentation Update
-- **Changes**: Upgraded crypto algorithm from RSA-OAEP-2048 to ECDH P-256 + AES-256-GCM. `crypto.js` completely rewritten — ephemeral keypair per email for forward secrecy, `_deriveAESKey(ECDH)` replaces RSA wrap/unwrap, file DEK embedded in encrypted body JSON. `background.js`: removed `SQM_UNWRAP_DEK` handler; `ensureKeypair()` clears stale RSA artifacts. `keystore.js`: `loadPrivateKey()` rejects `kty !== 'EC'`. `manifest.json`: version bumped to 2.0. `content_script.js`: envelope format `poc-v2`. Documentation: `seqremail-poc-design-v2.md` updated v1.4→v1.5; `SETUP.md` fully rewritten.
+### 2026-06-18 - ECDH P-256 Migration
+- **Changes**: RSA-OAEP-2048 → ECDH P-256 + AES-256-GCM. `crypto.js` rewritten (ephemeral keypair per email, forward secrecy, DEK in body). Stale RSA key rejection. `manifest.json` v2.0. Docs updated (design-v2.md v1.5, SETUP.md rewritten).
 - **Time Spent**: ~2 hours
-
-### 2026-06-15 (2) - Key API Live + Bug Fixes
-- **Changes**: API confirmed working via docker compose (MySQL port 3307, Flyway V1 on startup). Fixed Dockerfile to use Maven Docker image. Two extension bugs fixed: (1) double Encrypt toggle — moved `sqmDone='true'` to top of `injectEncryptToggle`; (2) decrypt JSON error — Gmail converts `"` to smart quotes → fixed by base64-encoding entire payload with `btoa()`.
-- **Time Spent**: ~1 hour
 
 ## Historical Summary
-Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryption via Gmail DOM interception. Over 11 sessions spanning one month, evolved from shared passphrase (Level 0) → RSA-OAEP keypair (Level 1) → ECDH P-256 client-side → ECDH P-256 server-side HSM. Key milestones: (1) Full SDD written 2026-05-26; (2) SDD formalised 2026-06-11 with 12 Mermaid diagrams; (3) POC redesigned to Level 1 2026-06-15 — DOM-based send/read, no OAuth2; (4) Key API backend live 2026-06-15 (Spring Boot + MySQL + Flyway, register + lookup endpoints); (5) ECDH P-256 migration 2026-06-18 — RSA-OAEP removed, forward secrecy; (6) OTP email verification 2026-06-24 — JavaMailSender, cooldown, popup state persistence; (7) Server-side HSM 2026-06-24 — all crypto moved to server, pure JDK, extension thin client; (8) Auto-provision receiver keypair 2026-06-24 — encrypt auto-generates key for unregistered recipients + sends notification email.
+Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryption via Gmail DOM interception. Over 12+ sessions spanning one month, evolved from shared passphrase (Level 0) → RSA-OAEP keypair (Level 1) → ECDH P-256 client-side → ECDH P-256 server-side HSM with full security model. Key milestones: (1) Full SDD written 2026-05-26; (2) SDD formalised 2026-06-11; (3) POC redesigned to Level 1 2026-06-15 — DOM-based, no OAuth2; (4) Key API backend live 2026-06-15; (5) ECDH P-256 migration 2026-06-18; (6) OTP email verification 2026-06-24; (7) Server-side HSM 2026-06-24; (8) Auto-provision receiver keypair 2026-06-24; (9) Double-envelope (sender + receiver blocks) + claimed flag 2026-06-25 — full security model: each party uses own key, unclaimed keys blocked until OTP registration.
 
 ## Technical Notes
 - **Repository**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\extension\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\`
 - **Design Doc (POC)**: `C:\PROJECTS\SEQURE MAIL\Documentation\POC\seqremail-poc-design-v2.md` (v1.5)
-- **Design Doc (Full SDD)**: `C:\PROJECTS\SEQURE MAIL\Documentation\Others\2026-05-26-seqremail-design.md`
-- **Key Dependencies**: Chrome Extension MV3, SeQureMail Key API (Spring Boot + MySQL), JavaMailSender (SMTP), Web Crypto API (file-only), TGCA (Trustgate CA — production)
+- **Key Dependencies**: Chrome Extension MV3, SeQureMail Key API (Spring Boot + MySQL), JavaMailSender (SMTP), Web Crypto API (file-only)
 - **Crypto Plan**:
-  - ~~v1 MVP: RSA-OAEP-2048 wraps AES-256-GCM DEK~~ (completed, superseded)
-  - ~~v2 client-side: ECDH P-256 + AES-256-GCM — ephemeral keypair, forward secrecy~~ (superseded)
-  - **v3 (current): SERVER-ECDH-P256-AES-256-GCM** — server-side HSM model, private key stays on Key API, extension is thin client
-  - v4 planned: ML-KEM-768 / Kyber (post-quantum)
-- **Envelope Format v3**: `seqremail: poc-v3`, algorithm: `SERVER-ECDH-P256-AES-256-GCM`, fields: `ephemeralPublicKey` (JWK), `iv` (base64), `ciphertext` (base64). File attachments: local AES-256-GCM, DEK embedded inside server-encrypted body.
-- **HSM Design**: Key API generates EC P-256 keypair server-side after OTP verification. Public JWK returned to caller. Private JWK stored in `user_keys.private_key` (TEXT). All encrypt/decrypt operations happen on server. Extension never sees private key.
-- **Flyway Migrations**: V1 (user_keys), V2 (otp_verifications), V3 (private_key column on user_keys)
+  - ~~v1: RSA-OAEP-2048~~ | ~~v2: ECDH P-256 client-side~~ | **v3 (current): SERVER-ECDH-P256-AES-256-GCM double-envelope** | v4 planned: ML-KEM-768
+- **Envelope Format v3 (double)**: `seqremail: poc-v3`, `from`, `to`, `recipient: {ephemeralPublicKey, iv, ciphertext}`, `sender: {ephemeralPublicKey, iv, ciphertext}`
+- **Security Model**: Auto-provision (`claimed=false`) → receiver registers via OTP → `claimed=true` → decrypt unlocked. Each party decrypts with own private key via own block. Strangers blocked by `selectBlock()` check.
+- **Gmail Account Detection**: `getCurrentGmailEmail()` parses `document.title` ("Inbox - email@gmail.com - Gmail") to determine active account for block selection.
+- **Flyway Migrations**: V1 (user_keys) | V2 (otp_verifications) | V3 (private_key) | V4 (claimed flag)
 
 ---
-**Last Updated**: 2026-06-24 (session 4) | **Position**: #1/10 Active
+**Last Updated**: 2026-06-25 (session 5) | **Position**: #1/10 Active
