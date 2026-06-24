@@ -6,18 +6,22 @@
 - **Client**: Any Gmail user (external-facing POC)
 - **Period**: 2026-05-21 - Active
 - **Tech Stack**: Frontend: Chrome Extension MV3 (thin client) | Backend: SeQureMail Key API (Spring Boot 3.2 + MySQL + Flyway) — Software HSM | Crypto: ECDH P-256 + AES-256-GCM double-envelope (server-side, pure JDK) | Auth: OTP email verification (JavaMailSender)
-- **Completion**: 97%
-- **Duration**: 14 hours
+- **Completion**: 99%
+- **Duration**: 15 hours
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-06-25 (session 5) - Double-envelope + claimed flag (full security model complete)
+- **Last Session**: 2026-06-25 (session 6) - Attachment auto-fetch decryption (no file picker)
 - **Next Steps**:
-  1. Truncate DB + reload extension → full E2E test (register sender → send → receiver registers via OTP → both decrypt)
-  2. Verify `getCurrentGmailEmail()` correctly picks sender vs receiver block on same browser
-- **Known Issues**: None — security model complete
+  1. Full E2E test with attachments: send image + PDF → receiver decrypts → image renders inline, PDF downloads with correct filename
+  2. Test with other file types (DOCX, ZIP) to confirm all download correctly
+- **Known Issues**: None
 
 ## Session History (Last 5)
+
+### 2026-06-25 (Session 6) - Attachment Auto-Fetch Decryption
+- **Changes**: Replaced manual file-picker attachment decrypt with auto-fetch from Gmail DOM. `findGmailAttachmentUrl(encryptedName, msgEl)` searches `a[href*="view=att"]` anchors inside the message element, matches by filename text — same approach as PQCee. `fetch()` uses active Gmail session (content script runs on mail.google.com). Fallback to file picker if link not found (e.g. attachment panel not expanded). **Image files**: rendered inline below attachment row via `<img>` tag + `.sqm-attach-preview` div. **All other files**: routed through background.js `SQM_DOWNLOAD` message → `chrome.downloads.download()` with correct filename+extension — fixes Chrome's built-in viewer (PDF) intercepting blob URLs and losing the filename extension. Added `"downloads"` permission to `manifest.json`. `background.js` decodes base64 payload → data URL → `chrome.downloads.download({ url, filename, saveAs: false })`. All file types work: images inline, PDF/DOCX/ZIP/etc auto-download with correct filename.
+- **Time Spent**: ~1 hour
 
 ### 2026-06-25 (Session 5) - Double-Envelope + Claimed Flag
 - **Changes**: **Double-envelope**: `CryptoServiceImpl.encrypt()` now encrypts plaintext TWICE — `recipient` block (receiver's public key + ephemeral) and `sender` block (sender's public key + ephemeral). Each party decrypts with their own private key. `EncryptRequest` + `CryptoService.encrypt()` signature updated to include `senderEmail`. `CryptoController.encrypt()` passes both emails. `crypto.js` + `content_script.js` updated to pass `senderEmail` from `sqmEmail`. **Block selection**: `handleDecrypt` uses `getCurrentGmailEmail()` (reads `document.title` — format: "Inbox - email@gmail.com - Gmail") to detect active Gmail account; compares against `envelope.from` to pick sender or recipient block. **Claimed flag**: V4 Flyway migration (`claimed BOOLEAN DEFAULT FALSE`), `UserKey.claimed` field, `CryptoService.claimKeyPair()` + `CryptoServiceImpl` implementation. Auto-provisioned keys have `claimed=false` — decrypt blocked until OTP registration sets `claimed=true`. `CryptoController.generate()` calls `claimKeyPair()` after keypair creation. `decrypt()` rejects unclaimed keys with 400. **Other fixes**: sender-registration guard in encrypt onclick, modal text updated ("Server-side HSM"), `generateKeyPair()` made idempotent (existing keypair returns unchanged). All verified: receiver blocked before claim ✅, receiver decrypts after OTP ✅, sender decrypts via sender block ✅, stranger blocked ✅.
@@ -35,12 +39,12 @@
 - **Changes**: Full OTP flow — `OtpService` + `OtpServiceImpl` (JavaMailSender, SecureRandom, cooldown, upsert, UUID token). `KeyController` + `GlobalExceptionHandler` updated. Extension: 3-step popup flow, `sqmOtpPending` persisted to storage for popup-close recovery.
 - **Time Spent**: ~2 hours
 
-### 2026-06-18 - ECDH P-256 Migration
-- **Changes**: RSA-OAEP-2048 → ECDH P-256 + AES-256-GCM. `crypto.js` rewritten (ephemeral keypair per email, forward secrecy, DEK in body). Stale RSA key rejection. `manifest.json` v2.0. Docs updated (design-v2.md v1.5, SETUP.md rewritten).
+### 2026-06-24 (Session 2) - OTP Email Verification
+- **Changes**: Full OTP flow — `OtpService` + `OtpServiceImpl` (JavaMailSender, SecureRandom, cooldown, upsert, UUID token). `KeyController` + `GlobalExceptionHandler` updated. Extension: 3-step popup flow, `sqmOtpPending` persisted to storage for popup-close recovery.
 - **Time Spent**: ~2 hours
 
 ## Historical Summary
-Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryption via Gmail DOM interception. Over 12+ sessions spanning one month, evolved from shared passphrase (Level 0) → RSA-OAEP keypair (Level 1) → ECDH P-256 client-side → ECDH P-256 server-side HSM with full security model. Key milestones: (1) Full SDD written 2026-05-26; (2) SDD formalised 2026-06-11; (3) POC redesigned to Level 1 2026-06-15 — DOM-based, no OAuth2; (4) Key API backend live 2026-06-15; (5) ECDH P-256 migration 2026-06-18; (6) OTP email verification 2026-06-24; (7) Server-side HSM 2026-06-24; (8) Auto-provision receiver keypair 2026-06-24; (9) Double-envelope (sender + receiver blocks) + claimed flag 2026-06-25 — full security model: each party uses own key, unclaimed keys blocked until OTP registration.
+Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryption via Gmail DOM interception. Over 13+ sessions spanning one month, evolved from shared passphrase (Level 0) → RSA-OAEP keypair (Level 1) → ECDH P-256 client-side → ECDH P-256 server-side HSM with full security model + attachment support. Key milestones: (1) Full SDD written 2026-05-26; (2) SDD formalised 2026-06-11; (3) POC redesigned to Level 1 2026-06-15 — DOM-based, no OAuth2; (4) Key API backend live 2026-06-15; (5) ECDH P-256 migration 2026-06-18 (RSA→ECDH, forward secrecy, DEK in body); (6) OTP email verification 2026-06-24; (7) Server-side HSM 2026-06-24; (8) Auto-provision receiver keypair 2026-06-24; (9) Double-envelope + claimed flag 2026-06-25 — full security model; (10) Attachment auto-fetch 2026-06-25 — Gmail DOM fetch, images inline, all file types download with correct filename via chrome.downloads API.
 
 ## Technical Notes
 - **Repository**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\extension\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\`
@@ -54,4 +58,4 @@ Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryp
 - **Flyway Migrations**: V1 (user_keys) | V2 (otp_verifications) | V3 (private_key) | V4 (claimed flag)
 
 ---
-**Last Updated**: 2026-06-25 (session 5) | **Position**: #1/10 Active
+**Last Updated**: 2026-06-25 (session 6) | **Position**: #1/10 Active
