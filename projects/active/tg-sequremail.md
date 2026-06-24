@@ -6,19 +6,23 @@
 - **Client**: Any Gmail user (external-facing POC)
 - **Period**: 2026-05-21 - Active
 - **Tech Stack**: Frontend: Chrome Extension MV3 (thin client, no local crypto) | Backend: SeQureMail Key API (Spring Boot 3.2 + MySQL + Flyway) — acts as Software HSM | Crypto: ECDH P-256 + AES-256-GCM (server-side, pure JDK) | Auth: OTP email verification (JavaMailSender)
-- **Completion**: 92%
-- **Duration**: 11 hours
+- **Completion**: 94%
+- **Duration**: 11.5 hours
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-06-24 (session 3) - Server-side HSM architecture complete + E2E verified
+- **Last Session**: 2026-06-24 (session 4) - Auto-provision receiver keypair on first encrypt
 - **Next Steps**:
   1. Reload extension in `chrome://extensions`
   2. Test OTP registration → server generates keypair (verify popup shows "Registered")
-  3. E2E: Compose → Encrypt (server) → Send → Decrypt (server) → view plaintext
-- **Known Issues**: None — server-side HSM complete, E2E API calls all verified
+  3. E2E: Compose → Encrypt (server, auto-provisions receiver if new) → Send → Decrypt (server)
+- **Known Issues**: None
 
 ## Session History (Last 5)
+
+### 2026-06-24 (Session 4) - Auto-Provision Receiver Keypair
+- **Changes**: `CryptoServiceImpl.encrypt()` no longer throws 404 when recipient has no key. Instead: auto-generates EC P-256 keypair for recipient, stores it in `user_keys`, then encrypts normally. Sends a best-effort notification email to recipient ("You have a secure message waiting — install SeQureMail to read it"). Notification failure is non-fatal (caught + logged as WARN). Added `JavaMailSender` + `@Value fromEmail` injection. Fixed compile error (missing `OtpException` import after refactor). Docker rebuilt + round-trip verified: encrypt to brand-new email → auto-provision → decrypt ✅.
+- **Time Spent**: ~30 min
 
 ### 2026-06-24 (Session 3) - Server-Side HSM Architecture
 - **Changes**: Full architectural pivot — all ECDH P-256 + AES-256-GCM crypto moved to Key API server (private key never touches browser). **Backend**: V3 Flyway migration (`private_key TEXT` column on `user_keys`), `UserKey.java` updated (`privateKey` field), `CryptoService` interface + `CryptoServiceImpl` (pure JDK — `KeyPairGenerator` EC secp256r1, `KeyAgreement` ECDH, SHA-256 key derivation, AES-256-GCM), `CryptoController` (`POST /api/crypto/generate`, `/encrypt`, `/decrypt`), `EncryptRequest` + `DecryptRequest` DTOs. **Extension**: `background.js` simplified (thin client, no local crypto), `keystore.js` stripped to contacts-only (no keypair storage), `crypto.js` rewritten as API wrapper (`encryptMessage`→server, `decryptMessage`→server, `encryptFile`/`decryptFile` remain local for file attachments), `content_script.js` (4 edits: removed tryAutoRegister, encrypt uses email not JWK, decrypt calls API directly, removed sender-key auto-save), `popup.js` (calls `/api/crypto/generate` after OTP verify — no browser key; Share button fetches public key from `/api/keys/lookup`; status reflects registered vs unregistered). Docker rebuilt — V3 migration applied. E2E API verified: generate ✅ encrypt ✅ decrypt ✅ (round-trip "Hello SeQureMail server-side HSM!" confirmed).
@@ -36,12 +40,8 @@
 - **Changes**: API confirmed working via docker compose (MySQL port 3307, Flyway V1 on startup). Fixed Dockerfile to use Maven Docker image. Two extension bugs fixed: (1) double Encrypt toggle — moved `sqmDone='true'` to top of `injectEncryptToggle`; (2) decrypt JSON error — Gmail converts `"` to smart quotes → fixed by base64-encoding entire payload with `btoa()`.
 - **Time Spent**: ~1 hour
 
-### 2026-06-15 - Key API Backend + Extension Auto-Lookup
-- **Changes**: Scaffolded `seqremail-key-api` — Spring Boot 3.2 + MySQL + Flyway. Full layered architecture: Controller → Service → Repository → Entity. Two endpoints: `POST /api/keys/register` and `GET /api/keys/lookup?email=x`. CORS open for Chrome extension. Docker + docker-compose included. Extension updated for auto-fetch from API.
-- **Time Spent**: ~1 hour
-
 ## Historical Summary
-Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryption via Gmail DOM interception. Over 10 sessions spanning one month, evolved from shared passphrase (Level 0) → RSA-OAEP keypair (Level 1) → ECDH P-256 client-side → ECDH P-256 server-side HSM. Key milestones: (1) Full SDD written 2026-05-26; (2) SDD formalised 2026-06-11 with 12 Mermaid diagrams; (3) POC redesigned to Level 1 2026-06-15 — DOM-based send/read, no OAuth2; (4) Key API backend live 2026-06-15; (5) ECDH P-256 migration 2026-06-18 — RSA-OAEP removed, forward secrecy; (6) OTP email verification 2026-06-24 — JavaMailSender, cooldown, popup state persistence; (7) Server-side HSM 2026-06-24 — all crypto moved to server, pure JDK implementation, extension is thin client.
+Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryption via Gmail DOM interception. Over 11 sessions spanning one month, evolved from shared passphrase (Level 0) → RSA-OAEP keypair (Level 1) → ECDH P-256 client-side → ECDH P-256 server-side HSM. Key milestones: (1) Full SDD written 2026-05-26; (2) SDD formalised 2026-06-11 with 12 Mermaid diagrams; (3) POC redesigned to Level 1 2026-06-15 — DOM-based send/read, no OAuth2; (4) Key API backend live 2026-06-15 (Spring Boot + MySQL + Flyway, register + lookup endpoints); (5) ECDH P-256 migration 2026-06-18 — RSA-OAEP removed, forward secrecy; (6) OTP email verification 2026-06-24 — JavaMailSender, cooldown, popup state persistence; (7) Server-side HSM 2026-06-24 — all crypto moved to server, pure JDK, extension thin client; (8) Auto-provision receiver keypair 2026-06-24 — encrypt auto-generates key for unregistered recipients + sends notification email.
 
 ## Technical Notes
 - **Repository**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\extension\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\`
@@ -58,4 +58,4 @@ Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryp
 - **Flyway Migrations**: V1 (user_keys), V2 (otp_verifications), V3 (private_key column on user_keys)
 
 ---
-**Last Updated**: 2026-06-24 (session 3) | **Position**: #1/10 Active
+**Last Updated**: 2026-06-24 (session 4) | **Position**: #1/10 Active
