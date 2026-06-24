@@ -3,20 +3,19 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-06-18
-**Session Focus**: MTSA v1.0.8.2-JKR — JKR meeting recall + OTP expiry config change (300s → 60s)
+**Last Activity**: 2026-06-24
+**Session Focus**: TG SeQureMail — Server-side HSM architecture (all crypto moved to Key API server)
 
 ## Active Project
 - **Name**: TG SeQureMail
-- **Resumed**: 2026-06-23
-- **Context**: ECDH P-256 + AES-256-GCM migration complete (v2.0). Forward secrecy live. Stale RSA key migration auto-handled. Docs updated (design-v2.md v1.5 + SETUP.md rewritten).
+- **Resumed**: 2026-06-24
+- **Context**: Server-side HSM model complete. Key API generates + stores EC P-256 keypair (private key never leaves server). Extension is thin client — all encrypt/decrypt calls go to API. OTP verification gates keypair generation. E2E API test confirmed: generate ✅ encrypt ✅ decrypt ✅.
 - **Next Steps**:
   1. Reload extension in Chrome (`chrome://extensions` → ↻ refresh)
-  2. Confirm ECDH keypair auto-generated (no RSA artifacts in storage)
-  3. Register new EC public key via popup (`kiflezul94@gmail.com`)
-  4. E2E re-test: Compose → 🔒 Encrypt → Send → Decrypt (with attachment)
+  2. Register via popup — OTP → verify → server generates keypair
+  3. E2E: Compose → Encrypt (server) → Send → Decrypt (server) → view plaintext
 - **Repo**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\extension\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\`
-- **API**: `http://localhost:8080` — run via `docker compose up` in `seqremail-key-api\`
+- **API**: `http://localhost:8080` — `docker compose up` in `seqremail\key-api\` (already running)
 
 ## Previous Active Project
 - **Name**: MyTrustSignerXML-MITI
