@@ -15,7 +15,7 @@
   2. Confirm ECDH keypair auto-generated (no RSA artifacts in storage)
   3. Register new EC public key via popup (`kiflezul94@gmail.com`)
   4. E2E re-test: Compose → 🔒 Encrypt → Send → Decrypt (with attachment)
-- **Repo**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail-poc-v1\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\`
+- **Repo**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\extension\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\`
 - **API**: `http://localhost:8080` — run via `docker compose up` in `seqremail-key-api\`
 
 ## Previous Active Project
