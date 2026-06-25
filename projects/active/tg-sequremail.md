@@ -11,13 +11,17 @@
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-06-25 (session 6) - Attachment auto-fetch decryption (no file picker)
+- **Last Session**: 2026-06-25 (session 7) - Fresh test + Gmail inbox investigation + DB timezone fix
 - **Next Steps**:
-  1. Full E2E test with attachments: send image + PDF → receiver decrypts → image renders inline, PDF downloads with correct filename
-  2. Test with other file types (DOCX, ZIP) to confirm all download correctly
+  1. Full E2E test — register both accounts, encrypt & send, decrypt on receiver side
+  2. Confirm attachment decrypt still works after fresh registration
 - **Known Issues**: None
 
 ## Session History (Last 5)
+
+### 2026-06-25 (Session 7) - Fresh Test Protocol + Timezone Fix
+- **Changes**: Defined "fresh test" protocol (DELETE user_keys + otp_verifications + clear chrome.storage.local + reload extension) — saved to Jessy memory. Investigated Gmail inbox label issue — diagnosed as Gmail account "Inbox type" setting, not an extension bug. Fixed DB timezone: added `TZ=Asia/Kuala_Lumpur` to both `app` and `db` services in `docker-compose.yml`, changed `serverTimezone=UTC` → `serverTimezone=Asia/Kuala_Lumpur`. Containers restarted — DB now shows MYT (UTC+8) timestamps.
+- **Time Spent**: ~30 min
 
 ### 2026-06-25 (Session 6) - Attachment Auto-Fetch Decryption
 - **Changes**: Replaced manual file-picker attachment decrypt with auto-fetch from Gmail DOM. `findGmailAttachmentUrl(encryptedName, msgEl)` searches `a[href*="view=att"]` anchors inside the message element, matches by filename text — same approach as PQCee. `fetch()` uses active Gmail session (content script runs on mail.google.com). Fallback to file picker if link not found (e.g. attachment panel not expanded). **Image files**: rendered inline below attachment row via `<img>` tag + `.sqm-attach-preview` div. **All other files**: routed through background.js `SQM_DOWNLOAD` message → `chrome.downloads.download()` with correct filename+extension — fixes Chrome's built-in viewer (PDF) intercepting blob URLs and losing the filename extension. Added `"downloads"` permission to `manifest.json`. `background.js` decodes base64 payload → data URL → `chrome.downloads.download({ url, filename, saveAs: false })`. All file types work: images inline, PDF/DOCX/ZIP/etc auto-download with correct filename.
@@ -39,10 +43,6 @@
 - **Changes**: Full OTP flow — `OtpService` + `OtpServiceImpl` (JavaMailSender, SecureRandom, cooldown, upsert, UUID token). `KeyController` + `GlobalExceptionHandler` updated. Extension: 3-step popup flow, `sqmOtpPending` persisted to storage for popup-close recovery.
 - **Time Spent**: ~2 hours
 
-### 2026-06-24 (Session 2) - OTP Email Verification
-- **Changes**: Full OTP flow — `OtpService` + `OtpServiceImpl` (JavaMailSender, SecureRandom, cooldown, upsert, UUID token). `KeyController` + `GlobalExceptionHandler` updated. Extension: 3-step popup flow, `sqmOtpPending` persisted to storage for popup-close recovery.
-- **Time Spent**: ~2 hours
-
 ## Historical Summary
 Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryption via Gmail DOM interception. Over 13+ sessions spanning one month, evolved from shared passphrase (Level 0) → RSA-OAEP keypair (Level 1) → ECDH P-256 client-side → ECDH P-256 server-side HSM with full security model + attachment support. Key milestones: (1) Full SDD written 2026-05-26; (2) SDD formalised 2026-06-11; (3) POC redesigned to Level 1 2026-06-15 — DOM-based, no OAuth2; (4) Key API backend live 2026-06-15; (5) ECDH P-256 migration 2026-06-18 (RSA→ECDH, forward secrecy, DEK in body); (6) OTP email verification 2026-06-24; (7) Server-side HSM 2026-06-24; (8) Auto-provision receiver keypair 2026-06-24; (9) Double-envelope + claimed flag 2026-06-25 — full security model; (10) Attachment auto-fetch 2026-06-25 — Gmail DOM fetch, images inline, all file types download with correct filename via chrome.downloads API.
 
@@ -58,4 +58,4 @@ Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryp
 - **Flyway Migrations**: V1 (user_keys) | V2 (otp_verifications) | V3 (private_key) | V4 (claimed flag)
 
 ---
-**Last Updated**: 2026-06-25 (session 6) | **Position**: #1/10 Active
+**Last Updated**: 2026-06-25 (session 7) | **Position**: #1/10 Active

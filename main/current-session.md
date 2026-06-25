@@ -3,17 +3,16 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-06-24
-**Session Focus**: TG SeQureMail — Server-side HSM architecture (all crypto moved to Key API server)
+**Last Activity**: 2026-06-25
+**Session Focus**: TG SeQureMail — Fresh test protocol, timezone fix, Gmail inbox investigation
 
 ## Active Project
 - **Name**: TG SeQureMail
-- **Resumed**: 2026-06-24
-- **Context**: Server-side HSM model complete. Key API generates + stores EC P-256 keypair (private key never leaves server). Extension is thin client — all encrypt/decrypt calls go to API. OTP verification gates keypair generation. E2E API test confirmed: generate ✅ encrypt ✅ decrypt ✅.
+- **Resumed**: 2026-06-25
+- **Context**: All features complete. Fresh test protocol defined — DB clear + chrome storage clear + extension reload. DB timezone fixed to Asia/Kuala_Lumpur. Gmail inbox label issue confirmed as Gmail account setting (not extension bug). Containers running on `docker compose up` in `key-api\`.
 - **Next Steps**:
-  1. Reload extension in Chrome (`chrome://extensions` → ↻ refresh)
-  2. Register via popup — OTP → verify → server generates keypair
-  3. E2E: Compose → Encrypt (server) → Send → Decrypt (server) → view plaintext
+  1. Full E2E test — register both accounts via OTP, encrypt & send, decrypt on receiver side
+  2. Confirm attachment decrypt still works after fresh registration
 - **Repo**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\extension\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\`
 - **API**: `http://localhost:8080` — `docker compose up` in `seqremail\key-api\` (already running)
 
