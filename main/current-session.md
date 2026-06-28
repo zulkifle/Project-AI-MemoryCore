@@ -8,8 +8,8 @@
 
 ## Active Project
 - **Name**: TG SeQureMail
-- **Resumed**: 2026-06-25
-- **Context**: All features complete. All documentation updated to reflect actual POC v3 architecture (Sections 0–5 + design.md rewritten — replaced stale v1 RSA-OAEP/Gmail-API/OAuth2/TGCA design). Fresh test protocol defined. DB timezone fixed to Asia/Kuala_Lumpur. Gmail inbox label issue confirmed as Gmail account setting (not extension bug). Containers running on `docker compose up` in `key-api\`.
+- **Resumed**: 2026-06-28
+- **Context**: Registration footer added to encrypted email plaintext (4-step guide). Noreply notification email removed — footer is sufficient. Friendly error message when sender not registered. Docs updated: seqremail-design.md v2.1, SETUP.md v3. Multiple fresh tests run and confirmed working.
 - **Next Steps**:
   1. Full E2E test — register both accounts via OTP, encrypt & send, decrypt on receiver side
   2. Confirm attachment decrypt still works after fresh registration

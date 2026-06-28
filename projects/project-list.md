@@ -6,9 +6,9 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-06-25 | TBD | 99% | Attachment auto-fetch ✅ — images inline, all files download with correct filename via chrome.downloads |
+| 1 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-06-28 | TBD | 99% | Registration footer added + noreply email removed + friendly unregistered error + docs v2.1 updated |
 | 2 | **[MyTrustSignerXML-MITI](./active/mytrustsignerxml-miti.md)** | 2026-06-18 | 2026-06-01 | 100% | ✅ CLOSED — All fixes delivered. PROD package handed over to MITI (self-deploy). |
-| 3 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-06-23 | TBD | 99% | PROD YAMLs ready ✅ — pending Docker build + K8s deploy + nginx update |
+| 3 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-06-26 | TBD | 100% | PROD deployed ✅ — image pushed, K8s applied, nginx live, Adacash tested. Pending: branch merge |
 | 4 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-06-03 | 2026-06-05 ⚠️ | 0% | Source not yet retrieved from server |
 | 5 | **[TGCA](./active/tgca.md)** | 2026-05-25 | TBD | 0% | Registered — pending study |
 | 6 | **[RSS Self Service Portal](./active/rss-self-service-portal.md)** | 2026-05-12 | Q2 2026 | 80% | Phase 1 complete — next: browser test + billing integration |
@@ -26,4 +26,4 @@
 ---
 ## System Status
 - **Total Projects**: 11 (7 active + 4 archived)
-- **Last Updated**: 2026-06-25 - Saved TG SeQureMail (attachment auto-fetch — images inline + all files download with correct filename)
+- **Last Updated**: 2026-06-28 - TG SeQureMail — registration footer + noreply removed + UX fixes

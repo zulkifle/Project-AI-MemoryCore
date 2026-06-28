@@ -11,7 +11,7 @@
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-06-25 (session 8) - Documentation full update (all 7 proposal/design docs rewritten to POC v3)
+- **Last Session**: 2026-06-28 (session 9) - Registration footer + removed noreply email + friendly error + docs updated
 - **Next Steps**:
   1. Full E2E test — register both accounts, encrypt & send, decrypt on receiver side
   2. Confirm attachment decrypt still works after fresh registration
@@ -19,28 +19,28 @@
 
 ## Session History (Last 5)
 
+### 2026-06-28 (Session 9) - Registration Footer + UX Fixes
+- **Changes**: **Registration footer**: added plaintext footer below encrypted block in `content_script.js` — 4-step guide (install extension → register → OTP verify → reopen email). Visible to any recipient without the extension. **Removed noreply notification email**: `sendRegistrationNotification()` removed from `CryptoServiceImpl` — unregistered recipients now receive only the encrypted email (footer is sufficient). **Friendly error message**: catch block in `Encrypt & Send` handler now detects `"Key not found"` / `"not found"` errors and shows "You are not registered yet. Click the SeQureMail extension icon to register first." instead of raw server error. **Docs updated**: `seqremail-design.md` bumped to v2.1 (revision history, design decisions, component map SMTP note, encrypt flow, edge cases table, envelope format section), `SETUP.md` updated to v3 (Step 3 rewritten for OTP flow, Step 5 removed, send step updated, troubleshooting refreshed). Multiple fresh tests run (DB truncated via Docker exec).
+- **Time Spent**: ~1 hour
+
 ### 2026-06-25 (Session 8) - Documentation Full Update
-- **Changes**: Rewrote all 7 documentation files in `C:\PROJECTS\SEQURE MAIL\Documentation\Others\` to reflect actual POC v3 architecture. Section 0: updated scope, v2.0 definitions, POC disclaimer. Section 1: server-side HSM rationale, OTP model, ECDH vs RSA decision. Section 2: real components, API endpoints (`/api/crypto/encrypt|decrypt|generate`, `/api/keys/request-otp|verify-otp|lookup`), Flyway V1–V4 schema, Docker Compose config. Section 3: 6 complete data flows (OTP registration, encrypt, decrypt, auto-provision, attachment encrypt, attachment decrypt) with ASCII + Mermaid diagrams. Section 4: full threat model (T1–T10), claimed flag state machine, OTP brute-force math, ECDH double-envelope properties, POC vs production gap table. Section 5: Gmail DOM injection points, popup 3-state UX, compose toggle, send modal, decrypt banner, structured decrypted view, attachment UX, poc-v3 envelope format JSON, parseEnvelope() zero-width char handling. `2026-05-26-seqremail-design.md`: complete v2.0 rewrite replacing original RSA-OAEP/Gmail-API/OAuth2/TGCA design with actual ECDH P-256/OTP/DOM-based/double-envelope/auto-provision/attachment implementation.
+- **Changes**: Rewrote all 7 documentation files to reflect POC v3. `seqremail-design.md` v2.0 complete rewrite — all sections (components, data flows, security model, envelope format). All 5 SDD proposal sections updated. ASCII + Mermaid diagrams, threat model T1–T10, OTP properties, ECDH double-envelope properties, POC vs production gap table, structured decrypted view UX, parseEnvelope() zero-width char handling.
 - **Time Spent**: ~1.5 hours
 
 ### 2026-06-25 (Session 7) - Fresh Test Protocol + Timezone Fix
-- **Changes**: Defined "fresh test" protocol (DELETE user_keys + otp_verifications + clear chrome.storage.local + reload extension) — saved to Jessy memory. Investigated Gmail inbox label issue — diagnosed as Gmail account "Inbox type" setting, not an extension bug. Fixed DB timezone: added `TZ=Asia/Kuala_Lumpur` to both `app` and `db` services in `docker-compose.yml`, changed `serverTimezone=UTC` → `serverTimezone=Asia/Kuala_Lumpur`. Containers restarted — DB now shows MYT (UTC+8) timestamps.
+- **Changes**: Defined "fresh test" protocol (TRUNCATE user_keys + otp_verifications + clear chrome.storage.local + reload extension). Gmail inbox label issue diagnosed as Gmail account setting (not extension bug). Fixed DB timezone: `TZ=Asia/Kuala_Lumpur` in both docker-compose services, `serverTimezone=Asia/Kuala_Lumpur`. Containers restarted — DB now shows MYT timestamps.
 - **Time Spent**: ~30 min
 
 ### 2026-06-25 (Session 6) - Attachment Auto-Fetch Decryption
-- **Changes**: Replaced manual file-picker attachment decrypt with auto-fetch from Gmail DOM. `findGmailAttachmentUrl(encryptedName, msgEl)` searches `a[href*="view=att"]` anchors inside the message element, matches by filename text — same approach as PQCee. `fetch()` uses active Gmail session (content script runs on mail.google.com). Fallback to file picker if link not found (e.g. attachment panel not expanded). **Image files**: rendered inline below attachment row via `<img>` tag + `.sqm-attach-preview` div. **All other files**: routed through background.js `SQM_DOWNLOAD` message → `chrome.downloads.download()` with correct filename+extension — fixes Chrome's built-in viewer (PDF) intercepting blob URLs and losing the filename extension. Added `"downloads"` permission to `manifest.json`. `background.js` decodes base64 payload → data URL → `chrome.downloads.download({ url, filename, saveAs: false })`. All file types work: images inline, PDF/DOCX/ZIP/etc auto-download with correct filename.
+- **Changes**: Replaced manual file-picker with auto-fetch from Gmail DOM (`findGmailAttachmentUrl`). Images rendered inline; all other files via `chrome.downloads.download()` with correct filename+extension. Added `"downloads"` permission to manifest. Fallback to file picker if link not in DOM.
 - **Time Spent**: ~1 hour
 
 ### 2026-06-25 (Session 5) - Double-Envelope + Claimed Flag
-- **Changes**: **Double-envelope**: `CryptoServiceImpl.encrypt()` now encrypts plaintext TWICE — `recipient` block (receiver's public key + ephemeral) and `sender` block (sender's public key + ephemeral). Each party decrypts with their own private key. `EncryptRequest` + `CryptoService.encrypt()` signature updated to include `senderEmail`. `CryptoController.encrypt()` passes both emails. `crypto.js` + `content_script.js` updated to pass `senderEmail` from `sqmEmail`. **Block selection**: `handleDecrypt` uses `getCurrentGmailEmail()` (reads `document.title` — format: "Inbox - email@gmail.com - Gmail") to detect active Gmail account; compares against `envelope.from` to pick sender or recipient block. **Claimed flag**: V4 Flyway migration (`claimed BOOLEAN DEFAULT FALSE`), `UserKey.claimed` field, `CryptoService.claimKeyPair()` + `CryptoServiceImpl` implementation. Auto-provisioned keys have `claimed=false` — decrypt blocked until OTP registration sets `claimed=true`. `CryptoController.generate()` calls `claimKeyPair()` after keypair creation. `decrypt()` rejects unclaimed keys with 400. **Other fixes**: sender-registration guard in encrypt onclick, modal text updated ("Server-side HSM"), `generateKeyPair()` made idempotent (existing keypair returns unchanged). All verified: receiver blocked before claim ✅, receiver decrypts after OTP ✅, sender decrypts via sender block ✅, stranger blocked ✅.
+- **Changes**: Double-envelope: `recipient` + `sender` blocks, independent ephemeral keypairs. Block selection via `getCurrentGmailEmail()` (document.title parse). Claimed flag: V4 Flyway migration, auto-provisioned keys blocked until OTP (`claimed=false→true`). `generateKeyPair()` idempotent. All scenarios verified: receiver blocked before claim ✅, decrypts after OTP ✅, sender decrypts via sender block ✅, stranger blocked ✅.
 - **Time Spent**: ~2.5 hours
 
-### 2026-06-24 (Session 4) - Auto-Provision Receiver Keypair
-- **Changes**: `CryptoServiceImpl.encrypt()` auto-generates EC P-256 keypair for unregistered recipients, sends best-effort notification email. `generateKeyPair()` made idempotent (returns existing if complete keypair present). Fixed missing `OtpException` import. Docker rebuilt + verified.
-- **Time Spent**: ~30 min
-
 ## Historical Summary
-Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryption via Gmail DOM interception. Over 13+ sessions spanning one month, evolved from shared passphrase (Level 0) → RSA-OAEP keypair (Level 1) → ECDH P-256 client-side → ECDH P-256 server-side HSM with full security model + attachment support. Key milestones: (1) Full SDD written 2026-05-26; (2) SDD formalised 2026-06-11; (3) POC redesigned to Level 1 2026-06-15 — DOM-based, no OAuth2; (4) Key API backend live 2026-06-15; (5) ECDH P-256 migration 2026-06-18 (RSA→ECDH, forward secrecy, DEK in body); (6) OTP email verification 2026-06-24; (7) Server-side HSM 2026-06-24; (8) Auto-provision receiver keypair 2026-06-24; (9) Double-envelope + claimed flag 2026-06-25 — full security model; (10) Attachment auto-fetch 2026-06-25 — Gmail DOM fetch, images inline, all file types download with correct filename via chrome.downloads API; (11) Documentation full update 2026-06-25 — all 7 proposal/design docs rewritten to reflect POC v3 (Sections 0–5 + design.md), replacing original RSA-OAEP/Gmail-API/OAuth2/TGCA v1 design.
+Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryption via Gmail DOM interception. Over 14+ sessions spanning one month, evolved from shared passphrase (Level 0) → RSA-OAEP keypair (Level 1) → ECDH P-256 client-side → ECDH P-256 server-side HSM with full security model + attachment support. Key milestones: (1) Full SDD written 2026-05-26; (2) SDD formalised 2026-06-11; (3) POC redesigned to Level 1 2026-06-15 — DOM-based, no OAuth2; (4) Key API backend live 2026-06-15; (5) ECDH P-256 migration 2026-06-18; (6) OTP email verification 2026-06-24; (7) Server-side HSM 2026-06-24; (8) Auto-provision receiver keypair 2026-06-24; (9) Double-envelope + claimed flag 2026-06-25 — full security model; (10) Attachment auto-fetch 2026-06-25; (11) Documentation full update 2026-06-25 — all docs rewritten to POC v3; (12) Registration footer + noreply email removed + friendly error UX 2026-06-28.
 
 ## Technical Notes
 - **Repository**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\extension\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\`
@@ -54,4 +54,4 @@ Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryp
 - **Flyway Migrations**: V1 (user_keys) | V2 (otp_verifications) | V3 (private_key) | V4 (claimed flag)
 
 ---
-**Last Updated**: 2026-06-25 (session 8) | **Position**: #1/10 Active
+**Last Updated**: 2026-06-28 (session 9) | **Position**: #1/10 Active

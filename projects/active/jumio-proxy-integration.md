@@ -6,8 +6,8 @@
 - **Client**: Adacash Sdn Bhd
 - **Period**: 2026-04-16 - Active
 - **Tech Stack**: Java 17 + Spring Boot 3.0.9 + OpenFeign + Maven + Docker + Kubernetes
-- **Completion**: 99%
-- **Duration**: ~13.5 hours
+- **Completion**: 100%
+- **Duration**: ~14 hours
 - **Due Date**: TBD
 
 ## Project Context
@@ -24,17 +24,16 @@
 6. On non-`PROCESSED` status (e.g. `SESSION_EXPIRED`): skip MTSS, forward to Adacash directly
 
 ## Current Status
-- **Last Session**: 2026-06-23 - PROD deployment YAML prep — configmap, deployment, nginx snippet ready
+- **Last Session**: 2026-06-26 - PROD deployed, image pushed, K8s applied, nginx updated, Adacash tested ✅
 - **Next Steps**:
-  1. Build & push Docker image: `docker build -t localhost:30445/jumioproxy:1.0 . && docker push localhost:30445/jumioproxy:1.0`
-  2. `kubectl create namespace jumioproxy`
-  3. `kubectl apply -f configmap.yaml && kubectl apply -f deployment.yaml`
-  4. Add nginx upstream `jumioproxyProd` (port 30240) + location block from `nginx-prod.conf`, reload nginx
-  5. Adacash to re-test on PROD URL
-  6. Merge `feature/per-session-callback-url` → `feature/multitenant-support` after PROD confirmed
+  1. Merge `feature/per-session-callback-url` → `feature/multitenant-support` after PROD confirmed ← remaining
 - **Known Issues**: None
 
 ## Session History (Last 5)
+
+### 2026-06-26 - PROD Deployed & Tested ✅
+- **Changes**: Docker image built and pushed to registry (`localhost:30445/jumioproxy:1.0`). Namespace `jumioproxy` created. `configmap.yaml` + `deployment.yaml` applied to K8s. Nginx updated with `jumioproxyProd` upstream (port 30240) + location block, reloaded. Adacash re-tested on PROD URL — confirmed working end-to-end.
+- **Time Spent**: ~30 min
 
 ### 2026-06-23 - PROD deployment YAML prep
 - **Changes**: Prepared full production deployment package — rewrote `production/deployment.yaml` (namespace `jumioproxy`, image `jumioproxy:1.0`, `imagePullPolicy: Always`, NodePort 30240, prod API keys). Updated `production/configmap.yaml` (prod namespace, prod callback-base-url, prod MTSS endpoint `MyTrustSignerService`, MTSS creds: `RockWingEL_prod`/`RockWing`, Adacash client-callback-url `https://jumio.adacash.my/api/v2/postback`). Created `production/nginx/nginx-prod.conf` (location block + upstream `jumioproxyProd`). Clarified API key design — global list, not per-project; new tenant = new key appended to comma-separated env var. Confirmed via `ApiKeyFilter.java`.
@@ -85,4 +84,4 @@ Project started 2026-04-16 as Trustgate proxy layer between Adacash and Jumio eK
 - **Session endpoint (prod)**: `POST https://digitalid.msctrustgate.com/jumioproxy/adacash/api/v1/jumio/session`
 
 ---
-**Last Updated**: 2026-06-23 | **Position**: #3/10 Active
+**Last Updated**: 2026-06-26 | **Position**: #3/10 Active
