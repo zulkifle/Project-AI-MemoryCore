@@ -4,9 +4,22 @@
 ## Session RAM Status
 **Current Session**: Active
 **Last Activity**: 2026-06-30
-**Session Focus**: MyTrustSignerXML MITI — generated system diagrams (sign/verify/getcertinfo flows + Docker + K8s infra) + created mermaid-diagrams skill (Lv.1)
+**Session Focus**: Petronas handover project — Mermaid diagrams + Dockerized C++ daemon + docker-compose TEST/PROD path switching + openssl notes
 
 ## Active Project
+- **Name**: Petronas Handover
+- **Resumed**: 2026-06-30
+- **Path**: `C:\PROJECTS\HANDOVER PROJECT\Petronas\source code\amg backup as per 29-06-2026\`
+- **Context**: C++ Linux daemon (PetronasService) — EMV card SSAD signing via SafeNet HSM (PKCS#11). Dockerized with multi-stage build from source. docker-compose has TEST (Windows relative paths) vs PRODUCTION (Linux absolute paths) — swap comments to switch.
+- **Next Steps**:
+  1. Add `HSM=0` under `[System]` in `Softwares\Petronas\Petronas.ini` before testing
+  2. Run `docker compose up` and check logs
+  3. Test TCP port 6803 with PowerShell (`Test-NetConnection localhost -Port 6803`)
+  4. When ready for production: swap commented volume blocks in docker-compose.yaml
+- **Files created**: `Dockerfile`, `docker-compose.yaml`, `entrypoint.sh`, `STEP.txt`, `docs/petronas-diagrams.md`
+- **OpenSSL note**: uses `openssl rsautl` (CLI shell calls, not linked lib). Container has OpenSSL 3.x — rsautl still works with deprecation warnings. Prod server uses `openssl1` alias (OpenSSL 1.x).
+
+## Previous Active Project
 - **Name**: TG SeQureMail
 - **Resumed**: 2026-06-28
 - **Context**: Registration footer added to encrypted email plaintext (4-step guide). Noreply notification email removed — footer is sufficient. Friendly error message when sender not registered. Docs updated: seqremail-design.md v2.1, SETUP.md v3. Multiple fresh tests run and confirmed working.

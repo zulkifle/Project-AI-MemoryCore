@@ -1,28 +1,44 @@
 # Petronas Legacy C++ Dockerize
-*Legacy C++ service that downloads files via FTP every morning, signs them, then uploads back to client*
+*Legacy C++ daemon (PetronasService) — downloads card data via SFTP, signs with SafeNet HSM (PKCS#11), uploads signed files back to Petronas*
 
 ## Project Overview
 - **Type**: Legacy C++ Dockerization
-- **Client**: Petronas
+- **Client**: Petronas (Handover Project)
 - **Period**: 2026-06-03 - Active
-- **Tech Stack**: Backend: C++ | Build: Makefile | Container: Docker
-- **Completion**: 0%
-- **Duration**: 0 min
-- **Due Date**: 2026-06-05 ⚠️ URGENT
+- **Tech Stack**: Backend: C++ (g++) | DB: MySQL (PetronasChipsCard) | Container: Docker (debian:bookworm) | Signing: SafeNet Luna HSM (PKCS#11/Crystoki) | OpenSSL CLI
+- **Completion**: 70%
+- **Duration**: ~120 min
+- **Due Date**: 2026-06-05 ⚠️ OVERDUE — still in test phase
+- **Source Path**: `C:\PROJECTS\HANDOVER PROJECT\Petronas\source code\amg backup as per 29-06-2026\`
 
 ## Current Status
-- **Last Session**: 2026-06-03 - Project created
+- **Last Session**: 2026-06-30 - Dockerized + diagrams complete
 - **Next Steps**:
-  1. Retrieve source code from server (PENDING — Dejul to share)
-  2. Understand build system (Makefile + BCC)
-  3. Write Dockerfile — base image that includes BCC + dependencies
-  4. Test build inside container
-  5. Test FTP download → sign → FTP upload flow inside container
+  1. Add `HSM=0` under `[System]` in `Softwares\Petronas\Petronas.ini`
+  2. Run `docker compose up` — verify logs show "Start Loop"
+  3. Test TCP port: `Test-NetConnection localhost -Port 6803`
+  4. When ready for production: swap commented volume blocks in docker-compose.yaml
+  5. On production Linux server: mount Crystoki lib + SSH keys + update DB host in ini
 - **Known Issues**:
-  - Source code not yet retrieved from server
-  - Must be easy to migrate to any environment (portability is the main goal)
+  - HSM (SafeNet Crystoki) not available in Docker — must set `HSM=0` for local test
+  - SFTP SSH keys not mounted (commented out in docker-compose)
+  - MySQL at 10.3.9.51 not reachable from Windows Docker — expected for local test
+  - `openssl rsautl` deprecated in OpenSSL 3.x (container) — still works, prod uses `openssl1` alias
 
 ## Session History (Last 5)
+
+### 2026-06-30 - Dockerized + Mermaid Diagrams
+- **Changes**:
+  - Explored full source: `PetronasService` (C++ daemon), `HSM.cpp`, `FTP.cpp`, `SSAD.cpp`, `DB.cpp`, `GenerateSSAD.cpp`, CronShell scripts, `Petronas.ini`
+  - Generated `docs/petronas-diagrams.md` — 6 Mermaid diagrams (system overview, main loop, FTP flow, SSAD generation, infra, monitoring & alerting)
+  - Created `Dockerfile` — multi-stage build: g++ compile from source (debian:bookworm builder) → minimal runtime with libmariadb3 + openssh-client + openssl
+  - Created `docker-compose.yaml` — TEST mode (Windows relative paths `./testdata/` + `./Softwares/Petronas/Petronas.ini`) vs PRODUCTION mode (Linux `/opt/petronas/...`) — swap comments to switch
+  - Created `entrypoint.sh` — validates Petronas.ini present before starting service
+  - Created `STEP.txt` — full deployment guide (host dirs, SSH keys, HSM, build, run, verify)
+  - `testdata/` folder structure created for Windows local testing
+  - Fixed: `openssl` missing from Dockerfile runtime — added
+  - Saved TEST vs PROD path switching to Claude auto-memory
+- **Time Spent**: ~120 min
 
 ### 2026-06-03 - Project Created
 - **Changes**: Initial project setup. Source not yet retrieved.
@@ -32,10 +48,13 @@
 [No history yet — this section is populated when session count exceeds 5]
 
 ## Technical Notes
-- **Repository**: TBD (source on Petronas server — not yet retrieved)
-- **Key Dependencies**: BCC (Borland C++ Compiler), Makefile
-- **How it works**: Downloads files via FTP every morning → signs the files → uploads signed files back to client
-- **Reminder**: Dejul will share source code from server — ask if not shared by next session
+- **Repository**: `C:\PROJECTS\HANDOVER PROJECT\Petronas\source code\amg backup as per 29-06-2026\`
+- **Key Dependencies**: g++ (build), libmariadb3 (runtime), openssl CLI (runtime shell calls), openssh-client (SFTP), SafeNet Crystoki PKCS#11 lib (HSM)
+- **Architecture**: C++ daemon listening on TCP :6803. Main loop every 60 min: FTPIn → FTPExtract → SSADProcess (HSM) → FTPOut. SFTP alias `petronas` configured via ~/.ssh/config.
+- **Crystoki lib paths**: `/usr/lib/libCryptoki2_64.so` (Luna 5.x) or `/usr/lib/libCryptoki2.so` (Luna 6.x+)
+- **INI file**: read from working dir `./Petronas.ini` — `HSM=0` under `[System]` disables HSM for testing
+- **docker-compose TEST vs PROD**: See auto-memory `project_petronas_docker.md` for exact lines to swap
+- **TCP health check**: send `TESTHSM` → get `ALIVE` or `DEATH`; send anything else → get current datetime
 
 ---
-**Last Updated**: 2026-06-03 | **Position**: #1/10 Active
+**Last Updated**: 2026-06-30 | **Position**: #1/10 Active

@@ -119,6 +119,15 @@
 - KTDataTable API confirmed: `KTDataTable.getInstance()`, `.setFilter()`, `.redraw()`, `.search()`
 - Jessy skill system upgraded: `laravel-php-skills` Lv.2 (20 rule categories inline), `laravel-best-practices` deleted, overlap triggers fixed
 
+**Session 14 (2026-06-30)**: Petronas handover project — diagrams + Dockerize
+- Explored C++ daemon project (`PetronasService`) — EMV card SSAD signing, SafeNet HSM (PKCS#11/Crystoki), SFTP data exchange, MySQL, CronShell monitoring
+- Generated `docs/petronas-diagrams.md` — 6 Mermaid diagrams (system overview, main loop, FTP flow, SSAD generation, infra, monitoring)
+- Dockerized: multi-stage Dockerfile (build from C++ source + debian:bookworm runtime), docker-compose.yaml, entrypoint.sh, STEP.txt
+- docker-compose has TEST (Windows `./testdata/` + `./Softwares/` relative paths) vs PRODUCTION (`/opt/petronas/...` Linux paths) — swap comments to switch
+- Key finding: `openssl rsautl` called via shell (not linked lib) — needs `openssl` installed in runtime image; OpenSSL 3.x works with deprecation warnings
+- HSM disabled via `HSM=0` in Petronas.ini for local testing
+- Test steps: `HSM=0` in ini → `docker compose up` → check logs → `Test-NetConnection localhost -Port 6803`
+
 **Session 13 (2026-06-30)**: MyTrustSignerXML MITI — system diagrams + new skill
 - Explored full MITI project structure (`sign.java`, `verify.java`, `getcertinfo.java`, `Credential.java`, Docker Compose, K8s deployment.yaml)
 - Generated `docs/miti-diagrams.md` — 5 Mermaid diagrams: sign flow, verify flow, getcertinfo flow, Docker Compose infra, K8s sandbox infra, component overview
