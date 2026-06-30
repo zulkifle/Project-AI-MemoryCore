@@ -6,16 +6,16 @@
 - **Client**: Petronas (Handover Project)
 - **Period**: 2026-06-03 - Active
 - **Tech Stack**: Backend: C++ (g++) | DB: MySQL (PetronasChipsCard) | Container: Docker (debian:bookworm) | Signing: SafeNet Luna HSM (PKCS#11/Crystoki) | OpenSSL CLI
-- **Completion**: 85%
-- **Duration**: ~160 min
+- **Completion**: 87%
+- **Duration**: ~165 min
 - **Due Date**: 2026-06-05 ⚠️ OVERDUE — still in test phase
 - **Source Path**: `C:\PROJECTS\HANDOVER PROJECT\Petronas\source code\amg backup as per 29-06-2026\`
 
 ## Current Status
-- **Last Session**: 2026-07-01 - Switched DB to localhost:3306 root for local test
+- **Last Session**: 2026-07-01 - Fixed localhost socket error → host.docker.internal
 - **Next Steps**:
-  1. Rebuild image: `docker compose build --no-cache`
-  2. Run `docker compose up` — for local MySQL test (no SSH tunnel needed, but use `host.docker.internal` not `localhost` in Docker)
+  1. `docker compose down && docker compose up` — no rebuild needed (ini is volume-mounted)
+  2. Verify logs show DB connected + "Start Loop"
   3. Test TCP port: `Test-NetConnection localhost -Port 6803`
   4. PROD deploy: uncomment `mysqlrouter.mysqlrouter:6446` block in ini + swap volume blocks in docker-compose
 - **Known Issues**:
@@ -24,6 +24,15 @@
   - `openssl rsautl` deprecated in OpenSSL 3.x (container) — still works, prod uses `openssl1` alias
 
 ## Session History (Last 5)
+
+### 2026-07-01 - Fixed localhost Unix Socket Error
+- **Changes**:
+  - Error: `Connect fails 2002 [Can't connect to local server through socket '/run/mysqld/mysqld.sock']`
+  - Root cause: MySQL C client on Linux treats `localhost` as Unix socket (not TCP), ignoring Port=3306
+  - Fix: Changed `Host="localhost"` → `Host="host.docker.internal"` in `Petronas.ini`
+  - No rebuild needed — ini is volume-mounted, `docker compose down && docker compose up` is enough
+  - Rule: inside Docker container on Linux, always use `host.docker.internal` (not `localhost`) to reach Windows host MySQL via TCP
+- **Time Spent**: ~5 min
 
 ### 2026-07-01 - DB Switched to localhost root for Local Test
 - **Changes**:
