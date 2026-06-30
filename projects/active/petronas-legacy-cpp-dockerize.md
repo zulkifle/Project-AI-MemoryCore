@@ -6,25 +6,38 @@
 - **Client**: Petronas (Handover Project)
 - **Period**: 2026-06-03 - Active
 - **Tech Stack**: Backend: C++ (g++) | DB: MySQL (PetronasChipsCard) | Container: Docker (debian:bookworm) | Signing: SafeNet Luna HSM (PKCS#11/Crystoki) | OpenSSL CLI
-- **Completion**: 80%
-- **Duration**: ~135 min
+- **Completion**: 85%
+- **Duration**: ~155 min
 - **Due Date**: 2026-06-05 ⚠️ OVERDUE — still in test phase
 - **Source Path**: `C:\PROJECTS\HANDOVER PROJECT\Petronas\source code\amg backup as per 29-06-2026\`
 
 ## Current Status
-- **Last Session**: 2026-07-01 - DB connection fixed (MySQL Router via SSH tunnel)
+- **Last Session**: 2026-07-01 - DB port made configurable (MySQL Router K8s support)
 - **Next Steps**:
-  1. Start SSH tunnel: `ssh -i ~/.ssh/zul_rsakey -L 3306:127.0.0.1:3306 zul@10.5.1.42`
-  2. Run `docker compose up` — verify logs show DB connected + "Start Loop"
-  3. Test TCP port: `Test-NetConnection localhost -Port 6803`
-  4. When ready for production: swap commented volume blocks in docker-compose.yaml + change DB Host to MySQL Router IP
-  5. On production Linux server: mount Crystoki lib + SSH keys
+  1. Rebuild image: `docker compose build --no-cache`
+  2. Start SSH tunnel: `ssh -i ~/.ssh/zul_rsakey -L 3306:127.0.0.1:3306 zul@10.5.1.42`
+  3. Run `docker compose up` — verify logs show DB connected + "Start Loop"
+  4. Test TCP port: `Test-NetConnection localhost -Port 6803`
+  5. K8s access: `ssh -L 6443:10.5.1.42:6443 zul@10.5.1.42` → verify kubeconfig server is `https://127.0.0.1:6443`
+  6. PROD deploy: swap Host/Port to `mysqlrouter.mysqlrouter:6446` in ini + swap volume blocks in docker-compose
 - **Known Issues**:
   - HSM (SafeNet Crystoki) not available in Docker — must set `HSM=0` for local test
   - SFTP SSH keys not mounted (commented out in docker-compose)
   - `openssl rsautl` deprecated in OpenSSL 3.x (container) — still works, prod uses `openssl1` alias
 
 ## Session History (Last 5)
+
+### 2026-07-01 - DB Port Configurable + K8s MySQL Router Support
+- **Changes**:
+  - Discovered `DB_Open()` had port hardcoded as `3306` — `iPort` variable was declared in `DB_ReadConfig()` but never used (original dev left a placeholder)
+  - Modified both `Sources_29072024/DB.cpp` and `Sources/DB.cpp`:
+    - Added `static unsigned int ui_DBPort = 3306` at module level
+    - `DB_ReadConfig()` now reads `Port` from `[Database]` section in ini (defaults to 3306 if missing)
+    - `DB_Open()` now passes `ui_DBPort` to `MySql.Register()` instead of hardcoded 3306
+  - Updated `Petronas.ini` `[Database]` section: added `Port=3306` (TEST), comments for `Host="mysqlrouter.mysqlrouter"` + `Port=6446` (PRODUCTION K8s)
+  - Noted K8s kubectl access: `ssh -L 6443:10.5.1.42:6443 zul@10.5.1.42` — kubeconfig must have `server: https://127.0.0.1:6443`
+  - **Rebuild required** after DB.cpp changes: `docker compose build --no-cache`
+- **Time Spent**: ~20 min
 
 ### 2026-07-01 - DB Connection via MySQL Router (SSH Tunnel)
 - **Changes**:
@@ -63,7 +76,9 @@
 - **docker-compose TEST vs PROD**: See auto-memory `project_petronas_docker.md` for exact lines to swap
 - **TCP health check**: send `TESTHSM` → get `ALIVE` or `DEATH`; send anything else → get current datetime
 - **DB connection (TEST)**: `host.docker.internal:3306` via SSH tunnel `ssh -L 3306:127.0.0.1:3306 zul@10.5.1.42`
-- **DB connection (PROD)**: Change `Host` in `Petronas.ini` to MySQL Router IP (e.g. `127.0.0.1` if local on server)
+- **DB connection (PROD K8s)**: `Host="mysqlrouter.mysqlrouter"` + `Port=6446` in `Petronas.ini` — matches JDBC: `jdbc:mysql://mysqlrouter.mysqlrouter:6446/PetronasChipsCard`
+- **DB port**: now read from `[Database]` → `Port=` in ini (was hardcoded 3306 in DB.cpp — both copies fixed)
+- **K8s access**: `ssh -L 6443:10.5.1.42:6443 zul@10.5.1.42` — kubeconfig `server:` must be `https://127.0.0.1:6443`
 
 ---
 **Last Updated**: 2026-07-01 | **Position**: #1/10 Active
