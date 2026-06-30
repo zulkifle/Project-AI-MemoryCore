@@ -6,26 +6,33 @@
 - **Client**: Petronas (Handover Project)
 - **Period**: 2026-06-03 - Active
 - **Tech Stack**: Backend: C++ (g++) | DB: MySQL (PetronasChipsCard) | Container: Docker (debian:bookworm) | Signing: SafeNet Luna HSM (PKCS#11/Crystoki) | OpenSSL CLI
-- **Completion**: 70%
-- **Duration**: ~120 min
+- **Completion**: 80%
+- **Duration**: ~135 min
 - **Due Date**: 2026-06-05 ⚠️ OVERDUE — still in test phase
 - **Source Path**: `C:\PROJECTS\HANDOVER PROJECT\Petronas\source code\amg backup as per 29-06-2026\`
 
 ## Current Status
-- **Last Session**: 2026-06-30 - Dockerized + diagrams complete
+- **Last Session**: 2026-07-01 - DB connection fixed (MySQL Router via SSH tunnel)
 - **Next Steps**:
-  1. Add `HSM=0` under `[System]` in `Softwares\Petronas\Petronas.ini`
-  2. Run `docker compose up` — verify logs show "Start Loop"
+  1. Start SSH tunnel: `ssh -i ~/.ssh/zul_rsakey -L 3306:127.0.0.1:3306 zul@10.5.1.42`
+  2. Run `docker compose up` — verify logs show DB connected + "Start Loop"
   3. Test TCP port: `Test-NetConnection localhost -Port 6803`
-  4. When ready for production: swap commented volume blocks in docker-compose.yaml
-  5. On production Linux server: mount Crystoki lib + SSH keys + update DB host in ini
+  4. When ready for production: swap commented volume blocks in docker-compose.yaml + change DB Host to MySQL Router IP
+  5. On production Linux server: mount Crystoki lib + SSH keys
 - **Known Issues**:
   - HSM (SafeNet Crystoki) not available in Docker — must set `HSM=0` for local test
   - SFTP SSH keys not mounted (commented out in docker-compose)
-  - MySQL at 10.3.9.51 not reachable from Windows Docker — expected for local test
   - `openssl rsautl` deprecated in OpenSSL 3.x (container) — still works, prod uses `openssl1` alias
 
 ## Session History (Last 5)
+
+### 2026-07-01 - DB Connection via MySQL Router (SSH Tunnel)
+- **Changes**:
+  - Updated `Softwares/Petronas/Petronas.ini` — DB `Host` changed from `10.3.9.51` (old direct IP) to `host.docker.internal` (resolves to Windows host where SSH tunnel is active on port 3306)
+  - Added comments in `Petronas.ini` explaining TEST (requires SSH tunnel) vs PRODUCTION (use MySQL Router IP directly) configuration
+  - Added `extra_hosts: - "host.docker.internal:host-gateway"` to `docker-compose.yaml` — required for Linux Docker Engine compatibility (Docker Desktop resolves it automatically on Windows)
+  - Flow: Container → `host.docker.internal:3306` → Windows host SSH tunnel → `127.0.0.1:3306` on 10.5.1.42 → MySQL Router → DB
+- **Time Spent**: ~15 min
 
 ### 2026-06-30 - Dockerized + Mermaid Diagrams
 - **Changes**:
@@ -55,6 +62,8 @@
 - **INI file**: read from working dir `./Petronas.ini` — `HSM=0` under `[System]` disables HSM for testing
 - **docker-compose TEST vs PROD**: See auto-memory `project_petronas_docker.md` for exact lines to swap
 - **TCP health check**: send `TESTHSM` → get `ALIVE` or `DEATH`; send anything else → get current datetime
+- **DB connection (TEST)**: `host.docker.internal:3306` via SSH tunnel `ssh -L 3306:127.0.0.1:3306 zul@10.5.1.42`
+- **DB connection (PROD)**: Change `Host` in `Petronas.ini` to MySQL Router IP (e.g. `127.0.0.1` if local on server)
 
 ---
-**Last Updated**: 2026-06-30 | **Position**: #1/10 Active
+**Last Updated**: 2026-07-01 | **Position**: #1/10 Active

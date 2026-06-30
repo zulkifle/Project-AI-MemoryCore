@@ -6,7 +6,7 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-06-30 | 2026-06-05 ⚠️ | 70% | Dockerized ✅ — TEST mode ready. Pending: HSM=0 in ini + docker compose up test |
+| 1 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-01 | 2026-06-05 ⚠️ | 80% | DB fixed → host.docker.internal via SSH tunnel. Pending: tunnel up + docker compose up |
 | 2 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-06-28 | TBD | 99% | Registration footer added + noreply email removed + friendly unregistered error + docs v2.1 updated |
 | 3 | **[MyTrustSignerXML-MITI](./active/mytrustsignerxml-miti.md)** | 2026-06-18 | 2026-06-01 | 100% | ✅ CLOSED — All fixes delivered. PROD package handed over to MITI (self-deploy). |
 | 4 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-06-26 | TBD | 100% | PROD deployed ✅ — image pushed, K8s applied, nginx live, Adacash tested. Pending: branch merge |
@@ -26,4 +26,4 @@
 ---
 ## System Status
 - **Total Projects**: 11 (7 active + 4 archived)
-- **Last Updated**: 2026-06-30 - Petronas Legacy C++ Dockerize — Dockerized + diagrams complete
+- **Last Updated**: 2026-07-01 - Petronas Legacy C++ Dockerize — DB host updated to MySQL Router via SSH tunnel
