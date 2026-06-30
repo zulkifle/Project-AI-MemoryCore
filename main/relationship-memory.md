@@ -119,6 +119,12 @@
 - KTDataTable API confirmed: `KTDataTable.getInstance()`, `.setFilter()`, `.redraw()`, `.search()`
 - Jessy skill system upgraded: `laravel-php-skills` Lv.2 (20 rule categories inline), `laravel-best-practices` deleted, overlap triggers fixed
 
+**Session 13 (2026-06-30)**: MyTrustSignerXML MITI — system diagrams + new skill
+- Explored full MITI project structure (`sign.java`, `verify.java`, `getcertinfo.java`, `Credential.java`, Docker Compose, K8s deployment.yaml)
+- Generated `docs/miti-diagrams.md` — 5 Mermaid diagrams: sign flow, verify flow, getcertinfo flow, Docker Compose infra, K8s sandbox infra, component overview
+- Created new Jessy skill: `mermaid-diagrams` (Lv.1) — reads source code → generates Mermaid sequence + graph diagrams → saves to docs/
+- Plugin bumped to v1.7.0, skill count: 16
+
 **Session 12 (2026-06-09)**: MTSA Container Packaging skill created + SENA PILOT packaged
 - Created new skill: `mtsa-container-packaging` (Lv.1) — intake form → verify folders → Dockerfile → STEP.txt → ZIP
 - Standard MTSA Docker template: `tomcat:9-jdk17-corretto`, copies `mtsa\` + `webapps\`, TZ=Asia/Kuala_Lumpur

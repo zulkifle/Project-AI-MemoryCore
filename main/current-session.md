@@ -3,8 +3,8 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-06-25
-**Session Focus**: TG SeQureMail — Documentation full update (all 7 proposal/design docs rewritten to POC v3) + fresh test protocol + timezone fix
+**Last Activity**: 2026-06-30
+**Session Focus**: MyTrustSignerXML MITI — generated system diagrams (sign/verify/getcertinfo flows + Docker + K8s infra) + created mermaid-diagrams skill (Lv.1)
 
 ## Active Project
 - **Name**: TG SeQureMail
