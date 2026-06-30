@@ -7,25 +7,32 @@
 - **Period**: 2026-06-03 - Active
 - **Tech Stack**: Backend: C++ (g++) | DB: MySQL (PetronasChipsCard) | Container: Docker (debian:bookworm) | Signing: SafeNet Luna HSM (PKCS#11/Crystoki) | OpenSSL CLI
 - **Completion**: 85%
-- **Duration**: ~155 min
+- **Duration**: ~160 min
 - **Due Date**: 2026-06-05 ⚠️ OVERDUE — still in test phase
 - **Source Path**: `C:\PROJECTS\HANDOVER PROJECT\Petronas\source code\amg backup as per 29-06-2026\`
 
 ## Current Status
-- **Last Session**: 2026-07-01 - DB port made configurable (MySQL Router K8s support)
+- **Last Session**: 2026-07-01 - Switched DB to localhost:3306 root for local test
 - **Next Steps**:
   1. Rebuild image: `docker compose build --no-cache`
-  2. Start SSH tunnel: `ssh -i ~/.ssh/zul_rsakey -L 3306:127.0.0.1:3306 zul@10.5.1.42`
-  3. Run `docker compose up` — verify logs show DB connected + "Start Loop"
-  4. Test TCP port: `Test-NetConnection localhost -Port 6803`
-  5. K8s access: `ssh -L 6443:10.5.1.42:6443 zul@10.5.1.42` → verify kubeconfig server is `https://127.0.0.1:6443`
-  6. PROD deploy: swap Host/Port to `mysqlrouter.mysqlrouter:6446` in ini + swap volume blocks in docker-compose
+  2. Run `docker compose up` — for local MySQL test (no SSH tunnel needed, but use `host.docker.internal` not `localhost` in Docker)
+  3. Test TCP port: `Test-NetConnection localhost -Port 6803`
+  4. PROD deploy: uncomment `mysqlrouter.mysqlrouter:6446` block in ini + swap volume blocks in docker-compose
 - **Known Issues**:
   - HSM (SafeNet Crystoki) not available in Docker — must set `HSM=0` for local test
   - SFTP SSH keys not mounted (commented out in docker-compose)
   - `openssl rsautl` deprecated in OpenSSL 3.x (container) — still works, prod uses `openssl1` alias
 
 ## Session History (Last 5)
+
+### 2026-07-01 - DB Switched to localhost root for Local Test
+- **Changes**:
+  - `Petronas.ini` [Database] restructured into 3 clearly labelled blocks (only one active at a time):
+    - **LOCAL TEST** (active): `Host="localhost"`, `Port=3306`, `User="root"`, `Password="7ru57ga73"`
+    - **Docker TEST** (commented): `host.docker.internal:3306`, `chips`/`dbaadmin` via SSH tunnel
+    - **PRODUCTION K8s** (commented): `mysqlrouter.mysqlrouter:6446`, `chips`/`dbaadmin`
+  - Note: `localhost` only works running binary directly — inside Docker use `host.docker.internal`
+- **Time Spent**: ~5 min
 
 ### 2026-07-01 - DB Port Configurable + K8s MySQL Router Support
 - **Changes**:
