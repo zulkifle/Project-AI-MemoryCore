@@ -7,17 +7,22 @@
 - **Period**: 2026-05-21 - Active
 - **Tech Stack**: Frontend: Chrome Extension MV3 (thin client) | Backend: SeQureMail Key API (Spring Boot 3.2 + MySQL + Flyway) — Software HSM | Crypto: ECDH P-256 + AES-256-GCM double-envelope (server-side, pure JDK) | Auth: OTP email verification (JavaMailSender)
 - **Completion**: 99%
-- **Duration**: 16.5 hours
+- **Duration**: 17.5 hours
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-06-28 (session 9) - Registration footer + removed noreply email + friendly error + docs updated
+- **Last Session**: 2026-07-01 (session 10) - Team feedback received + Feature #7 (non-subscriber role) implemented
 - **Next Steps**:
-  1. Full E2E test — register both accounts, encrypt & send, decrypt on receiver side
-  2. Confirm attachment decrypt still works after fresh registration
+  1. Continue team feedback checklist — next feature TBD
+  2. Full E2E test — register both accounts, encrypt & send, decrypt on receiver side
+  3. Confirm attachment decrypt still works after fresh registration
 - **Known Issues**: None
 
 ## Session History (Last 5)
+
+### 2026-07-01 (Session 10) - Team Feedback + Feature #7 Non-Subscriber Role
+- **Changes**: Received team feedback — 7-item feature checklist. Implemented **Feature #7 (Non-Subscriber Role)**: `UserRole` enum (SUBSCRIBER/RECIPIENT), V5 Flyway migration (`role VARCHAR(20) DEFAULT 'RECIPIENT'`), `GET /api/keys/role` endpoint, `assertSubscriber()` enforcement in `CryptoServiceImpl.encrypt()`, extension async role check greys out Encrypt toggle for RECIPIENTs. Branch `feature/7-non-subscriber-role` committed and pushed to GitLab. Explained MR vs PR (same concept, GitLab=MR, GitHub=PR). Explained sequential branch merging strategy for the 8-feature checklist.
+- **Time Spent**: ~1 hour
 
 ### 2026-06-28 (Session 9) - Registration Footer + UX Fixes
 - **Changes**: **Registration footer**: added plaintext footer below encrypted block in `content_script.js` — 4-step guide (install extension → register → OTP verify → reopen email). Visible to any recipient without the extension. **Removed noreply notification email**: `sendRegistrationNotification()` removed from `CryptoServiceImpl` — unregistered recipients now receive only the encrypted email (footer is sufficient). **Friendly error message**: catch block in `Encrypt & Send` handler now detects `"Key not found"` / `"not found"` errors and shows "You are not registered yet. Click the SeQureMail extension icon to register first." instead of raw server error. **Docs updated**: `seqremail-design.md` bumped to v2.1 (revision history, design decisions, component map SMTP note, encrypt flow, edge cases table, envelope format section), `SETUP.md` updated to v3 (Step 3 rewritten for OTP flow, Step 5 removed, send step updated, troubleshooting refreshed). Multiple fresh tests run (DB truncated via Docker exec).
@@ -51,7 +56,16 @@ Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryp
 - **Envelope Format v3 (double)**: `seqremail: poc-v3`, `from`, `to`, `recipient: {ephemeralPublicKey, iv, ciphertext}`, `sender: {ephemeralPublicKey, iv, ciphertext}`
 - **Security Model**: Auto-provision (`claimed=false`) → receiver registers via OTP → `claimed=true` → decrypt unlocked. Each party decrypts with own private key via own block. Strangers blocked by `selectBlock()` check.
 - **Gmail Account Detection**: `getCurrentGmailEmail()` parses `document.title` ("Inbox - email@gmail.com - Gmail") to determine active account for block selection.
-- **Flyway Migrations**: V1 (user_keys) | V2 (otp_verifications) | V3 (private_key) | V4 (claimed flag)
+- **Flyway Migrations**: V1 (user_keys) | V2 (otp_verifications) | V3 (private_key) | V4 (claimed flag) | V5 (role)
+- **Team Feedback Checklist** (branching strategy: one branch per feature, merge to master sequentially):
+  - [x] #7 Non-subscriber role — `feature/7-non-subscriber-role` ✅ pushed
+  - [ ] #6 User management — charge per user (depends on #7)
+  - [ ] #5 HSM integration
+  - [ ] #4 Outlook Web (OWA) support
+  - [ ] #2 Firefox support
+  - [ ] #3 Safari support
+  - [ ] #1 MyDigital ID onboarding
+  - [ ] #8 Outlook plugin (if possible)
 
 ---
-**Last Updated**: 2026-06-28 (session 9) | **Position**: #1/10 Active
+**Last Updated**: 2026-07-01 (session 10) | **Position**: #1/10 Active
