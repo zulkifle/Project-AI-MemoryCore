@@ -44,7 +44,7 @@ Project files stored in projects/active/ and projects/archived/.
 ### 🔌 **Skill Plugin System**
 - Plugin: `jessy-skills` (Claude Code plugin)
 - Location: `plugins/jessy-skills/`
-- Skills: 16 active skills
+- Skills: 18 active skills
   - `springboot-restful` — Auto-triggers on all Spring Boot / Java REST tasks
   - `save-memory` — Triggers on "save", "save memory", "save progress"
   - `mygpki-signing` — Triggers on MyGPKI INTERNAL signing, MTSA PDF signing, iText5 CMS flow
@@ -61,6 +61,7 @@ Project files stored in projects/active/ and projects/archived/.
   - `verification-before-completion` — Triggers before ANY completion claim, commit, or PR — requires running verification commands and seeing output before claiming success
   - `mtsa-container-packaging` — Triggers on "package [project]", "create deployment package", "dockerize MTSA", "MTSA package", or when packaging an MTSA deployment folder into a Docker-ready ZIP (Dockerfile + mtsa/ + webapps/ + STEP.txt)
   - `mermaid-diagrams` — Triggers on "create flowchart", "create diagram", "infrastructure diagram", "sequence diagram", "document the flow", "system diagram", or any request to visualise API/system/infra as a diagram — reads source code first, outputs Mermaid in docs/
+  - `frontend-design` — Triggers on "build UI", "create admin page", "design frontend", "user management UI", or any request to build/restyle a web frontend — applies one of 8 aesthetic anchors (Swiss, Industrial, Brutalist, Aurora, Chaotic, Retro-Futuristic, Organic, Lo-Fi) with strict CSS token fidelity
 - Add new skills: Create folder in `plugins/jessy-skills/skills/`
 
 ## 🔥 Essential Components (Always Load)

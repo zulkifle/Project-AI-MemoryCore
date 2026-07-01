@@ -1,6 +1,6 @@
 {
   "name": "jessy-skills",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Jessy AI companion skill plugins — Spring Boot, Laravel PHP (best practices + Pest testing + Tailwind CSS), Kubernetes administration (CKA), XML digital signing (XMLDSig/Apache Santuario), Mermaid system diagrams (flowchart/sequence/infra), memory management, and developer productivity skills.",
   "author": {
     "name": "Dejul",
