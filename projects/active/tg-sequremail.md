@@ -7,18 +7,22 @@
 - **Period**: 2026-05-21 - Active
 - **Tech Stack**: Frontend: Chrome Extension MV3 (thin client) | Backend: SeQureMail Key API (Spring Boot 3.2 + MySQL + Flyway) — Software HSM | Crypto: ECDH P-256 + AES-256-GCM double-envelope (server-side, pure JDK) | Auth: OTP email verification (JavaMailSender)
 - **Completion**: 99%
-- **Duration**: 17.5 hours
+- **Duration**: 19.5 hours
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-07-01 (session 10) - Team feedback received + Feature #7 (non-subscriber role) implemented
+- **Last Session**: 2026-07-01 (session 11) - Feature #6 design complete — admin portal spec approved, ready to scaffold
 - **Next Steps**:
-  1. Continue team feedback checklist — next feature TBD
-  2. Full E2E test — register both accounts, encrypt & send, decrypt on receiver side
-  3. Confirm attachment decrypt still works after fresh registration
+  1. Scaffold `seqremail-admin` Spring Boot project (Feature #6)
+  2. Create branch `feature/6-user-management` from master
+  3. Full E2E test — register both accounts, encrypt & send, decrypt on receiver side
 - **Known Issues**: None
 
 ## Session History (Last 5)
+
+### 2026-07-01 (Session 11) - Feature #6 Admin Portal Design
+- **Changes**: Brainstormed and designed `seqremail-admin` — separate Spring Boot app (port 8081, shared DB). Architecture: two-app model (key-api + admin), no REST calls between them, shared `seqremail_db`. Generated 5 Mermaid diagrams (`docs/admin-portal-diagrams.md`): system architecture, admin workflow, user registration flow, data model, OTP state diagram. Wrote full design spec (`docs/specs/2026-07-01-admin-portal-design.md`): companies table, admin_users table, V6 migration (company_id + provisioned_by on user_keys), CSV bulk upload, multiselect role change, user detail (OTP status + provisioned_by + platform). Registered `frontend-design` skill (v1.8.0). Key decisions: port configurable via env, no CSV row limit, billing = user count per company (external invoicing only, no payment gateway), single admin account (admin/BCrypt hash), whitelist-gated OTP.
+- **Time Spent**: ~2 hours
 
 ### 2026-07-01 (Session 10) - Team Feedback + Feature #7 Non-Subscriber Role
 - **Changes**: Received team feedback — 7-item feature checklist. Implemented **Feature #7 (Non-Subscriber Role)**: `UserRole` enum (SUBSCRIBER/RECIPIENT), V5 Flyway migration (`role VARCHAR(20) DEFAULT 'RECIPIENT'`), `GET /api/keys/role` endpoint, `assertSubscriber()` enforcement in `CryptoServiceImpl.encrypt()`, extension async role check greys out Encrypt toggle for RECIPIENTs. Branch `feature/7-non-subscriber-role` committed and pushed to GitLab. Explained MR vs PR (same concept, GitLab=MR, GitHub=PR). Explained sequential branch merging strategy for the 8-feature checklist.
@@ -35,14 +39,6 @@
 ### 2026-06-25 (Session 7) - Fresh Test Protocol + Timezone Fix
 - **Changes**: Defined "fresh test" protocol (TRUNCATE user_keys + otp_verifications + clear chrome.storage.local + reload extension). Gmail inbox label issue diagnosed as Gmail account setting (not extension bug). Fixed DB timezone: `TZ=Asia/Kuala_Lumpur` in both docker-compose services, `serverTimezone=Asia/Kuala_Lumpur`. Containers restarted — DB now shows MYT timestamps.
 - **Time Spent**: ~30 min
-
-### 2026-06-25 (Session 6) - Attachment Auto-Fetch Decryption
-- **Changes**: Replaced manual file-picker with auto-fetch from Gmail DOM (`findGmailAttachmentUrl`). Images rendered inline; all other files via `chrome.downloads.download()` with correct filename+extension. Added `"downloads"` permission to manifest. Fallback to file picker if link not in DOM.
-- **Time Spent**: ~1 hour
-
-### 2026-06-25 (Session 5) - Double-Envelope + Claimed Flag
-- **Changes**: Double-envelope: `recipient` + `sender` blocks, independent ephemeral keypairs. Block selection via `getCurrentGmailEmail()` (document.title parse). Claimed flag: V4 Flyway migration, auto-provisioned keys blocked until OTP (`claimed=false→true`). `generateKeyPair()` idempotent. All scenarios verified: receiver blocked before claim ✅, decrypts after OTP ✅, sender decrypts via sender block ✅, stranger blocked ✅.
-- **Time Spent**: ~2.5 hours
 
 ## Historical Summary
 Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryption via Gmail DOM interception. Over 14+ sessions spanning one month, evolved from shared passphrase (Level 0) → RSA-OAEP keypair (Level 1) → ECDH P-256 client-side → ECDH P-256 server-side HSM with full security model + attachment support. Key milestones: (1) Full SDD written 2026-05-26; (2) SDD formalised 2026-06-11; (3) POC redesigned to Level 1 2026-06-15 — DOM-based, no OAuth2; (4) Key API backend live 2026-06-15; (5) ECDH P-256 migration 2026-06-18; (6) OTP email verification 2026-06-24; (7) Server-side HSM 2026-06-24; (8) Auto-provision receiver keypair 2026-06-24; (9) Double-envelope + claimed flag 2026-06-25 — full security model; (10) Attachment auto-fetch 2026-06-25; (11) Documentation full update 2026-06-25 — all docs rewritten to POC v3; (12) Registration footer + noreply email removed + friendly error UX 2026-06-28.
@@ -68,4 +64,4 @@ Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryp
   - [ ] #8 Outlook plugin (if possible)
 
 ---
-**Last Updated**: 2026-07-01 (session 10) | **Position**: #1/10 Active
+**Last Updated**: 2026-07-01 (session 11) | **Position**: #1/10 Active

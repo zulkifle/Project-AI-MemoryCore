@@ -6,7 +6,7 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-07-01 | TBD | 99% | Feature #7 done (non-subscriber role). Team feedback checklist: 1/8 complete. Branch pushed to GitLab. |
+| 1 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-07-01 | TBD | 99% | Feature #6 design spec approved. seqremail-admin (port 8081) ready to scaffold. Team checklist: 1/8 done. |
 | 2 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-01 | 2026-06-05 ⚠️ | 87% | Fixed localhost→host.docker.internal (socket error). Pending: docker compose up + verify DB |
 | 3 | **[MyTrustSignerXML-MITI](./active/mytrustsignerxml-miti.md)** | 2026-06-18 | 2026-06-01 | 100% | ✅ CLOSED — All fixes delivered. PROD package handed over to MITI (self-deploy). |
 | 4 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-06-26 | TBD | 100% | PROD deployed ✅ — image pushed, K8s applied, nginx live, Adacash tested. Pending: branch merge |
@@ -26,4 +26,4 @@
 ---
 ## System Status
 - **Total Projects**: 11 (7 active + 4 archived)
-- **Last Updated**: 2026-07-01 - Petronas Legacy C++ Dockerize — fixed localhost socket error → host.docker.internal
+- **Last Updated**: 2026-07-01 - TG SeQureMail session 11 — Feature #6 admin portal design spec approved, ready to scaffold

@@ -8,17 +8,17 @@
 
 ## Active Project
 - **Name**: TG SeQureMail
-- **Resumed**: 2026-07-01
+- **Session**: 11 — 2026-07-01
 - **Completion**: 99%
-- **Repo**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\extension\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\`
-- **Context**: Chrome Extension MV3 + Spring Boot 3.2 Key API. End-to-end encrypted Gmail via DOM interception. Server-side ECDH P-256 + AES-256-GCM double-envelope. OTP registration, claimed flag, attachment auto-fetch.
+- **Repo**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\extension\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\` | Admin: `seqremail-admin` (to scaffold)
+- **Context**: Feature #6 (User Management UI) design completed and approved. `seqremail-admin` is a new Spring Boot 3.2 app (port 8081, configurable), shared `seqremail_db`. B2B multi-tenant: companies → users. Spring Security form login, Thymeleaf + Tailwind CDN, OpenCSV, admin creds: admin / BCrypt(7ru57ga73). Billing = user count per company (external invoicing only). No payment gateway.
 - **Next Steps**:
-  1. Continue team feedback checklist — Feature #6 (User Management) is next
-  2. Full E2E test — register both accounts via OTP, encrypt & send, decrypt on receiver side
-  3. Confirm attachment decrypt still works after fresh registration
+  1. Create branch `feature/6-user-management` from master
+  2. Scaffold `seqremail-admin` Spring Boot project per spec at `docs/specs/2026-07-01-admin-portal-design.md`
+  3. Apply Flyway V6 migration in key-api (company_id + provisioned_by + companies table)
 - **Fresh test protocol**: TRUNCATE `user_keys` + `otp_verifications` tables + clear `chrome.storage.local` + reload extension
 - **API**: `http://localhost:8080` — `docker compose up` in `seqremail\key-api\`
-- **Team Feedback Checklist**: 1/8 done — Feature #7 (non-subscriber role) ✅ on branch `feature/7-non-subscriber-role`
+- **Team Feedback Checklist**: 1/8 done — Feature #7 ✅ | Feature #6 design ✅ → implementation next
 - **Git branching strategy**: one branch per feature, cut from master, merge sequentially. GitLab=MR, GitHub=PR (same thing).
 
 ## Previous Active Project
