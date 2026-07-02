@@ -7,6 +7,17 @@
 **Session Focus**: Petronas handover project — Mermaid diagrams + Dockerized C++ daemon + docker-compose TEST/PROD path switching + openssl notes
 
 ## Active Project
+- **Name**: ECOURT_PdfErrorCheckWS
+- **Session**: 1 — 2026-07-02
+- **Completion**: 80%
+- **Repo**: `C:\PROJECTS\ECOURT\WebServiceProject\POJ\ECOURT_PdfErrorCheckWS`
+- **Context**: JAX-WS SOAP service on WildFly/JDK8 to check and auto-repair PDFs before digital signing. Uses iText5 5.4.1. Two methods: `CheckPdfError` (Base64) and `CheckPdfErrorByPath` (file path + gUid). Auto-repair via PdfStamper when `isRebuilt()=true`. Returns errCode/status/errMsg (000/success or 100/failed).
+- **Next Steps**:
+  1. Consider adding PDFBox + QPDF fallback chain for ClassCastException and trailer-not-found cases
+  2. Test both methods with known good and known corrupt PDFs
+  3. Redeploy WAR to WildFly after latest changes
+
+## Previous Active Project
 - **Name**: TG SeQureMail
 - **Session**: 11 — 2026-07-01
 - **Completion**: 99%
