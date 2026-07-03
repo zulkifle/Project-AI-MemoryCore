@@ -5,20 +5,24 @@
 - **Type**: Chrome Extension (Manifest V3)
 - **Client**: Any Gmail user (external-facing POC)
 - **Period**: 2026-05-21 - Active
-- **Tech Stack**: Frontend: Chrome Extension MV3 (thin client) | Backend: SeQureMail Key API (Spring Boot 3.2 + MySQL + Flyway) — Software HSM | Crypto: ECDH P-256 + AES-256-GCM double-envelope (server-side, pure JDK) | Auth: OTP email verification (JavaMailSender)
+- **Tech Stack**: Frontend: Chrome Extension MV3 (thin client) | Backend: SeQureMail Key API (Spring Boot 3.2 + MySQL + Flyway) + seqremail-admin (Spring Boot 3.2, port 8081) — Software HSM | Crypto: ECDH P-256 + AES-256-GCM double-envelope (server-side, pure JDK) | Auth: OTP email verification (JavaMailSender)
 - **Completion**: 99%
-- **Duration**: 19.5 hours
+- **Duration**: 22.5 hours
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-07-01 (session 11) - Feature #6 design complete — admin portal spec approved, ready to scaffold
+- **Last Session**: 2026-07-03 (session 12) - Feature #6 admin portal fully implemented + deployed via Docker
 - **Next Steps**:
-  1. Scaffold `seqremail-admin` Spring Boot project (Feature #6)
-  2. Create branch `feature/6-user-management` from master
-  3. Full E2E test — register both accounts, encrypt & send, decrypt on receiver side
+  1. Full E2E test — register both accounts, encrypt & send, decrypt on receiver side
+  2. Merge `feature/6-user-management` → master (MR on GitLab)
+  3. Continue team feedback checklist: #5 (HSM), #4 (OWA), #2 (Firefox)
 - **Known Issues**: None
 
 ## Session History (Last 5)
+
+### 2026-07-03 (Session 12) - Feature #6 Admin Portal Fully Implemented
+- **Changes**: Scaffolded `seqremail-admin` Spring Boot 3.2 app (port 8081, branch `feature/6-user-management`). Full implementation: Spring Security form login (admin/BCrypt(7ru57ga73)), Thymeleaf 3 + Tailwind CDN (Swiss aesthetic — white, #E4002B accent, Inter font). Companies + Users + Dashboard pages. Flyway admin-isolated migrations (separate `flyway_schema_history_admin` table): V1 baseline, V2 add company_id + provisioned_by to user_keys (PREPARE/EXECUTE idempotent DDL for MySQL 8.4), V3 create admin_users. `FlywayConfig` auto-repair on startup. Dockerized: multi-stage build → root-level `docker-compose.yml` (db → key-api healthcheck → admin). Fixed bugs: Flyway V2 failed migration (depends_on service_healthy), Thymeleaf `:: head` fragment ambiguity (moved th:fragment to `<head>` element), 404 on `/admin/login` (added AuthController). **Feature additions this session**: (1) AJAX search with filter dropdown (All / Email / Company, 300ms debounce, `GET /admin/users/ajax` JSON endpoint, in-place table row re-render, no page reload); (2) Bulk role-change bar hidden until rows are checked, shows selected count, confirmation dialog before submit; (3) Add User form — role removed (hidden input, always SUBSCRIBER); (4) `UserKeyRepository` searchByEmail + searchByCompany JPQL queries; (5) Pre-registration pattern (null keys, claimed=false, OTP whitelist gate blocks unregistered). Extension not changed — all Feature #6 work is server-side.
+- **Time Spent**: ~3 hours
 
 ### 2026-07-01 (Session 11) - Feature #6 Admin Portal Design
 - **Changes**: Brainstormed and designed `seqremail-admin` — separate Spring Boot app (port 8081, shared DB). Architecture: two-app model (key-api + admin), no REST calls between them, shared `seqremail_db`. Generated 5 Mermaid diagrams (`docs/admin-portal-diagrams.md`): system architecture, admin workflow, user registration flow, data model, OTP state diagram. Wrote full design spec (`docs/specs/2026-07-01-admin-portal-design.md`): companies table, admin_users table, V6 migration (company_id + provisioned_by on user_keys), CSV bulk upload, multiselect role change, user detail (OTP status + provisioned_by + platform). Registered `frontend-design` skill (v1.8.0). Key decisions: port configurable via env, no CSV row limit, billing = user count per company (external invoicing only, no payment gateway), single admin account (admin/BCrypt hash), whitelist-gated OTP.
@@ -29,33 +33,32 @@
 - **Time Spent**: ~1 hour
 
 ### 2026-06-28 (Session 9) - Registration Footer + UX Fixes
-- **Changes**: **Registration footer**: added plaintext footer below encrypted block in `content_script.js` — 4-step guide (install extension → register → OTP verify → reopen email). Visible to any recipient without the extension. **Removed noreply notification email**: `sendRegistrationNotification()` removed from `CryptoServiceImpl` — unregistered recipients now receive only the encrypted email (footer is sufficient). **Friendly error message**: catch block in `Encrypt & Send` handler now detects `"Key not found"` / `"not found"` errors and shows "You are not registered yet. Click the SeQureMail extension icon to register first." instead of raw server error. **Docs updated**: `seqremail-design.md` bumped to v2.1 (revision history, design decisions, component map SMTP note, encrypt flow, edge cases table, envelope format section), `SETUP.md` updated to v3 (Step 3 rewritten for OTP flow, Step 5 removed, send step updated, troubleshooting refreshed). Multiple fresh tests run (DB truncated via Docker exec).
+- **Changes**: **Registration footer**: added plaintext footer below encrypted block in `content_script.js` — 4-step guide (install extension → register → OTP verify → reopen email). Visible to any recipient without the extension. **Removed noreply notification email**: `sendRegistrationNotification()` removed from `CryptoServiceImpl` — unregistered recipients now receive only the encrypted email (footer is sufficient). **Friendly error message**: catch block in `Encrypt & Send` handler now detects `"Key not found"` / `"not found"` errors and shows "You are not registered yet." instead of raw server error. **Docs updated**: `seqremail-design.md` bumped to v2.1, `SETUP.md` updated to v3. Multiple fresh tests run (DB truncated via Docker exec).
 - **Time Spent**: ~1 hour
 
 ### 2026-06-25 (Session 8) - Documentation Full Update
 - **Changes**: Rewrote all 7 documentation files to reflect POC v3. `seqremail-design.md` v2.0 complete rewrite — all sections (components, data flows, security model, envelope format). All 5 SDD proposal sections updated. ASCII + Mermaid diagrams, threat model T1–T10, OTP properties, ECDH double-envelope properties, POC vs production gap table, structured decrypted view UX, parseEnvelope() zero-width char handling.
 - **Time Spent**: ~1.5 hours
 
-### 2026-06-25 (Session 7) - Fresh Test Protocol + Timezone Fix
-- **Changes**: Defined "fresh test" protocol (TRUNCATE user_keys + otp_verifications + clear chrome.storage.local + reload extension). Gmail inbox label issue diagnosed as Gmail account setting (not extension bug). Fixed DB timezone: `TZ=Asia/Kuala_Lumpur` in both docker-compose services, `serverTimezone=Asia/Kuala_Lumpur`. Containers restarted — DB now shows MYT timestamps.
-- **Time Spent**: ~30 min
-
 ## Historical Summary
-Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryption via Gmail DOM interception. Over 14+ sessions spanning one month, evolved from shared passphrase (Level 0) → RSA-OAEP keypair (Level 1) → ECDH P-256 client-side → ECDH P-256 server-side HSM with full security model + attachment support. Key milestones: (1) Full SDD written 2026-05-26; (2) SDD formalised 2026-06-11; (3) POC redesigned to Level 1 2026-06-15 — DOM-based, no OAuth2; (4) Key API backend live 2026-06-15; (5) ECDH P-256 migration 2026-06-18; (6) OTP email verification 2026-06-24; (7) Server-side HSM 2026-06-24; (8) Auto-provision receiver keypair 2026-06-24; (9) Double-envelope + claimed flag 2026-06-25 — full security model; (10) Attachment auto-fetch 2026-06-25; (11) Documentation full update 2026-06-25 — all docs rewritten to POC v3; (12) Registration footer + noreply email removed + friendly error UX 2026-06-28.
+Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryption via Gmail DOM interception. Over 14+ sessions spanning one month, evolved from shared passphrase (Level 0) → RSA-OAEP keypair (Level 1) → ECDH P-256 client-side → ECDH P-256 server-side HSM with full security model + attachment support. Key milestones: (1) Full SDD written 2026-05-26; (2) SDD formalised 2026-06-11; (3) POC redesigned to Level 1 2026-06-15 — DOM-based, no OAuth2; (4) Key API backend live 2026-06-15; (5) ECDH P-256 migration 2026-06-18; (6) OTP email verification 2026-06-24; (7) Server-side HSM 2026-06-24; (8) Auto-provision receiver keypair 2026-06-24; (9) Double-envelope + claimed flag 2026-06-25 — full security model; (10) Attachment auto-fetch 2026-06-25; (11) Documentation full update 2026-06-25; (12) Registration footer + noreply email removed + friendly error UX 2026-06-28; (13) Fresh test protocol + DB timezone fix (MYT) 2026-06-25.
 
 ## Technical Notes
-- **Repository**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\extension\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\`
+- **Repository**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\extension\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\` | Admin: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\seqremail-admin\`
+- **Docker**: Root-level `docker-compose.yml` at `C:\PROJECTS\SEQURE MAIL\Development\seqremail\` — starts db + key-api (healthcheck) + admin. Admin on port 8081. key-api on 8080. MySQL on 3307.
+- **Admin Creds**: `admin` / `7ru57ga73` (BCrypt stored in admin_users table, seeded via DataLoader)
 - **Design Doc (POC)**: `C:\PROJECTS\SEQURE MAIL\Documentation\POC\seqremail-poc-design-v2.md` (v1.5)
 - **Key Dependencies**: Chrome Extension MV3, SeQureMail Key API (Spring Boot + MySQL), JavaMailSender (SMTP), Web Crypto API (file-only)
 - **Crypto Plan**:
   - ~~v1: RSA-OAEP-2048~~ | ~~v2: ECDH P-256 client-side~~ | **v3 (current): SERVER-ECDH-P256-AES-256-GCM double-envelope** | v4 planned: ML-KEM-768
 - **Envelope Format v3 (double)**: `seqremail: poc-v3`, `from`, `to`, `recipient: {ephemeralPublicKey, iv, ciphertext}`, `sender: {ephemeralPublicKey, iv, ciphertext}`
 - **Security Model**: Auto-provision (`claimed=false`) → receiver registers via OTP → `claimed=true` → decrypt unlocked. Each party decrypts with own private key via own block. Strangers blocked by `selectBlock()` check.
-- **Gmail Account Detection**: `getCurrentGmailEmail()` parses `document.title` ("Inbox - email@gmail.com - Gmail") to determine active account for block selection.
-- **Flyway Migrations**: V1 (user_keys) | V2 (otp_verifications) | V3 (private_key) | V4 (claimed flag) | V5 (role)
+- **Flyway Migrations (key-api)**: V1 (user_keys) | V2 (otp_verifications) | V3 (private_key) | V4 (claimed flag) | V5 (role)
+- **Flyway Migrations (admin)**: V1 baseline | V2 (company_id + provisioned_by on user_keys, companies table) | V3 (admin_users) — isolated via `flyway_schema_history_admin`
+- **Fresh test protocol**: TRUNCATE `user_keys` + `otp_verifications` + clear `chrome.storage.local` + reload extension
 - **Team Feedback Checklist** (branching strategy: one branch per feature, merge to master sequentially):
-  - [x] #7 Non-subscriber role — `feature/7-non-subscriber-role` ✅ pushed
-  - [ ] #6 User management — charge per user (depends on #7)
+  - [x] #7 Non-subscriber role — `feature/7-non-subscriber-role` ✅ merged
+  - [x] #6 User management — `feature/6-user-management` ✅ pushed, pending MR
   - [ ] #5 HSM integration
   - [ ] #4 Outlook Web (OWA) support
   - [ ] #2 Firefox support
@@ -64,4 +67,4 @@ Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryp
   - [ ] #8 Outlook plugin (if possible)
 
 ---
-**Last Updated**: 2026-07-01 (session 11) | **Position**: #1/10 Active
+**Last Updated**: 2026-07-03 (session 12) | **Position**: #2/10 Active

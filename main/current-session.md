@@ -19,18 +19,16 @@
 
 ## Previous Active Project
 - **Name**: TG SeQureMail
-- **Session**: 11 — 2026-07-01
+- **Session**: 12 — 2026-07-03
 - **Completion**: 99%
-- **Repo**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\extension\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\` | Admin: `seqremail-admin` (to scaffold)
-- **Context**: Feature #6 (User Management UI) design completed and approved. `seqremail-admin` is a new Spring Boot 3.2 app (port 8081, configurable), shared `seqremail_db`. B2B multi-tenant: companies → users. Spring Security form login, Thymeleaf + Tailwind CDN, OpenCSV, admin creds: admin / BCrypt(7ru57ga73). Billing = user count per company (external invoicing only). No payment gateway.
+- **Repo**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\extension\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\` | Admin: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\seqremail-admin\`
+- **Context**: Feature #6 fully implemented. `seqremail-admin` live (port 8081) with Docker. AJAX search (dropdown filter + 300ms debounce), bulk role change bar (hidden until checked, confirmation dialog), Add User = SUBSCRIBER by default (hidden input). Branch `feature/6-user-management` pushed to GitLab, pending MR.
 - **Next Steps**:
-  1. Create branch `feature/6-user-management` from master
-  2. Scaffold `seqremail-admin` Spring Boot project per spec at `docs/specs/2026-07-01-admin-portal-design.md`
-  3. Apply Flyway V6 migration in key-api (company_id + provisioned_by + companies table)
-- **Fresh test protocol**: TRUNCATE `user_keys` + `otp_verifications` tables + clear `chrome.storage.local` + reload extension
-- **API**: `http://localhost:8080` — `docker compose up` in `seqremail\key-api\`
-- **Team Feedback Checklist**: 1/8 done — Feature #7 ✅ | Feature #6 design ✅ → implementation next
-- **Git branching strategy**: one branch per feature, cut from master, merge sequentially. GitLab=MR, GitHub=PR (same thing).
+  1. Merge `feature/6-user-management` → master (MR on GitLab)
+  2. Continue team checklist: #5 (HSM), #4 (OWA), #2 (Firefox)
+- **Docker**: `docker compose up` in `C:\PROJECTS\SEQURE MAIL\Development\seqremail\` — starts db + key-api + admin
+- **Admin**: `http://localhost:8081/admin/login` — admin / 7ru57ga73
+- **Team Feedback Checklist**: 2/8 done — #7 ✅ | #6 ✅ pending MR
 
 ## Previous Active Project
 - **Name**: Petronas Handover
