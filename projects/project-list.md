@@ -6,7 +6,7 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-07-02 | TBD | 80% | CheckPdfError + CheckPdfErrorByPath done. Auto-repair isRebuilt() inline. ClassCastException/trailer-not-found → external repair needed. |
+| 1 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-07-03 | TBD | 85% | File handle safety fix applied. Rebuild + redeploy next. ClassCastException/trailer-not-found → external repair needed. |
 | 2 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-07-01 | TBD | 99% | Feature #6 design spec approved. seqremail-admin (port 8081) ready to scaffold. Team checklist: 1/8 done. |
 | 3 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-01 | 2026-06-05 ⚠️ | 87% | Fixed localhost→host.docker.internal (socket error). Pending: docker compose up + verify DB |
 | 4 | **[MyTrustSignerXML-MITI](./active/mytrustsignerxml-miti.md)** | 2026-06-18 | 2026-06-01 | 100% | ✅ CLOSED — All fixes delivered. PROD package handed over to MITI (self-deploy). |
@@ -27,4 +27,4 @@
 ---
 ## System Status
 - **Total Projects**: 12 (8 active + 4 archived)
-- **Last Updated**: 2026-07-02 - ECOURT_PdfErrorCheckWS created — PDF error check SOAP WS, auto-repair inline
+- **Last Updated**: 2026-07-03 - ECOURT_PdfErrorCheckWS — file handle safety fix (reader.close before FileOutputStream write)
