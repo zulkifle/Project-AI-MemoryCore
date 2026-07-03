@@ -6,7 +6,7 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-07-03 | TBD | 95% | PDFBox fallback added. ExceptionConverter bug fixed. Tested OK. Ready for PROD deploy. |
+| 1 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-07-03 | TBD | 97% | Removed PDFBox. ClassCastException → 100/failed. isRebuilt auto-rp only. Ready for PROD deploy. |
 | 2 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-07-01 | TBD | 99% | Feature #6 design spec approved. seqremail-admin (port 8081) ready to scaffold. |
 | 3 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-01 | 2026-06-05 ⚠️ | 87% | Fixed localhost→host.docker.internal. Pending: docker compose up + verify DB. |
 | 4 | **[TGCA](./active/tgca.md)** | 2026-05-25 | TBD | 0% | Registered — pending study |
@@ -27,4 +27,4 @@
 ---
 ## System Status
 - **Total Projects**: 12 (5 active + 7 archived)
-- **Last Updated**: 2026-07-03 - ECOURT_PdfErrorCheckWS — PDFBox fallback + ExceptionConverter fix, tested OK
+- **Last Updated**: 2026-07-03 - ECOURT_PdfErrorCheckWS — removed PDFBox, ClassCastException returns 100/failed

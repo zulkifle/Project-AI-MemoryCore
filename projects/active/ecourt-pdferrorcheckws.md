@@ -5,25 +5,26 @@
 - **Type**: API (SOAP Web Service)
 - **Client**: Internal (POJ / e-Court)
 - **Period**: 2026-07-02 - Active
-- **Tech Stack**: Java 8 + JAX-WS + WildFly 18 + iText5 5.4.1 + PDFBox 2.0.27 + log4j
-- **Completion**: 95%
+- **Tech Stack**: Java 8 + JAX-WS + WildFly 18 + iText5 5.4.1 + log4j
+- **Completion**: 97%
 - **Duration**: ~3.5 hours
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-07-03 — PDFBox fallback added, ExceptionConverter bug found and fixed, tested OK
+- **Last Session**: 2026-07-03 — Removed PDFBox entirely; ClassCastException returns 100/failed
 - **Next Steps**:
-  1. Deploy to production server
-  2. Monitor logs for any new PDF error types
+  1. Clean and Build in NetBeans (remove pdfbox/fontbox from WEB-INF/lib in WAR)
+  2. Deploy to production server
 - **Known Issues**:
-  - `InvalidPdfException: Rebuild failed: trailer not found` → PDF too corrupt for iText + PDFBox, external repair required (QPDF / Acrobat Pro)
+  - `ClassCastException: PdfArray/PdfNumber cast` → 100/failed, no auto-fix (AcroForm structure corruption — not fixable without external tools)
+  - `InvalidPdfException: Rebuild failed: trailer not found` → 100/failed, too corrupt for iText
 
 ## SOAP Methods
 
 | Method | Params | Purpose |
 |--------|--------|---------|
-| `CheckPdfError` | `PdfBase64`, `FileName` | Check PDF from Base64; auto-rp if needed, in memory |
-| `CheckPdfErrorByPath` | `PDFtoSign`, `gUid` | Check PDF from file path; auto-rp if needed, overwrite file |
+| `CheckPdfError` | `PdfBase64`, `FileName` | Check PDF from Base64; auto-rp xref damage in memory |
+| `CheckPdfErrorByPath` | `PDFtoSign`, `gUid` | Check PDF from file path; auto-rp xref damage, overwrite file |
 
 ## Response Format
 ```xml
@@ -37,34 +38,22 @@
 | Error | Auto-fix? | Client Response |
 |-------|-----------|-----------------|
 | Clean PDF | — | 000 / success / pdf verification pass |
-| `isRebuilt() = true` (minor xref damage) | Yes — PdfStamper | 000 / success / pdf verification pass |
-| `ClassCastException: PdfArray/PdfNumber cast` | Yes — PdfStamper → PDFBox fallback | 000 / success / pdf verification pass |
+| `isRebuilt() = true` (xref damage) | Yes — PdfStamper | 000 / success / pdf verification pass |
+| `ClassCastException` (AcroForm corrupt) | No | 100 / failed / full exception message |
 | `InvalidPdfException: Rebuild failed` | No — too corrupt | 100 / failed / full exception message |
-
-## Repair Chain (internal — client never sees)
-```
-isRebuilt() = true
-  → PdfStamper → overwrite file → 000/success
-
-ClassCastException (wrapped as ExceptionConverter by iText5)
-  → detected via isClassCastIssue() helper (instanceof + getCause() + toString())
-  → Try 1: PdfStamper → 000/success
-  → Try 2: PDFBox → 000/success
-  → Both fail → 100/failed
-```
 
 ## Project Structure
 ```
 ECOURT_PdfErrorCheckWS/
 ├── src/java/com/poj/pdferrorcheck/
 │   ├── PdfErrorCheckService.java   ← @WebService, 2 methods
-│   ├── PdfErrorCheckHelper.java    ← logic, auto-rp inline, isClassCastIssue()
+│   ├── PdfErrorCheckHelper.java    ← logic, isRebuilt auto-rp only
 │   └── PdfCheckResult.java         ← errCode, status, errMsg
 ├── web/WEB-INF/
 │   ├── jboss-web.xml               ← context-root: /PdfErrorCheckWS
 │   └── web.xml                     ← minimal (WildFly handles @WebService)
 ├── nbproject/
-│   ├── project.xml                 ← libs: log4j + itextpdf-5.4.1 + pdfbox + fontbox
+│   ├── project.xml                 ← libs: log4j + itextpdf-5.4.1
 │   ├── project.properties          ← JDK8, WildFly, war.name=PdfErrorCheckWS.war
 │   └── jax-ws.xml                  ← registers PdfErrorCheckService
 └── dist/PdfErrorCheckWS.war
@@ -76,20 +65,24 @@ ECOURT_PdfErrorCheckWS/
 - **Context root**: `/PdfErrorCheckWS`
 - **WSDL**: `http://<server>:<port>/PdfErrorCheckWS/PdfErrorCheckService?wsdl`
 - **targetNamespace**: `http://signing/`
-- **Key Dependencies**: `itextpdf-5.4.1.jar`, `pdfbox-2.0.27.jar`, `fontbox-2.0.27.jar`, `log4j.jar` — all in `C:\PROJECTS\java Library\`
-- **iText5 ExceptionConverter**: iText5 wraps `ClassCastException` in `ExceptionConverter extends RuntimeException` — `catch (ClassCastException e)` never triggers. Must detect via `isClassCastIssue()` in `catch (Exception e)`.
+- **Key Dependencies**: `itextpdf-5.4.1.jar`, `log4j.jar` — all in `C:\PROJECTS\java Library\`
+- **iText5 ExceptionConverter**: iText5 wraps `ClassCastException` in `ExceptionConverter extends RuntimeException`. `catch (ClassCastException e)` never triggers — ClassCastException lands in `catch (Exception e)` and returns 100/failed.
 - **File handle safety**: `reader.close(); reader = null;` before `FileOutputStream` write — prevents Windows file lock overlap between check API and sign API
-- **Repair is silent**: All repair success paths return `"pdf verification pass"` — client never knows repair happened. Internal logs use `"rp"` shorthand.
-- **For trailer-not-found**: External tools only — QPDF (`qpdf --recover`) or Acrobat Pro Method 3 (Reduced Size PDF)
+- **isRebuilt repair**: Silent — returns `"pdf verification pass"`. Logs use `"rp"` shorthand.
+- **ClassCastException / trailer-not-found**: No auto-fix. Returns full exception message. External tools required if fix needed (QPDF / Acrobat Pro).
 
 ## Session History (Last 5)
 
+### 2026-07-03 - Remove PDFBox, ClassCastException returns error
+- **Changes**: Removed PDFBox entirely — PDFBox repaired the file but iText5 still triggered ClassCastException on every subsequent call (AcroForm corruption preserved by PDFBox's save). Decision: ClassCastException returns 100/failed with exception message. Removed `isClassCastIssue()` helper, removed PDFBox import, removed pdfbox + fontbox from project.xml and project.properties javac.classpath.
+- **Time Spent**: ~15 min
+
 ### 2026-07-03 - PDFBox Fallback + ExceptionConverter Fix
-- **Changes**: Added PDFBox 2.0.27 as ClassCastException fallback (pdfbox + fontbox jars added to project.xml + project.properties). Discovered root cause: iText5 wraps `ClassCastException` in `ExceptionConverter extends RuntimeException`, so `catch (ClassCastException e)` was never triggered — ClassCastException was silently going to `catch (Exception e)`. Fixed by moving detection to `isClassCastIssue()` helper method inside `catch (Exception e)`. Repair chain: PdfStamper first, PDFBox if PdfStamper fails. All repair success paths return `"pdf verification pass"` — client unaware of repair. Log messages use `"rp"` instead of `"repair"`. Tested and confirmed working.
+- **Changes**: Added PDFBox 2.0.27 as ClassCastException fallback. Discovered iText5 wraps `ClassCastException` in `ExceptionConverter extends RuntimeException`. Added `isClassCastIssue()` helper. Tested — PDFBox repaired structurally but AcroForm corruption was preserved, so 2nd call still triggered repair. Reverted.
 - **Time Spent**: ~60 min
 
-### 2026-07-03 - File Handle Safety Fix
-- **Changes**: Fixed `reader.close()` ordering in both repair blocks. Reader closed before `FileOutputStream` write to prevent Windows file lock overlap when client calls check API then sign API sequentially.
+### 2026-07-03 - File Handle Safety + Silent Repair
+- **Changes**: Fixed `reader.close()` ordering before `FileOutputStream` write. All repair success paths return `"pdf verification pass"`. Log messages use `"rp"` shorthand.
 - **Time Spent**: ~15 min
 
 ### 2026-07-02 - Project Created
