@@ -4,7 +4,7 @@
 ## Project Overview
 - **Type**: Tool (Windows Batch Script)
 - **Client**: Trustgate Sdn Bhd (Internal)
-- **Period**: 2026-04-29 - Active
+- **Period**: 2026-04-29 - 2026-05-25
 - **Tech Stack**: Windows Batch Script (.bat) + forfiles + Windows Task Scheduler
 - **Completion**: 100%
 - **Duration**: 30 min
@@ -12,7 +12,7 @@
 
 ## Current Status
 - **Last Session**: 2026-05-25 - Script written and saved ✅
-- **Next Steps**: Copy housekeeping.bat to Trustgate server → schedule via Task Scheduler (daily 2:00 AM)
+- **Remaining**: Copy housekeeping.bat to Trustgate server → schedule via Task Scheduler (daily 2:00 AM)
 - **Known Issues**: None — script ready to deploy
 
 ## Log Paths (4 targets)
@@ -24,7 +24,7 @@
 ## Rules
 - Retain last **10 days** of logs
 - Delete files older than 10 days
-- Table is **read-only** — no application files touched, log folders only
+- Log folders only — no application files touched
 
 ## Session History (Last 5)
 
@@ -37,13 +37,13 @@
 - **Time Spent**: ~0 min
 
 ## Historical Summary
-[No history yet — this section is populated when session count exceeds 5]
+[No history — short project, 2 sessions total]
 
 ## Technical Notes
-- **Repository**: `C:\PROJECTS\ECOURT\SIGN SERVER ARCH DIAGRAM\Release v2 ecourt\housekeeping.bat`
+- **Script location**: `C:\PROJECTS\ECOURT\SIGN SERVER ARCH DIAGRAM\Release v2 ecourt\housekeeping.bat`
 - **Key Dependencies**: `forfiles` (built-in Windows command), Windows Task Scheduler
 - **Deployment**: Copy .bat to server → schedule via Task Scheduler (daily 2:00 AM)
 - **Audit log on server**: `C:\Trustgate\housekeeping-report.log`
 
 ---
-**Last Updated**: 2026-04-29 | **Position**: #1/10 Active
+**Last Updated**: 2026-07-03 | **Status**: Archived (LRU) — Script done ✅. Pending server deployment.

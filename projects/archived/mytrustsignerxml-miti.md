@@ -4,7 +4,7 @@
 ## Project Overview
 - **Type**: API
 - **Client**: MITI (Ministry of Investment, Trade and Industry of Malaysia)
-- **Period**: 2026-05-24 - Active (reactivated 2026-06-05)
+- **Period**: 2026-05-24 - 2026-06-18
 - **Tech Stack**: Java 8 (Servlet) + Tomcat + MySQL
 - **Completion**: 100%
 - **Duration**: 3 hours
@@ -167,50 +167,20 @@ TestSignXML/
 - **Root cause (two independent paths)**:
   1. `DBUtil.getTXID()` built the id from `currentTimeMillis + (nanoTime/1000)%1e6`. Two threads reading `nanoTime` within ~1µs produce the same micro portion → same id under concurrency.
   2. `sign.java` held `txid` and `db` as **servlet instance fields**. Servlets are singletons, so concurrent requests shared them — request B's `getTXID()` overwrote request A's `txid` before A saved → both saved the same id. Plus catch blocks re-saved the same `txid` (third path).
-- **Fix (code-level only, NO DB change — `UNIQUE` constraint kept as backstop)**:
-  - `DBUtil.java`: `getTXID()` now uses a process-wide `AtomicLong` sequence (`currentTimeMillis + %06d seq`) — cannot collide in-process. Added dedicated `SQLIntegrityConstraintViolationException` catch for clear logging.
-  - `sign.java`: moved `txid`/`db` to request-local vars; added `txSaved` guard so catch blocks never re-insert; null-guarded catch saves (also fixes latent NPE when exception fires before `db` created).
-- **Verified**: `mvn compile` → EXIT=0.
-- **PROD package prep** (`Deployment\PRODUCTION\MTSAXML_PROD`): Dejul rebuilt WAR (DBUtil/sign .class stamped today, confirmed `AtomicLong` + constraint-catch compiled in). Reviewed package vs `DEPLOYMENT_CHECKLIST.txt`:
-  - Fixed `mtsa.properties` `DB_URL` `localhost` → `mysql` (compose service name — would've failed DB connect inside container).
-  - Bumped image tag `mtsa-miti-prod:1.` → `1.1` in docker-compose.yaml.
-  - Removed leaked UKM artifacts from webapps (`SandboxAPI#MTSAPilotUKM.war` + 2 `.filepart` leftovers, ~75 MB).
-  - Left default Tomcat apps (docs/examples/manager/host-manager/ROOT) in place per Dejul's call.
-- **Deploy caveat**: compose mounts `/opt/mtsa/properties` from host → host's `mtsa.properties` overrides baked-in copy; must update `DB_URL` on the server host too. Rebuild with `docker compose build --no-cache`.
-- **Pending**: Dejul to zip package + deploy. PROD go-live still gated on MITI pilot sign-off.
+- **Fix**: `DBUtil.java` uses `AtomicLong` seq; `sign.java` moved `txid`/`db` to request-local vars with `txSaved` guard.
 - **Time Spent**: ~45 min
 
 ### 2026-06-11 - PILOT Billing Verified — PROD Blocked on Client
-- **Changes**: Confirmed steps 1-4 complete — WAR built, billing.class deployed to PILOT, `/billing` endpoint tested OK, recipients restored to all 4. Project now effectively done on our side.
-- **Status**: PROD deploy is the only remaining task, gated on MITI confirming the pilot test is successful. No action on our side until client responds.
+- **Changes**: Confirmed steps 1-4 complete — WAR built, billing.class deployed to PILOT, `/billing` endpoint tested OK, recipients restored to all 4.
 - **Time Spent**: ~10 min
 
 ### 2026-06-05 - Monthly Billing Feature (billing.java + cron)
-- **New Feature**: `/billing` servlet — crond triggers on 1st of every month at 08:00 MYT, queries successful transactions for previous month, generates CSV, emails to recipients via SMTP (Gmail app password)
-- **Dev changes** (`C:\PROJECTS\MITI\Development\MyTrustSignerXML`):
-  - `Dockerfile` — added `cron` + `curl` install, `COPY crontab`, `COPY entrypoint.sh`, replaced `CMD` with `ENTRYPOINT ["/entrypoint.sh"]`
-  - `crontab` — new file: `0 8 1 * *` curl to `/billing`
-  - `entrypoint.sh` — new file: `service cron start` then `catalina.sh run`
-  - `mtsa-pilot.properties` — DB_URL changed from `localhost` to `mysql` (compose service name); added `billing.recipients`, `smtp.*`; testing: recipients set to `zulkifle@msctrustgate.com` only
-  - `billing.java` — (1) production-only guard: returns `{"status":"SKIPPED"}` if `stage != production`; (2) email subject hardcoded to `MITI PRODUCTION Monthly Billing Report — {monthLabel}`
-- **PILOT deployment changes** (`C:\PROJECTS\MITI\Deployment\PILOT\MTSAXML_PILOT`):
-  - `mtsa-pilot.properties` — fixed DB_URL + added SMTP/billing config
-  - `docker-compose.yaml` — added `networks: default: bridge`
-- **PROD deployment changes** (`C:\PROJECTS\MITI\Deployment\PRODUCTION\MTSAXML_PROD`):
-  - `mtsa.properties` — fixed DB_URL (`mysql`), added SMTP/billing config
-  - `crontab` — removed duplicate pilot line
-  - `docker-compose.yaml` — added `networks: default: bridge`
-  - `DEPLOYMENT_CHECKLIST.txt` — new file: 9-section pre-deployment checklist (reusable for other projects)
-- **Pending**: WAR not yet rebuilt/copied to either deployment folder (billing.class missing)
+- **Changes**: `/billing` servlet — crond triggers 1st of month 08:00 MYT, queries successful tx for previous month, generates CSV, emails to recipients via SMTP.
 - **Time Spent**: ~2.5 hours
 
 ### 2026-06-01 - sign.java:140 Fix + Cert Expiry Analysis
-- **Changes**: (1) Fixed sign.java:140 — replaced `verifySignature(signatureValue, digestValue.getBytes())` with `verifySignedInfoSignature(signedInfo, signatureValue, canonAlgoUri)`. Verify log now correctly reflects actual signature validity. (2) Analyzed cert expiry handling — `SignUsingP12` is instantiated per request, so replacing P12 file at `kspath` takes effect immediately on next request. No container restart or code change needed when cert expires.
+- **Changes**: Fixed sign.java:140 verify bug. Analyzed cert expiry — replacing P12 at `kspath` takes effect on next request, no container restart needed.
 - **Time Spent**: ~15 min
-
-### 2026-05-29 - Production Deployed + Tested + Deployment Guide Written
-- **Changes**: (1) Diagnosed `verify signature: false` log in sign.java:140 — confirmed harmless bug (wrong data passed to verify check; uses digestValue.getBytes() instead of canonicalized SignedInfo). (2) Confirmed signing correct via /verify endpoint — statusCode 000. (3) Root cause of "error" was wrong URL used during testing. (4) Generated DEPLOYMENT_GUIDE.txt covering: package structure, host dir setup, docker compose up, DB verification, endpoint tests, troubleshooting. Saved to `C:\PROJECTS\MITI\Deployment\PRODUCTION\DEPLOYMENT_GUIDE.txt`.
-- **Time Spent**: ~90 min
 
 ## Historical Summary
 Project started 2026-05-24: studied full source, documented architecture (sign/verify/getcertinfo flows, config, DB schema, API contracts), and created the `xml-signing` skill (Lv.1) for XMLDSig/Apache Santuario. Reached 100% functional completion by end of May — production deployed & tested, DEPLOYMENT_GUIDE written. Key milestones since: sign.java:140 verify fix, monthly `/billing` servlet (cron-driven CSV email), PILOT billing verified, and the duplicate-tx_id race fix.
@@ -220,10 +190,10 @@ Project started 2026-05-24: studied full source, documented architecture (sign/v
 - **Key Dependencies**: Apache Santuario xmlsec 4.0.1, PKCS12 keystore, MySQL
 - **WAR Context Path**: `/SandboxAPI2/MyTrustSignerXMLPilot` (sandbox)
 - **Java Version**: Java 8 (compiled target 1.8)
-- **XMLDSig Standard**: W3C XML-Signature Syntax and Processing (https://www.w3.org/TR/xmldsig-core/)
-- **Canonicalization**: EXC-C14N (`http://www.w3.org/2001/10/xml-exc-c14n#`) — exclusive C14N, omit comments
-- **Signature Algorithm**: RSA-SHA256 (auto-detected from P12 key type; also supports ECDSA)
+- **XMLDSig Standard**: W3C XML-Signature Syntax and Processing
+- **Canonicalization**: EXC-C14N — exclusive C14N, omit comments
+- **Signature Algorithm**: RSA-SHA256
 - **Digest Algorithm**: SHA-256
 
 ---
-**Last Updated**: 2026-06-18 | **Status**: ✅ CLOSED — All fixes delivered. PROD package handed over. MITI self-deploys.
+**Last Updated**: 2026-07-03 | **Status**: Archived (LRU) — Completed ✅ 2026-06-18. PROD handed over to MITI.
