@@ -6,8 +6,8 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-07-03 | TBD | 97% | Removed PDFBox. ClassCastException → 100/failed. isRebuilt auto-rp only. Ready for PROD deploy. |
-| 2 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-07-03 | TBD | 99% | Feature #6 fully implemented — seqremail-admin live (port 8081), AJAX search, bulk role, Docker. Pending MR. |
+| 1 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-07-07 | TBD | 99% | Admin portal: bulk delete, sortable/paginated datatable, provisioned_by FK fix. Pending MR. |
+| 2 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-07-03 | TBD | 97% | Removed PDFBox. ClassCastException → 100/failed. isRebuilt auto-rp only. Ready for PROD deploy. |
 | 3 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-01 | 2026-06-05 ⚠️ | 87% | Fixed localhost→host.docker.internal. Pending: docker compose up + verify DB. |
 | 4 | **[TGCA](./active/tgca.md)** | 2026-05-25 | TBD | 0% | Registered — pending study |
 | 5 | **[RSS Self Service Portal](./active/rss-self-service-portal.md)** | 2026-05-12 | Q2 2026 | 80% | Phase 1 complete — next: browser test + billing integration |
@@ -27,4 +27,4 @@
 ---
 ## System Status
 - **Total Projects**: 12 (5 active + 7 archived)
-- **Last Updated**: 2026-07-03 - TG SeQureMail — Feature #6 admin portal fully implemented + Docker
+- **Last Updated**: 2026-07-07 - TG SeQureMail — Admin portal bulk delete, datatable pagination/sort, provisioned_by FK fix

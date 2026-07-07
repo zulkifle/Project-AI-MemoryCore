@@ -7,6 +7,21 @@
 **Session Focus**: Petronas handover project — Mermaid diagrams + Dockerized C++ daemon + docker-compose TEST/PROD path switching + openssl notes
 
 ## Active Project
+- **Name**: TG SeQureMail
+- **Session**: 13 — 2026-07-07
+- **Completion**: 99%
+- **Repo**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\extension\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\` | Admin: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\seqremail-admin\`
+- **Context**: Rebuilt/redeployed `seqremail-admin` container. Added bulk delete (checkbox selection → "Delete" button, batch removal), converted Users table to client-side rendering with pagination (25/50/100/All) and sortable headers (Company/Role/Status). Fixed `provisioned_by` — was always NULL (never wired up); redesigned as `provisioned_by_id` self-referencing FK on `user_keys.id`, threaded sender through `CryptoServiceImpl` auto-provision flow. Migration split: key-api's V6 adds the column (starts first in compose), admin's V4 drops the legacy string column.
+- **Next Steps**:
+  1. Full E2E test — register both accounts, encrypt & send, decrypt on receiver side (fresh test protocol)
+  2. Merge `feature/6-user-management` → master (MR on GitLab)
+  3. Continue team checklist: #5 (HSM), #4 (OWA), #2 (Firefox)
+- **Docker**: `docker compose up` in `C:\PROJECTS\SEQURE MAIL\Development\seqremail\` — starts db + key-api + admin
+- **Admin**: `http://localhost:8081/admin/login` — admin / 7ru57ga73
+- **Team Feedback Checklist**: 2/8 done — #7 ✅ | #6 ✅ pending MR
+- **Fresh test**: `TRUNCATE TABLE otp_verifications; TRUNCATE TABLE user_keys;` (container `seqremail-db-1`) + `chrome.storage.local.clear()` in extension console
+
+## Previous Active Project
 - **Name**: ECOURT_PdfErrorCheckWS
 - **Session**: 1 — 2026-07-02
 - **Completion**: 80%
@@ -16,19 +31,6 @@
   1. Consider adding PDFBox + QPDF fallback chain for ClassCastException and trailer-not-found cases
   2. Test both methods with known good and known corrupt PDFs
   3. Redeploy WAR to WildFly after latest changes
-
-## Previous Active Project
-- **Name**: TG SeQureMail
-- **Session**: 12 — 2026-07-03
-- **Completion**: 99%
-- **Repo**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\extension\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\` | Admin: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\seqremail-admin\`
-- **Context**: Feature #6 fully implemented. `seqremail-admin` live (port 8081) with Docker. AJAX search (dropdown filter + 300ms debounce), bulk role change bar (hidden until checked, confirmation dialog), Add User = SUBSCRIBER by default (hidden input). Branch `feature/6-user-management` pushed to GitLab, pending MR.
-- **Next Steps**:
-  1. Merge `feature/6-user-management` → master (MR on GitLab)
-  2. Continue team checklist: #5 (HSM), #4 (OWA), #2 (Firefox)
-- **Docker**: `docker compose up` in `C:\PROJECTS\SEQURE MAIL\Development\seqremail\` — starts db + key-api + admin
-- **Admin**: `http://localhost:8081/admin/login` — admin / 7ru57ga73
-- **Team Feedback Checklist**: 2/8 done — #7 ✅ | #6 ✅ pending MR
 
 ## Previous Active Project
 - **Name**: Petronas Handover
