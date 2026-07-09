@@ -3,10 +3,22 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-06-30
-**Session Focus**: Petronas handover project — Mermaid diagrams + Dockerized C++ daemon + docker-compose TEST/PROD path switching + openssl notes
+**Last Activity**: 2026-07-09
+**Session Focus**: MyTrustID Desktop (reactivated) — NPRA AUT103 UserCompName check removed, debug payload logging added, Release `Prefer32Bit` fix for token-detection bug
 
 ## Active Project
+- **Name**: MyTrustID Desktop
+- **Session**: 15 — 2026-07-09
+- **Completion**: 100% (maintenance)
+- **Repo**: `C:\repos\MyTrustIDv1_AATL-GENERIC` — main app: `MyTrustIDv1\`, installer: `MyTrustID\`
+- **Context**: Investigated NPRA cert-vs-param check in `AuthServiceNpra.cs` — `AUT103` compared cert `O=` (`cd.UserOrg`) against request `UserCompName`; removed that check entirely per Dejul's request (only `AUT102` UserCompID check remains). Added payload logging after deserialization (masks `TokenPin`), fixed SonarC# S2629 by using `log.InfoFormat` with a constant template instead of concatenation. Diagnosed tester-reported "token not detected" on the compiled Release installer — root cause: `Prefer32Bit=false` in Release vs `true` in Debug in `MyTrustIDv1.csproj` (PKCS#11 token driver is 32-bit only, Release ran as x64 and couldn't load it). Fixed by setting `Prefer32Bit=true` in Release config, kept `Optimize=true`/`DebugType=pdbonly`.
+- **Next Steps**:
+  1. Rebuild Release installer, have tester retest token detection
+  2. Confirm AUT103 removal doesn't break NPRA caller-side expectations
+  3. Commit changes in `MyTrustIDv1_AATL-GENERIC` repo (not yet committed)
+  4. Merge `fix/autoupdate-elevation` → master (August 2026 — hold until bpfk team done)
+
+## Previous Active Project
 - **Name**: TG SeQureMail
 - **Session**: 13 — 2026-07-07
 - **Completion**: 99%
@@ -47,9 +59,6 @@
 - **Context**: Fixed duplicate `tx_id` race (DBUtil.getTXID → AtomicLong seq; sign.java txid/db moved off shared servlet fields + txSaved guard). PROD package verified at `Deployment\PRODUCTION\MTSAXML_PROD`. Go-live gated on MITI pilot sign-off.
 - **Next Steps**: Dejul to zip + deploy. On server: update DB_URL on host `/opt/mtsa/properties/mtsa.properties`, `docker compose build --no-cache`. Awaiting MITI pilot sign-off.
 - **Repo**: `C:\PROJECTS\MITI\Development\MyTrustSignerXML`
-
-## Previous Active Project (carry-over)
-**MyTrustID Desktop** — ARCHIVED 2026-05-28. Dev done. External items pending (bpfk team, cert signing). Branch `fix/autoupdate-elevation` held — remind to merge in August 2026.
 
 ## 💭 Session Recap (For AI Restart)
 
