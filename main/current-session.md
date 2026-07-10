@@ -4,9 +4,20 @@
 ## Session RAM Status
 **Current Session**: Active
 **Last Activity**: 2026-07-09
-**Session Focus**: MyTrustID Desktop (reactivated) — NPRA AUT103 UserCompName check removed, debug payload logging added, Release `Prefer32Bit` fix for token-detection bug
+**Session Focus**: jumio-proxy-integration (reactivated) — fixed intermittent OAuth 401 (empty webHref) reported by Jumio, per-project synchronized token refresh + 401 retry-once, deployed
 
 ## Active Project
+- **Name**: jumio-proxy-integration
+- **Session**: 2026-07-09 (reactivated after PROD completion 2026-06-26)
+- **Completion**: 100% (maintenance)
+- **Repo**: `C:\PROJECTS\DOCKER GITLAB\docker\jumio-proxy\app\jumio-proxy\` — separate nested git repo (`trustgate/jumio-proxy.git`), production runs branch `feature/per-session-callback-url` (multi-tenant)
+- **Context**: Jumio reported intermittent HTTP 401 on `initiateWorkflow` for several userReferences, causing empty `webHref`. Root cause: `JumioClient.java`'s per-project token cache had no synchronized refresh (race condition) and no 401 retry. Jumio's suggested fix was single-tenant (matches this repo's stale `master` branch, not what's deployed) — adapted it to preserve multi-tenancy: added per-project `synchronized` lock on cache-miss token fetch, and `executeWithAuthRetry()` wrapping `initiateWorkflow`/`getWorkflowExecutionRaw` that invalidates + retries once on 401. Built, deployed, and replied to Jumio explaining the multi-tenant adaptation.
+- **Next Steps**:
+  1. Monitor logs over next token-expiry cycles to confirm 401s resolved
+  2. Await Jumio's confirmation
+  3. Merge `feature/per-session-callback-url` → `feature/multitenant-support` once stable
+
+## Previous Active Project
 - **Name**: MyTrustID Desktop
 - **Session**: 15 — 2026-07-09
 - **Completion**: 100% (maintenance)
