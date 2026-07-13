@@ -6,8 +6,8 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-07-09 | TBD | 100% (maintenance) | Reactivated — fixed intermittent OAuth 401 (empty webHref) via per-project synchronized token refresh + 401 retry-once. Deployed, monitoring. |
-| 2 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-09 | TBD | 100% (maintenance) | Removed AUT103 UserCompName check, added debug payload logging, fixed Release `Prefer32Bit` token-detection bug. Not yet committed. |
+| 1 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-13 | TBD | 100% (maintenance) | Fixed two AUT100 bugs: quoted-comma DN parsing (CertHelper.cs, all 4 parsers) + untrimmed request params (AuthServiceNpra.cs). Not yet committed, awaiting tester retest. |
+| 2 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-07-09 | TBD | 100% (maintenance) | Reactivated — fixed intermittent OAuth 401 (empty webHref) via per-project synchronized token refresh + 401 retry-once. Deployed, monitoring. |
 | 3 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-07-07 | TBD | 99% | Admin portal: bulk delete, sortable/paginated datatable, provisioned_by FK fix. Pending MR. |
 | 4 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-07-03 | TBD | 97% | Removed PDFBox. ClassCastException → 100/failed. isRebuilt auto-rp only. Ready for PROD deploy. |
 | 5 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-01 | 2026-06-05 ⚠️ | 87% | Fixed localhost→host.docker.internal. Pending: docker compose up + verify DB. |
@@ -27,4 +27,4 @@
 ---
 ## System Status
 - **Total Projects**: 12 (7 active + 5 archived)
-- **Last Updated**: 2026-07-09 - jumio-proxy-integration reactivated (#1) — OAuth 401 token bug fixed (per-project synchronized refresh + retry-once), deployed
+- **Last Updated**: 2026-07-13 - MyTrustID Desktop (#1) — two AUT100 root causes fixed (quoted-comma DN parsing + untrimmed request params), awaiting tester retest

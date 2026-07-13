@@ -7,6 +7,19 @@
 **Session Focus**: jumio-proxy-integration (reactivated) — fixed intermittent OAuth 401 (empty webHref) reported by Jumio, per-project synchronized token refresh + 401 retry-once, deployed
 
 ## Active Project
+- **Name**: MyTrustID Desktop
+- **Session**: 16 — 2026-07-13
+- **Completion**: 100% (maintenance)
+- **Repo**: `C:\repos\MyTrustIDv1_AATL-GENERIC` — main app: `MyTrustIDv1\`, installer: `MyTrustID\`
+- **Context**: Tester retested session 15's token-detection fix — confirmed working, but surfaced two new `AUT100` (UserID/UserFullName mismatch) failures. (1) BPFK user `PAN, CHIA-YUEH`: `CertHelper.cs`'s four DN parsers (`GPKICert`, `ECourtCert`, `MykeyCert`, `BPFKCert`) used naive `subjectdn.Split(',')`, which breaks when `X509Certificate2.Subject` quotes a comma-containing RDN value (`CN="PAN, CHIA-YUEH"` → parsed as truncated `"PAN`). Added a shared quote-aware `SplitDnComponents()` helper, applied to all four parsers. (2) BPFK user `Siow Nget Kam`: request payload had untrimmed trailing whitespace that survived into the `OrdinalIgnoreCase` fullname comparison against the (already-trimmed) cert-side value. Added `?.Trim()` to `UserID`/`UserFullName`/`UserCompID`/`UserCompName` at read-time in `AuthServiceNpra.cs`.
+- **Next Steps**:
+  1. Retest both fixes (comma-name case + trailing-space case)
+  2. Rebuild Release installer with `Prefer32Bit=true`, have tester retest token detection (still pending from session 15)
+  3. Confirm AUT103 removal doesn't break NPRA caller-side expectations
+  4. Commit all pending changes in `MyTrustIDv1_AATL-GENERIC` repo (sessions 15 + 16, not yet committed)
+  5. Merge `fix/autoupdate-elevation` → master (August 2026 — hold until bpfk team done)
+
+## Previous Active Project
 - **Name**: jumio-proxy-integration
 - **Session**: 2026-07-09 (reactivated after PROD completion 2026-06-26)
 - **Completion**: 100% (maintenance)
@@ -16,18 +29,6 @@
   1. Monitor logs over next token-expiry cycles to confirm 401s resolved
   2. Await Jumio's confirmation
   3. Merge `feature/per-session-callback-url` → `feature/multitenant-support` once stable
-
-## Previous Active Project
-- **Name**: MyTrustID Desktop
-- **Session**: 15 — 2026-07-09
-- **Completion**: 100% (maintenance)
-- **Repo**: `C:\repos\MyTrustIDv1_AATL-GENERIC` — main app: `MyTrustIDv1\`, installer: `MyTrustID\`
-- **Context**: Investigated NPRA cert-vs-param check in `AuthServiceNpra.cs` — `AUT103` compared cert `O=` (`cd.UserOrg`) against request `UserCompName`; removed that check entirely per Dejul's request (only `AUT102` UserCompID check remains). Added payload logging after deserialization (masks `TokenPin`), fixed SonarC# S2629 by using `log.InfoFormat` with a constant template instead of concatenation. Diagnosed tester-reported "token not detected" on the compiled Release installer — root cause: `Prefer32Bit=false` in Release vs `true` in Debug in `MyTrustIDv1.csproj` (PKCS#11 token driver is 32-bit only, Release ran as x64 and couldn't load it). Fixed by setting `Prefer32Bit=true` in Release config, kept `Optimize=true`/`DebugType=pdbonly`.
-- **Next Steps**:
-  1. Rebuild Release installer, have tester retest token detection
-  2. Confirm AUT103 removal doesn't break NPRA caller-side expectations
-  3. Commit changes in `MyTrustIDv1_AATL-GENERIC` repo (not yet committed)
-  4. Merge `fix/autoupdate-elevation` → master (August 2026 — hold until bpfk team done)
 
 ## Previous Active Project
 - **Name**: TG SeQureMail

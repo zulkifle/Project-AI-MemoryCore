@@ -7,7 +7,7 @@
 - **Tech Stack**: C# + WPF + .NET Framework 4.8 + WebSocket
 - **Completion**: 100% (maintenance)
 - **Due Date**: TBD
-- **Duration**: ~15.75 hours
+- **Duration**: ~16.5 hours
 
 ## Solution Structure
 | Project | Purpose | Path |
@@ -23,16 +23,18 @@
 - Desktop installer via VS installer project
 
 ## Current Status
-- **Last Session**: 2026-07-09 - NPRA company-name check removed, debug payload logging added, Release `Prefer32Bit` fix for token-detection bug
+- **Last Session**: 2026-07-13 - Fixed two distinct `AUT100` (UserID/UserFullName mismatch) bugs in NPRA auth flow, found via tester log analysis
 - **Next Steps**:
-  1. Rebuild Release installer with `Prefer32Bit=true` fix, have tester retest token detection
-  2. Confirm removal of `AUT103` (UserCompName) check doesn't break NPRA auth flow expectations on the caller (PKI webservice) side
-  3. Changes not yet committed in `MyTrustIDv1_AATL-GENERIC` repo — commit when tester confirms fix
-  4. Merge `fix/autoupdate-elevation` → master (August 2026 — hold until bpfk team done)
+  1. Retest both fixes: BPFK user with comma in name (`PAN, CHIA-YUEH`) and user with trailing-space payload (`Siow Nget Kam `)
+  2. Rebuild Release installer with `Prefer32Bit=true` fix, have tester retest token detection (still pending from session 15)
+  3. Confirm removal of `AUT103` (UserCompName) check doesn't break NPRA auth flow expectations on the caller (PKI webservice) side
+  4. Changes not yet committed in `MyTrustIDv1_AATL-GENERIC` repo — commit when tester confirms all fixes (session 15 + 16)
+  5. Merge `fix/autoupdate-elevation` → master (August 2026 — hold until bpfk team done)
 - **Decided**: `AUT103` UserCompName-vs-certificate check removed entirely per Dejul's request (2026-07-09) — only `AUT102` (UserCompID) company check remains active
 - **Known Issues**: bpfk outer iframe missing `allow="local-network-access"` — confirmed via Sec-Fetch-Dest + empty MTID header log
 
 ## Key Logic Notes
+- **`AUT100` root causes found 2026-07-13**: (1) `X509Certificate2.Subject` quotes RDN values containing a comma (e.g. `CN="PAN, CHIA-YUEH"`) — naive `Split(',')` in `CertHelper.cs` tore the value in two, corrupting `CD.UserFullName`. (2) Caller (NPRA/PKI webservice) sometimes sends untrimmed whitespace in request params (e.g. `UserFullname: "Siow Nget Kam "`) — cert-side value is trimmed during DN parsing but request-side wasn't, so `OrdinalIgnoreCase` comparison still failed on the trailing space.
 - `CheckBNMcert()` in `PickupNewCertViewModel.cs:507` — reads X509 SubjectDN, checks `O=BNM`
 - Returns `isModifiedCka = true` if BNM cert detected → affects how cert is imported via `ImportCertificate()`
 - Chrome LNA silent block signature: TLS opens, 22-sec gap, empty `Header start:` in MTID log, connection closes
@@ -40,6 +42,10 @@
 - **Debug vs Release build difference**: only meaningful diff was `Prefer32Bit` (Debug=true, Release=false). No `#if DEBUG` blocks anywhere in codebase. PKCS#11 token driver (QUEST3PLUS) is 32-bit only — Release running AnyCPU/x64 couldn't load it, causing "token not detected". Fixed by setting `Prefer32Bit=true` in Release `PropertyGroup` in `MyTrustIDv1.csproj` (kept `Optimize=true`, `DebugType=pdbonly` — proper optimized build, not a Debug build shipped as Release).
 
 ## Session History (Last 5)
+
+### 2026-07-13 - AUT100 Double Root-Cause Fix: Quoted-Comma DN Parsing + Untrimmed Request Params
+- **Changes**: Tester retested token detection fix (session 15) — confirmed working, but surfaced two new `AUT100` (UserID/UserFullName mismatch) failures. (1) BPFK user `PAN, CHIA-YUEH`: `CertHelper.cs` parsers (`GPKICert`, `ECourtCert`, `MykeyCert`, `BPFKCert`) all used naive `subjectdn.Split(',')`, which breaks when `X509Certificate2.Subject` quotes a comma-containing RDN value (e.g. `CN="PAN, CHIA-YUEH"` → parsed as `"PAN`, truncated). Added a shared `SplitDnComponents()` helper that respects double-quoted values (and unescapes doubled `""`), applied to all four parser methods. (2) BPFK user `Siow Nget Kam`: request payload had trailing whitespace (`"Siow Nget Kam "`) that survived into the `OrdinalIgnoreCase` comparison against the (already-trimmed) cert-side value. Added `?.Trim()` to `UserID`, `UserFullName`, `UserCompID`, `UserCompName` at read-time in `AuthServiceNpra.cs` (left `TokenPIN` untouched — feeds decryption, not string comparison). Both fixes diagnosed from tester-provided debug payload logs (added last session). Not yet retested or committed.
+- **Time Spent**: ~40 min
 
 ### 2026-07-09 - NPRA Company Name Check Removal + Debug Payload Logging + Release Config Fix
 - **Changes**: (1) Investigated NPRA cert-vs-param comparison logic in `AuthServiceNpra.cs` — confirmed `AUT103` compared cert `O=` (`cd.UserOrg`) against request `UserCompName`. (2) Added payload logging after deserialization (`payloadReceived` var + `log.InfoFormat("Payload received: {0}", payloadReceived)`), masking `TokenPin` — fixed SonarC# S2629 (logging template must be constant, no string concatenation). (3) Removed the `AUT103` UserCompName-vs-cert `else if` block entirely per request — `AUT102` (UserCompID) check still active, chain now falls through to cert status check. (4) Diagnosed tester-reported "token not detected" issue on compiled Release installer — traced to `Prefer32Bit=false` in Release vs `true` in Debug in `MyTrustIDv1.csproj` (PKCS#11 token driver is 32-bit only, so Release running as x64 couldn't load it). Dejul initially matched full Debug settings (`DebugType=full`, `Optimize=false`) in Release too; reverted those two back to `pdbonly`/`true` per confirmation, kept only `Prefer32Bit=true`.
@@ -57,18 +63,14 @@
 - **Changes**: Replaced non-functional "click here" anchor (blocked by Chrome security) with "Copy & Open New Tab" button. Button copies `chrome://` or `edge://` flags URL to clipboard and opens a blank new tab in one click. Added browser restriction explanatory text. Pending: same changes to `page_auth_jnlp.jsp` (deferred).
 - **Time Spent**: ~30 min
 
-### 2026-05-21 - UI Lock All Screens + Installer Bat Overhaul + Code Signing Tool
-- **Changes**: (1) Added `IsNotProcessing` + `NavEnabled` pattern across all 4 VMs — `PickupNewCertViewModel`, `SelectStorageViewModel`, `LoginViewModel`, `SoftCertViewModel` — locks all input fields, radio buttons, and sidebar nav during processing, re-enables in `finally`. (2) Rewrote `mytrustid.bat`: replaced dynamic .vbs→PowerShell shortcut, bitsadmin→WebClient.DownloadFile, .NET 4.6.1→4.8 (Release DWORD check), WMIC→registry + direct `msiexec /x` (synchronous), fixed auto-run race condition. (3) Created `sign.bat` — double-click code signing tool for SafeNet token using `signtool /a`.
-- **Time Spent**: ~2 hours
-
 ## Historical Summary
-Earlier sessions (2026-03-31 to 2026-04-21): Project registered. Full solution explored. Admin testing completed, BNM cert pickup success. May 6-7: STA thread fix, NullRef fix, expired cert fallback loop, CertVerifierWSClient integrated, NPRA 5-param auth, Java AES/CBC/NoPadding decrypt, `userSERIALNUMBER` overwrite bug fixed, BPFKCert single-pass parse fix, 10 error codes audited. May 8: UI freeze async fix (SelectStorageViewModel + PickupNewCertViewModel). May 12: FaultException investigation — user confirmed own error, no code changes. May 14: Chrome PNA investigation — fixed `HttpService.cs` crash (query string stripping), fixed OPTIONS regex in `WebServer.cs`. May 15-17: Chrome LNA nested iframe diagnosis, JSON parse bug fix, LNA instruction box on JSPs, LNA_Findings_Draft.txt created. May 20: PickupNewCertViewModel trim fix (UserID+UUID). May 20-22: UI lock all screens, installer bat overhaul, code signing tool, AutoUpdate overhaul (no admin, IExpress, restart mutex fix). Project archived 2026-06-03 (EXE+MSI signed, 100% complete) — reactivated 2026-07-09 for NPRA auth logic maintenance and a Release-build token-detection bug.
+Earlier sessions (2026-03-31 to 2026-04-21): Project registered. Full solution explored. Admin testing completed, BNM cert pickup success. May 6-7: STA thread fix, NullRef fix, expired cert fallback loop, CertVerifierWSClient integrated, NPRA 5-param auth, Java AES/CBC/NoPadding decrypt, `userSERIALNUMBER` overwrite bug fixed, BPFKCert single-pass parse fix, 10 error codes audited. May 8: UI freeze async fix (SelectStorageViewModel + PickupNewCertViewModel). May 12: FaultException investigation — user confirmed own error, no code changes. May 14: Chrome PNA investigation — fixed `HttpService.cs` crash (query string stripping), fixed OPTIONS regex in `WebServer.cs`. May 15-17: Chrome LNA nested iframe diagnosis, JSON parse bug fix, LNA instruction box on JSPs, LNA_Findings_Draft.txt created. May 20: PickupNewCertViewModel trim fix (UserID+UUID). May 20-21: UI lock all screens (IsNotProcessing/NavEnabled pattern across 4 VMs), installer bat overhaul (mytrustid.bat rewrite), sign.bat code signing tool created. May 21-22: AutoUpdate overhaul (no admin, IExpress, restart mutex fix). Project archived 2026-06-03 (EXE+MSI signed, 100% complete) — reactivated 2026-07-09 for NPRA auth logic maintenance and a Release-build token-detection bug.
 
 ## Technical Notes
-- **Repository**: `C:\repos\MyTrustIDv1_AATL-GENERIC` (not yet committed — pending changes from 2026-07-09 session)
+- **Repository**: `C:\repos\MyTrustIDv1_AATL-GENERIC` (not yet committed — pending changes from sessions 15 + 16, awaiting tester retest)
 - **Key Dependencies**: .NET Framework 4.8, WPF, WebSocket library, log4net, Newtonsoft.Json
 - **LNA Fix files**: `page_auth.jsp`, `page_auth_jnlp.jsp`, `page_auth_jnlp_ORI.jsp`, `error_page_auth.jsp`, `HttpService.cs`, `testq3.php`
 - **SafeNet Token installer**: `C:\PROJECTS\MYTRUSTID DESKTOP\Token\Safenet\Installation` — install this before signing EXE/MSI with real code signing cert
 
 ---
-**Last Updated**: 2026-07-09 (Session 15) | **Position**: #1/10 Active
+**Last Updated**: 2026-07-13 (Session 16) | **Position**: #1/10 Active
