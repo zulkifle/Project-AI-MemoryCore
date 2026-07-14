@@ -8,16 +8,12 @@
 
 ## Active Project
 - **Name**: MyTrustID Desktop
-- **Session**: 16 — 2026-07-13
+- **Session**: 17 — 2026-07-14
 - **Completion**: 100% (maintenance)
 - **Repo**: `C:\repos\MyTrustIDv1_AATL-GENERIC` — main app: `MyTrustIDv1\`, installer: `MyTrustID\`
-- **Context**: Tester retested session 15's token-detection fix — confirmed working, but surfaced two new `AUT100` (UserID/UserFullName mismatch) failures. (1) BPFK user `PAN, CHIA-YUEH`: `CertHelper.cs`'s four DN parsers (`GPKICert`, `ECourtCert`, `MykeyCert`, `BPFKCert`) used naive `subjectdn.Split(',')`, which breaks when `X509Certificate2.Subject` quotes a comma-containing RDN value (`CN="PAN, CHIA-YUEH"` → parsed as truncated `"PAN`). Added a shared quote-aware `SplitDnComponents()` helper, applied to all four parsers. (2) BPFK user `Siow Nget Kam`: request payload had untrimmed trailing whitespace that survived into the `OrdinalIgnoreCase` fullname comparison against the (already-trimmed) cert-side value. Added `?.Trim()` to `UserID`/`UserFullName`/`UserCompID`/`UserCompName` at read-time in `AuthServiceNpra.cs`.
+- **Context**: Tester rebuilt the Release installer with `Prefer32Bit=true` (session 15 fix) and retested token detection — confirmed OK. This closes the token-detection bug chain fully. All session 15+16 fixes committed (`e656f8e` on `fix/autoupdate-elevation`) and pushed, up to date with origin.
 - **Next Steps**:
-  1. Retest both fixes (comma-name case + trailing-space case)
-  2. Rebuild Release installer with `Prefer32Bit=true`, have tester retest token detection (still pending from session 15)
-  3. Confirm AUT103 removal doesn't break NPRA caller-side expectations
-  4. Commit all pending changes in `MyTrustIDv1_AATL-GENERIC` repo (sessions 15 + 16, not yet committed)
-  5. Merge `fix/autoupdate-elevation` → master (August 2026 — hold until bpfk team done)
+  1. Merge `fix/autoupdate-elevation` → master (August 2026 — hold until bpfk team done)
 
 ## Previous Active Project
 - **Name**: jumio-proxy-integration

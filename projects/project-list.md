@@ -6,7 +6,7 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-13 | TBD | 100% (maintenance) | Fixed two AUT100 bugs: quoted-comma DN parsing (CertHelper.cs, all 4 parsers) + untrimmed request params (AuthServiceNpra.cs). Not yet committed, awaiting tester retest. |
+| 1 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-14 | TBD | 100% (maintenance) | Tester confirmed Release installer Prefer32Bit retest OK — token detection issue fully closed. Only merge to master remains (Aug 2026, on hold). |
 | 2 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-07-09 | TBD | 100% (maintenance) | Reactivated — fixed intermittent OAuth 401 (empty webHref) via per-project synchronized token refresh + 401 retry-once. Deployed, monitoring. |
 | 3 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-07-07 | TBD | 99% | Admin portal: bulk delete, sortable/paginated datatable, provisioned_by FK fix. Pending MR. |
 | 4 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-07-03 | TBD | 97% | Removed PDFBox. ClassCastException → 100/failed. isRebuilt auto-rp only. Ready for PROD deploy. |
@@ -27,4 +27,4 @@
 ---
 ## System Status
 - **Total Projects**: 12 (7 active + 5 archived)
-- **Last Updated**: 2026-07-13 - MyTrustID Desktop (#1) — two AUT100 root causes fixed (quoted-comma DN parsing + untrimmed request params), awaiting tester retest
+- **Last Updated**: 2026-07-14 - MyTrustID Desktop (#1) — Release installer Prefer32Bit retest confirmed OK, token detection issue closed

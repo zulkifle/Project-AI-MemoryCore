@@ -7,7 +7,7 @@
 - **Tech Stack**: C# + WPF + .NET Framework 4.8 + WebSocket
 - **Completion**: 100% (maintenance)
 - **Due Date**: TBD
-- **Duration**: ~16.5 hours
+- **Duration**: ~16.67 hours
 
 ## Solution Structure
 | Project | Purpose | Path |
@@ -23,13 +23,9 @@
 - Desktop installer via VS installer project
 
 ## Current Status
-- **Last Session**: 2026-07-13 - Fixed two distinct `AUT100` (UserID/UserFullName mismatch) bugs in NPRA auth flow, found via tester log analysis
+- **Last Session**: 2026-07-14 - Tester confirmed Release installer rebuild with `Prefer32Bit=true` retested OK — token detection issue (session 15) fully closed
 - **Next Steps**:
-  1. Retest both fixes: BPFK user with comma in name (`PAN, CHIA-YUEH`) and user with trailing-space payload (`Siow Nget Kam `)
-  2. Rebuild Release installer with `Prefer32Bit=true` fix, have tester retest token detection (still pending from session 15)
-  3. Confirm removal of `AUT103` (UserCompName) check doesn't break NPRA auth flow expectations on the caller (PKI webservice) side
-  4. Changes not yet committed in `MyTrustIDv1_AATL-GENERIC` repo — commit when tester confirms all fixes (session 15 + 16)
-  5. Merge `fix/autoupdate-elevation` → master (August 2026 — hold until bpfk team done)
+  1. Merge `fix/autoupdate-elevation` → master (August 2026 — hold until bpfk team done)
 - **Decided**: `AUT103` UserCompName-vs-certificate check removed entirely per Dejul's request (2026-07-09) — only `AUT102` (UserCompID) company check remains active
 - **Known Issues**: bpfk outer iframe missing `allow="local-network-access"` — confirmed via Sec-Fetch-Dest + empty MTID header log
 
@@ -42,6 +38,10 @@
 - **Debug vs Release build difference**: only meaningful diff was `Prefer32Bit` (Debug=true, Release=false). No `#if DEBUG` blocks anywhere in codebase. PKCS#11 token driver (QUEST3PLUS) is 32-bit only — Release running AnyCPU/x64 couldn't load it, causing "token not detected". Fixed by setting `Prefer32Bit=true` in Release `PropertyGroup` in `MyTrustIDv1.csproj` (kept `Optimize=true`, `DebugType=pdbonly` — proper optimized build, not a Debug build shipped as Release).
 
 ## Session History (Last 5)
+
+### 2026-07-14 - Release Installer Prefer32Bit Retest Confirmed
+- **Changes**: Tester rebuilt the Release installer with the `Prefer32Bit=true` fix (from session 15) and retested token detection — confirmed working. Closes the last open item from the token-detection bug chain.
+- **Time Spent**: ~10 min
 
 ### 2026-07-13 - AUT100 Double Root-Cause Fix: Quoted-Comma DN Parsing + Untrimmed Request Params
 - **Changes**: Tester retested token detection fix (session 15) — confirmed working, but surfaced two new `AUT100` (UserID/UserFullName mismatch) failures. (1) BPFK user `PAN, CHIA-YUEH`: `CertHelper.cs` parsers (`GPKICert`, `ECourtCert`, `MykeyCert`, `BPFKCert`) all used naive `subjectdn.Split(',')`, which breaks when `X509Certificate2.Subject` quotes a comma-containing RDN value (e.g. `CN="PAN, CHIA-YUEH"` → parsed as `"PAN`, truncated). Added a shared `SplitDnComponents()` helper that respects double-quoted values (and unescapes doubled `""`), applied to all four parser methods. (2) BPFK user `Siow Nget Kam`: request payload had trailing whitespace (`"Siow Nget Kam "`) that survived into the `OrdinalIgnoreCase` comparison against the (already-trimmed) cert-side value. Added `?.Trim()` to `UserID`, `UserFullName`, `UserCompID`, `UserCompName` at read-time in `AuthServiceNpra.cs` (left `TokenPIN` untouched — feeds decryption, not string comparison). Both fixes diagnosed from tester-provided debug payload logs (added last session). Not yet retested or committed.
@@ -67,10 +67,10 @@
 Earlier sessions (2026-03-31 to 2026-04-21): Project registered. Full solution explored. Admin testing completed, BNM cert pickup success. May 6-7: STA thread fix, NullRef fix, expired cert fallback loop, CertVerifierWSClient integrated, NPRA 5-param auth, Java AES/CBC/NoPadding decrypt, `userSERIALNUMBER` overwrite bug fixed, BPFKCert single-pass parse fix, 10 error codes audited. May 8: UI freeze async fix (SelectStorageViewModel + PickupNewCertViewModel). May 12: FaultException investigation — user confirmed own error, no code changes. May 14: Chrome PNA investigation — fixed `HttpService.cs` crash (query string stripping), fixed OPTIONS regex in `WebServer.cs`. May 15-17: Chrome LNA nested iframe diagnosis, JSON parse bug fix, LNA instruction box on JSPs, LNA_Findings_Draft.txt created. May 20: PickupNewCertViewModel trim fix (UserID+UUID). May 20-21: UI lock all screens (IsNotProcessing/NavEnabled pattern across 4 VMs), installer bat overhaul (mytrustid.bat rewrite), sign.bat code signing tool created. May 21-22: AutoUpdate overhaul (no admin, IExpress, restart mutex fix). Project archived 2026-06-03 (EXE+MSI signed, 100% complete) — reactivated 2026-07-09 for NPRA auth logic maintenance and a Release-build token-detection bug.
 
 ## Technical Notes
-- **Repository**: `C:\repos\MyTrustIDv1_AATL-GENERIC` (not yet committed — pending changes from sessions 15 + 16, awaiting tester retest)
+- **Repository**: `C:\repos\MyTrustIDv1_AATL-GENERIC` — sessions 15+16 committed (`e656f8e` on `fix/autoupdate-elevation`), pushed, up to date with origin
 - **Key Dependencies**: .NET Framework 4.8, WPF, WebSocket library, log4net, Newtonsoft.Json
 - **LNA Fix files**: `page_auth.jsp`, `page_auth_jnlp.jsp`, `page_auth_jnlp_ORI.jsp`, `error_page_auth.jsp`, `HttpService.cs`, `testq3.php`
 - **SafeNet Token installer**: `C:\PROJECTS\MYTRUSTID DESKTOP\Token\Safenet\Installation` — install this before signing EXE/MSI with real code signing cert
 
 ---
-**Last Updated**: 2026-07-13 (Session 16) | **Position**: #1/10 Active
+**Last Updated**: 2026-07-14 (Session 17) | **Position**: #1/10 Active
