@@ -7,6 +7,19 @@
 **Session Focus**: jumio-proxy-integration (reactivated) — fixed intermittent OAuth 401 (empty webHref) reported by Jumio, per-project synchronized token refresh + 401 retry-once, deployed
 
 ## Active Project
+- **Name**: TG SeQureMail
+- **Session**: 14 — 2026-07-14
+- **Completion**: 99%
+- **Repo**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\extension\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\` | Admin: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\seqremail-admin\`
+- **Context**: Ran full fresh-test E2E protocol — register both accounts, encrypt & send, decrypt on receiver side — confirmed working. Added Feature #9 "Revoke & Expiry Controls" to the team feedback checklist (admin can revoke access to a sent email / set attachment expiry — enterprise selling point, feasible via server-side gate similar to existing `claimed` flag pattern). Not yet scoped/implemented.
+- **Next Steps**:
+  1. Merge `feature/6-user-management` → master (MR on GitLab)
+  2. Continue team feedback checklist: #5 (HSM), #4 (OWA), #2 (Firefox), #9 (Revoke & Expiry Controls)
+- **Docker**: `docker compose up` in `C:\PROJECTS\SEQURE MAIL\Development\seqremail\` — starts db + key-api + admin
+- **Admin**: `http://localhost:8081/admin/login` — admin / 7ru57ga73
+- **Fresh test**: `TRUNCATE TABLE otp_verifications; TRUNCATE TABLE user_keys;` (container `seqremail-db-1`) + `chrome.storage.local.clear()` in extension console
+
+## Previous Active Project
 - **Name**: MyTrustID Desktop
 - **Session**: 17 — 2026-07-14
 - **Completion**: 100% (maintenance)

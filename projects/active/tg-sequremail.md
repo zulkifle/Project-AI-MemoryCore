@@ -7,18 +7,21 @@
 - **Period**: 2026-05-21 - Active
 - **Tech Stack**: Frontend: Chrome Extension MV3 (thin client) | Backend: SeQureMail Key API (Spring Boot 3.2 + MySQL + Flyway) + seqremail-admin (Spring Boot 3.2, port 8081) — Software HSM | Crypto: ECDH P-256 + AES-256-GCM double-envelope (server-side, pure JDK) | Auth: OTP email verification (JavaMailSender)
 - **Completion**: 99%
-- **Duration**: 24 hours
+- **Duration**: ~24.5 hours
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-07-07 (session 13) - Admin portal: bulk delete, datatable pagination/sort, provisioned_by FK fix
+- **Last Session**: 2026-07-14 (session 14) - Fresh test E2E confirmed working; added Feature #9 (Revoke & Expiry Controls) to team checklist
 - **Next Steps**:
-  1. Full E2E test — register both accounts, encrypt & send, decrypt on receiver side (fresh test protocol)
-  2. Merge `feature/6-user-management` → master (MR on GitLab)
-  3. Continue team feedback checklist: #5 (HSM), #4 (OWA), #2 (Firefox)
+  1. Merge `feature/6-user-management` → master (MR on GitLab)
+  2. Continue team feedback checklist: #5 (HSM), #4 (OWA), #2 (Firefox), #9 (Revoke & Expiry Controls)
 - **Known Issues**: None
 
 ## Session History (Last 5)
+
+### 2026-07-14 (Session 14) - Fresh Test E2E Confirmed + Feature #9 Proposed
+- **Changes**: Resumed project. Ran full fresh-test E2E protocol (register both accounts, encrypt & send, decrypt on receiver side) — confirmed working end-to-end. Discussed and added **Feature #9: Revoke & Expiry Controls** to the team feedback checklist — corporate admin ability to instantly revoke access to a sent email or set an attachment expiration date, positioned as an enterprise selling point over native email. Feasible via a server-side gate (message-ID-keyed revoke/expiry flag checked before releasing decrypt material through the Key API), following the same pattern as the existing `claimed` flag gate. Not yet scoped or implemented.
+- **Time Spent**: ~20 min
 
 ### 2026-07-07 (Session 13) - Admin Portal: Bulk Delete, Datatable UX, provisioned_by FK Fix
 - **Changes**: Rebuilt + redeployed `seqremail-admin` container (Docker) with latest code. **Bulk delete**: `UserService.removeAll()` (batch delete), `POST /admin/users/delete-bulk` endpoint, "Delete" button added next to "Change" (renamed from "Change Role"/"Delete Selected") in the bulk action bar — reuses existing checkbox selection with its own confirm dialog. **Datatable UX**: converted Users table to fully client-side rendering (fetches via existing `/admin/users/ajax` endpoint on load, same as search) to support pagination (25/50/100/All per page, Prev/Next, "Showing X–Y of Z") and clickable sortable column headers (Company, Role, Status) with asc/desc arrow indicators — all state-managed in JS (`allUsers`, `sortField`, `pageSize`, `currentPage`). **provisioned_by fix**: discovered the column was always NULL — never wired up in code. Redesigned from `VARCHAR` (sender email, unused) to `provisioned_by_id BIGINT` self-referencing FK on `user_keys.id`, matching the `company_id` FK pattern. Updated both `UserKey` entities (key-api + admin) to `@ManyToOne` self-reference. Threaded sender's `UserKey` through `CryptoServiceImpl.encrypt()` → `resolvePublicKey()` → `generateKeyPair()` so future auto-provisioned recipients get `provisioned_by_id` populated. Migration split across two services due to compose startup order (key-api starts before admin): `V6` in key-api adds `provisioned_by_id` + FK (key-api's entity needs it at its own Hibernate validation); `V4` in admin drops the legacy `provisioned_by` string column. First attempt put the ADD COLUMN in admin's V4 — broke key-api startup (`SchemaManagementException: missing column`) since admin runs after key-api; fixed by moving the ADD to key-api's chain. Discussed (not implemented) future direction: storing X.509 certs per user + possible PDF/CMS signing — parked as a bigger scope conversation, closer to what MTSA already does.
@@ -34,10 +37,6 @@
 
 ### 2026-07-01 (Session 10) - Team Feedback + Feature #7 Non-Subscriber Role
 - **Changes**: Received team feedback — 7-item feature checklist. Implemented **Feature #7 (Non-Subscriber Role)**: `UserRole` enum (SUBSCRIBER/RECIPIENT), V5 Flyway migration (`role VARCHAR(20) DEFAULT 'RECIPIENT'`), `GET /api/keys/role` endpoint, `assertSubscriber()` enforcement in `CryptoServiceImpl.encrypt()`, extension async role check greys out Encrypt toggle for RECIPIENTs. Branch `feature/7-non-subscriber-role` committed and pushed to GitLab. Explained MR vs PR (same concept, GitLab=MR, GitHub=PR). Explained sequential branch merging strategy for the 8-feature checklist.
-- **Time Spent**: ~1 hour
-
-### 2026-06-28 (Session 9) - Registration Footer + UX Fixes
-- **Changes**: **Registration footer**: added plaintext footer below encrypted block in `content_script.js` — 4-step guide (install extension → register → OTP verify → reopen email). Visible to any recipient without the extension. **Removed noreply notification email**: `sendRegistrationNotification()` removed from `CryptoServiceImpl` — unregistered recipients now receive only the encrypted email (footer is sufficient). **Friendly error message**: catch block in `Encrypt & Send` handler now detects `"Key not found"` / `"not found"` errors and shows "You are not registered yet." instead of raw server error. **Docs updated**: `seqremail-design.md` bumped to v2.1, `SETUP.md` updated to v3. Multiple fresh tests run (DB truncated via Docker exec).
 - **Time Spent**: ~1 hour
 
 ## Historical Summary
@@ -66,6 +65,7 @@ Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryp
   - [ ] #3 Safari support
   - [ ] #1 MyDigital ID onboarding
   - [ ] #8 Outlook plugin (if possible)
+  - [ ] #9 Revoke & Expiry Controls — admin can instantly revoke access to a sent email or set an attachment expiration date. Enterprise selling point native email lacks. Feasible via server-side gate (message-ID-keyed revoke/expiry flag checked before releasing decrypt material via Key API), similar pattern to existing `claimed` flag gate.
 
 ---
-**Last Updated**: 2026-07-07 (session 13) | **Position**: #1/10 Active
+**Last Updated**: 2026-07-14 (session 14) | **Position**: #1/10 Active

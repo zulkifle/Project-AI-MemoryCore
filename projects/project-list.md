@@ -6,9 +6,9 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-14 | TBD | 100% (maintenance) | Tester confirmed Release installer Prefer32Bit retest OK — token detection issue fully closed. Only merge to master remains (Aug 2026, on hold). |
-| 2 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-07-09 | TBD | 100% (maintenance) | Reactivated — fixed intermittent OAuth 401 (empty webHref) via per-project synchronized token refresh + 401 retry-once. Deployed, monitoring. |
-| 3 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-07-07 | TBD | 99% | Admin portal: bulk delete, sortable/paginated datatable, provisioned_by FK fix. Pending MR. |
+| 1 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-07-14 | TBD | 99% | Fresh test E2E confirmed working. Added Feature #9 (Revoke & Expiry Controls) to checklist. Pending MR. |
+| 2 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-14 | TBD | 100% (maintenance) | Tester confirmed Release installer Prefer32Bit retest OK — token detection issue fully closed. Only merge to master remains (Aug 2026, on hold). |
+| 3 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-07-09 | TBD | 100% (maintenance) | Reactivated — fixed intermittent OAuth 401 (empty webHref) via per-project synchronized token refresh + 401 retry-once. Deployed, monitoring. |
 | 4 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-07-03 | TBD | 97% | Removed PDFBox. ClassCastException → 100/failed. isRebuilt auto-rp only. Ready for PROD deploy. |
 | 5 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-01 | 2026-06-05 ⚠️ | 87% | Fixed localhost→host.docker.internal. Pending: docker compose up + verify DB. |
 | 6 | **[TGCA](./active/tgca.md)** | 2026-05-25 | TBD | 0% | Registered — pending study |
@@ -27,4 +27,4 @@
 ---
 ## System Status
 - **Total Projects**: 12 (7 active + 5 archived)
-- **Last Updated**: 2026-07-14 - MyTrustID Desktop (#1) — Release installer Prefer32Bit retest confirmed OK, token detection issue closed
+- **Last Updated**: 2026-07-14 - TG SeQureMail (#1) — E2E test confirmed OK, Feature #9 (Revoke & Expiry Controls) added to checklist, MR still pending
