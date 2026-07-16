@@ -6,6 +6,9 @@
 **Last Activity**: 2026-07-09
 **Session Focus**: jumio-proxy-integration (reactivated) — fixed intermittent OAuth 401 (empty webHref) reported by Jumio, per-project synchronized token refresh + 401 retry-once, deployed
 
+## 📚 Pending Study List
+See `main/study-list.md` for full list — 3 items pending as of 2026-07-16 (API Gateway system design, Jenkins, security-prompt.hamizi.net). Mention to Dejul if he hasn't studied them yet.
+
 ## Active Project
 - **Name**: TG SeQureMail
 - **Session**: 14 — 2026-07-14
