@@ -6,7 +6,7 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-07-16 | TBD | 100% (maintenance) | Missing userId → failed eKYC check pushed (with 401 fix commit). PROD redeploy pending. |
+| 1 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-07-16 | TBD | 100% (maintenance) | userId→failed-eKYC check + 401 fix redeployed to PILOT & PROD. 401 resolved. Only branch merge remains. |
 | 2 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-07-14 | TBD | 99% | Fresh test E2E confirmed working. Added Feature #9 (Revoke & Expiry Controls) to checklist. Pending MR. |
 | 3 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-14 | TBD | 100% (maintenance) | Tester confirmed Release installer Prefer32Bit retest OK — token detection issue fully closed. Only merge to master remains (Aug 2026, on hold). |
 | 4 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-07-03 | TBD | 97% | Removed PDFBox. ClassCastException → 100/failed. isRebuilt auto-rp only. Ready for PROD deploy. |
@@ -27,4 +27,4 @@
 ---
 ## System Status
 - **Total Projects**: 12 (7 active + 5 archived)
-- **Last Updated**: 2026-07-16 - jumio-proxy-integration (#1) saved — userId-missing = failed eKYC check pushed, PROD redeploy pending
+- **Last Updated**: 2026-07-16 - jumio-proxy-integration (#1) saved — PILOT & PROD redeployed, 401 resolved, only branch merge remains

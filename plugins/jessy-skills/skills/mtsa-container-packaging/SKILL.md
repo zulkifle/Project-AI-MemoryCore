@@ -111,6 +111,7 @@ RUN yum update -y && \
 CMD ["sh", "-c", "/usr/local/tomcat/bin/catalina.sh run"]
 ```
 
+- [ ] **Choose the JDK tag by the WAR's JAX-WS stack**: legacy MTSA WARs bundling old Metro/WSIT (`javax.xml.ws`, `com.sun.xml.ws` 2.x) MUST use `tomcat:9-jdk8-corretto` — on JDK 17 deployment fails at startup with `WSP0061` / `WSSERVLET11: failed to parse runtime descriptor` (Metro's reflective `getResource` lookup of `wsit-<endpoint-class>.xml` breaks on JDK 9+) and the context never deploys even though Tomcat reports normal startup. Use `tomcat:9-jdk17-corretto` only for WARs built and tested on JDK 17. When unsure, match the JDK of the existing production server.
 - [ ] If `Dockerfile` already exists: show diff and ask user to confirm overwrite before proceeding
 - [ ] Write the file after confirmation (or immediately if no existing file)
 
@@ -123,7 +124,7 @@ Write `[DEPLOY_PATH]\STEP.txt` with values filled in from Step 1:
 ```
 step-by-step instructions
 
-1. Set JAVA_HOME to JDK 17
+1. Set JAVA_HOME to JDK [JDK_VERSION — must match the Dockerfile base image]
 
 2. Build the Docker Image
    > docker build -t [IMAGE] .
@@ -237,9 +238,13 @@ Display a completion summary:
 | PRODUCTION environment | Use `PRODUCTION` in ZIP name; remind user to double-check WSDL URL before handover |
 | User skips intake form fields | Ask for missing required fields before proceeding — do not use guessed values |
 | WAR context path differs from container name | Use `[WAR_CONTEXT]` only for the URL path; `[CONTAINER]` only for `docker run --name` |
+| WAR bundles legacy Metro/JAX-WS (`javax.*`) | Base image must be `tomcat:9-jdk8-corretto` — JDK 17 causes `WSP0061`/`WSSERVLET11` context startup failure |
+| App says "No such file or directory" but file exists in container | Hidden chars in a properties value (trailing spaces or `\r`). Tell: extra spaces before `(No such file...)` in the FileNotFoundException message (Java prints `<path> (reason)` with one space). Diagnose: `docker exec <c> sh -c "grep -n '<key>' <file> \| cat -A"` |
+| Flat deployment folder (no `mtsa\`/`webapps\`) | Offer to restructure: create `mtsa\` (properties + wscredentials.xml + files/logs/tmp) and `webapps\` (deploy WAR only, exclude `*_backup*.war`), leave originals in place — confirm with user first |
 
 ---
 
 ## Level History
 
 - **Lv.1** — Base: Intake form → verify folders → create Dockerfile → create STEP.txt → ZIP → summary. Standard MTSA tomcat:9-jdk17-corretto Docker template. (Origin: 2026-06-09, based on AMANAH KREDIT PILOT deployment package pattern)
+- **Lv.2** — JDK Selection + Hidden-Char Debugging: JDK tag chosen by WAR's JAX-WS stack (legacy Metro/javax → jdk8, WSP0061 on 17); flat-folder restructure flow; phantom FileNotFoundException diagnosis via `cat -A`. (Origin: 2026-07-16, MPAY QUICKREDIT PROD+PILOT packaging)

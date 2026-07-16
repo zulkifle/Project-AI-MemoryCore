@@ -24,19 +24,16 @@
 6. On non-`PROCESSED` status (e.g. `SESSION_EXPIRED`): skip MTSS, forward to Adacash directly
 
 ## Current Status
-- **Last Session**: 2026-07-16 - Missing userId (documentNumber) now treated as failed eKYC (MTSS skipped cleanly)
+- **Last Session**: 2026-07-16 - userId-check + 401 fix redeployed to PILOT & PROD; 401s confirmed resolved
 - **Next Steps**:
-  1. **Rebuild Docker image + redeploy to PROD** — the userId check (commit `03bf023`) is pushed but NOT yet deployed; prod still runs old image
-  2. Monitor logs over next token-expiry cycles to confirm 401s no longer recur
-  3. Await Jumio's confirmation after their own monitoring
-  4. Merge `feature/per-session-callback-url` → `feature/multitenant-support` after fixes confirmed stable ← still remaining
-- **Known Issues**: None (userId-check redeploy pending)
+  1. Merge `feature/per-session-callback-url` → `feature/multitenant-support` ← only remaining item
+- **Known Issues**: None
 
 ## Session History (Last 5)
 
 ### 2026-07-16 - Missing userId = failed eKYC check
-- **Changes**: Prod logs showed workflows completing with empty extraction (`userId(documentNumber)=, fullname=`) → MTSS rejected with `-103 Missing userId` → RuntimeException + misleading ERROR stack trace, even though the real cause is a failed eKYC (Jumio couldn't extract the document). Fix: `MtssServiceImpl.callCallbackJumio` now checks `documentNumber` right after extraction — if blank, logs `eKYC FAILED — userId (documentNumber) not found...` at WARN, skips the MTSS SOAP call, returns `false` (signature changed `void` → `boolean` in `MtssService` interface). `JumioCallbackController.handleProcessed` logs the outcome accordingly; original payload still forwarded to Adacash unchanged. Also committed the previously uncommitted JumioClient 401 fix as its own commit. Verified with `mvn compile`, pushed both commits (`1050e82` 401 fix, `03bf023` userId check) to `origin/feature/per-session-callback-url`. **Redeploy to PROD still pending.**
-- **Time Spent**: ~30 min
+- **Changes**: Prod logs showed workflows completing with empty extraction (`userId(documentNumber)=, fullname=`) → MTSS rejected with `-103 Missing userId` → RuntimeException + misleading ERROR stack trace, even though the real cause is a failed eKYC (Jumio couldn't extract the document). Fix: `MtssServiceImpl.callCallbackJumio` now checks `documentNumber` right after extraction — if blank, logs `eKYC FAILED — userId (documentNumber) not found...` at WARN, skips the MTSS SOAP call, returns `false` (signature changed `void` → `boolean` in `MtssService` interface). `JumioCallbackController.handleProcessed` logs the outcome accordingly; original payload still forwarded to Adacash unchanged. Also committed the previously uncommitted JumioClient 401 fix as its own commit. Verified with `mvn compile`, pushed both commits (`1050e82` 401 fix, `03bf023` userId check) to `origin/feature/per-session-callback-url`. Same night (~midnight): Docker image rebuilt and **redeployed to both PILOT and PROD** ✅. Log monitoring done and Jumio confirmation received — 401 issue considered resolved. Only branch merge remains.
+- **Time Spent**: ~45 min
 
 ### 2026-07-09 - OAuth 401 token bug fix (Jumio-reported)
 - **Changes**: Jumio reported intermittent HTTP 401 on `JumioAccountFeignClient#initiateWorkflow` for several `userReference`/borrowerIds (632780, 1241776, 1241760, etc.), causing empty `webHref` on session creation. Diagnosed from proxy logs (`issue no 4.txt`) — root cause: `JumioClient.java`'s per-project token cache had no synchronized refresh (race condition on concurrent cache miss) and no 401 retry (a rejected/expired Bearer token failed the call outright instead of recovering). Jumio sent a suggested fix, but their sample was single-tenant (global `JumioProperties`, single `cachedToken` field) — confirmed via git archaeology that `master` on the `jumio-proxy` repo (a separate nested repo at `trustgate/jumio-proxy.git`) is single-tenant, while production actually runs `feature/per-session-callback-url` (multi-tenant, per-project token cache keyed by `projectId`). Adapted the fix to preserve multi-tenancy: added per-project `synchronized` lock on cache-miss token fetch, and wrapped `initiateWorkflow`/`getWorkflowExecutionRaw` in a `executeWithAuthRetry` helper that catches `JumioFeignException` on status 401, invalidates that project's cached token, and retries once. Built and deployed to production. Replied to Jumio explaining the multi-tenant adaptation.
@@ -77,4 +74,4 @@ Project started 2026-04-16 as Trustgate proxy layer between Adacash and Jumio eK
 - **JumioClient.java 401 fix (2026-07-09)**: per-project `synchronized` lock (`tokenLocks` map) on cache-miss token fetch; `executeWithAuthRetry()` wraps `initiateWorkflow`/`getWorkflowExecutionRaw` — on `JumioFeignException` status 401, invalidates that project's cached token and retries once
 
 ---
-**Last Updated**: 2026-07-16 | **Status**: Active — #1 — userId-check pushed, PROD redeploy pending; monitoring for 401 recurrence
+**Last Updated**: 2026-07-16 | **Status**: Active — #1 — PILOT & PROD redeployed, 401 resolved; only branch merge remaining

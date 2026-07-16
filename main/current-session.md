@@ -3,8 +3,18 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-07-09
-**Session Focus**: jumio-proxy-integration (reactivated) — fixed intermittent OAuth 401 (empty webHref) reported by Jumio, per-project synchronized token refresh + 401 retry-once, deployed
+**Last Activity**: 2026-07-16
+**Session Focus**: MPAY QUICKREDIT MTSA Docker packaging (PROD + PILOT) — JDK 8 requirement discovered, WSP0061 + phantom wscredentials.xml root-caused
+
+## Recent Work (2026-07-16) — MPAY QUICKREDIT MTSA Packaging
+- Packaged both envs at `C:\PROJECTS\ELENDING\MPAY QUCKREDIT\Deployment\`:
+  - `MTSA-PRODUCTION_MPAY-QUICKREDIT.zip` — port 8000:8080, context `/MTSA`, WSDL `http://103.150.189.58:8000/MTSA/MyTrustSignerAgentWSELMP?wsdl`
+  - `MTSA-PILOT_MPAY-QUICKREDIT.zip` — port 80:8080, context `/MTSAPilot`, WSDL `http://175.139.198.205/MTSAPilot/MyTrustSignerAgentWSELMP?wsdl`
+- **Base image MUST be `tomcat:9-jdk8-corretto`** — these WARs bundle legacy Metro/WSIT (`javax.*`, `com.sun.xml.ws` 2.x); on JDK 17 deployment dies with `WSP0061`/`WSSERVLET11` (reflection `getResource` for `wsit-<endpoint-class>.xml` fails), context never starts
+- Root-caused phantom `wscredentials.xml (No such file or directory)` while file existed: **trailing spaces** in `ws.credential=wscredentials.xml␣␣␣␣` inside the old WAR's `WEB-INF/classes/mtsagent.properties` — extra spaces before `(No such file...)` in a FileNotFoundException message are the tell (Java prints `<path> (reason)` with exactly one space)
+- `mpayquickredit-mtsa.prod.properties` line 17 has trailing `\r` (`workdir.path=/opt/mtsa^M`) — harmless, `Properties.load()` strips it
+- Existing production runs natively on Ubuntu server Tomcat + JDK 8 (why the WAR works there); Docker image ships its own JDK so host Java is irrelevant
+- `webapps\` copy is source of truth for the PROD package (root `MTSA.war` is older)
 
 ## 📚 Pending Study List
 See `main/study-list.md` for full list — 3 items pending as of 2026-07-16 (API Gateway system design, Jenkins, security-prompt.hamizi.net). Mention to Dejul if he hasn't studied them yet.
@@ -14,11 +24,9 @@ See `main/study-list.md` for full list — 3 items pending as of 2026-07-16 (API
 - **Session**: 2026-07-16
 - **Completion**: 100% (maintenance)
 - **Repo**: `C:\PROJECTS\DOCKER GITLAB\docker\jumio-proxy\app\jumio-proxy\` — nested git repo, production runs branch `feature/per-session-callback-url`
-- **Context**: Prod logs showed `-103 Missing userId` MTSS errors when Jumio extraction returned no documentNumber — actually a failed eKYC, not a system error. Fixed: `callCallbackJumio` checks documentNumber after extraction; blank → WARN `eKYC FAILED`, skip MTSS, return false (interface `void`→`boolean`), controller logs outcome, payload still forwarded to Adacash. Also committed the previously uncommitted JumioClient 401 fix. `mvn compile` OK, both commits pushed (`1050e82`, `03bf023`).
+- **Context**: Prod logs showed `-103 Missing userId` MTSS errors when Jumio extraction returned no documentNumber — actually a failed eKYC, not a system error. Fixed: `callCallbackJumio` checks documentNumber after extraction; blank → WARN `eKYC FAILED`, skip MTSS, return false (interface `void`→`boolean`), controller logs outcome, payload still forwarded to Adacash. Also committed the previously uncommitted JumioClient 401 fix. `mvn compile` OK, both commits pushed (`1050e82`, `03bf023`). Same night: **redeployed to PILOT & PROD**, log monitoring done, Jumio confirmed — 401 issue resolved.
 - **Next Steps**:
-  1. **Rebuild Docker image + redeploy PROD** — userId check pushed but not deployed
-  2. Monitor 401s over token-expiry cycles; await Jumio confirmation
-  3. Merge `feature/per-session-callback-url` → `feature/multitenant-support` once stable
+  1. Merge `feature/per-session-callback-url` → `feature/multitenant-support` ← only remaining item
 
 ## Previous Active Project
 - **Name**: TG SeQureMail

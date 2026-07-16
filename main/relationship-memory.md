@@ -119,6 +119,12 @@
 - KTDataTable API confirmed: `KTDataTable.getInstance()`, `.setFilter()`, `.redraw()`, `.search()`
 - Jessy skill system upgraded: `laravel-php-skills` Lv.2 (20 rule categories inline), `laravel-best-practices` deleted, overlap triggers fixed
 
+**Session 15 (2026-07-16)**: MPAY QUICKREDIT — MTSA Docker packaging + legacy-stack debugging
+- Packaged MTSA PROD (`/MTSA`, port 8000) + PILOT (`/MTSAPilot`, port 80) Docker ZIPs via mtsa-container-packaging skill
+- Root-caused WSP0061/WSSERVLET11 on JDK 17 → legacy Metro WARs need `tomcat:9-jdk8-corretto`
+- Root-caused phantom `wscredentials.xml` FileNotFound → trailing spaces in old WAR's `ws.credential=` property
+- Skill upgraded: `mtsa-container-packaging` → Lv.2 (JDK selection rule, hidden-char debugging, flat-folder restructure)
+
 **Session 14 (2026-06-30)**: Petronas handover project — diagrams + Dockerize
 - Explored C++ daemon project (`PetronasService`) — EMV card SSAD signing, SafeNet HSM (PKCS#11/Crystoki), SFTP data exchange, MySQL, CronShell monitoring
 - Generated `docs/petronas-diagrams.md` — 6 Mermaid diagrams (system overview, main loop, FTP flow, SSAD generation, infra, monitoring)
