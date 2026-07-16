@@ -10,6 +10,17 @@
 See `main/study-list.md` for full list — 3 items pending as of 2026-07-16 (API Gateway system design, Jenkins, security-prompt.hamizi.net). Mention to Dejul if he hasn't studied them yet.
 
 ## Active Project
+- **Name**: jumio-proxy-integration
+- **Session**: 2026-07-16
+- **Completion**: 100% (maintenance)
+- **Repo**: `C:\PROJECTS\DOCKER GITLAB\docker\jumio-proxy\app\jumio-proxy\` — nested git repo, production runs branch `feature/per-session-callback-url`
+- **Context**: Prod logs showed `-103 Missing userId` MTSS errors when Jumio extraction returned no documentNumber — actually a failed eKYC, not a system error. Fixed: `callCallbackJumio` checks documentNumber after extraction; blank → WARN `eKYC FAILED`, skip MTSS, return false (interface `void`→`boolean`), controller logs outcome, payload still forwarded to Adacash. Also committed the previously uncommitted JumioClient 401 fix. `mvn compile` OK, both commits pushed (`1050e82`, `03bf023`).
+- **Next Steps**:
+  1. **Rebuild Docker image + redeploy PROD** — userId check pushed but not deployed
+  2. Monitor 401s over token-expiry cycles; await Jumio confirmation
+  3. Merge `feature/per-session-callback-url` → `feature/multitenant-support` once stable
+
+## Previous Active Project
 - **Name**: TG SeQureMail
 - **Session**: 14 — 2026-07-14
 - **Completion**: 99%
@@ -30,17 +41,6 @@ See `main/study-list.md` for full list — 3 items pending as of 2026-07-16 (API
 - **Context**: Tester rebuilt the Release installer with `Prefer32Bit=true` (session 15 fix) and retested token detection — confirmed OK. This closes the token-detection bug chain fully. All session 15+16 fixes committed (`e656f8e` on `fix/autoupdate-elevation`) and pushed, up to date with origin.
 - **Next Steps**:
   1. Merge `fix/autoupdate-elevation` → master (August 2026 — hold until bpfk team done)
-
-## Previous Active Project
-- **Name**: jumio-proxy-integration
-- **Session**: 2026-07-09 (reactivated after PROD completion 2026-06-26)
-- **Completion**: 100% (maintenance)
-- **Repo**: `C:\PROJECTS\DOCKER GITLAB\docker\jumio-proxy\app\jumio-proxy\` — separate nested git repo (`trustgate/jumio-proxy.git`), production runs branch `feature/per-session-callback-url` (multi-tenant)
-- **Context**: Jumio reported intermittent HTTP 401 on `initiateWorkflow` for several userReferences, causing empty `webHref`. Root cause: `JumioClient.java`'s per-project token cache had no synchronized refresh (race condition) and no 401 retry. Jumio's suggested fix was single-tenant (matches this repo's stale `master` branch, not what's deployed) — adapted it to preserve multi-tenancy: added per-project `synchronized` lock on cache-miss token fetch, and `executeWithAuthRetry()` wrapping `initiateWorkflow`/`getWorkflowExecutionRaw` that invalidates + retries once on 401. Built, deployed, and replied to Jumio explaining the multi-tenant adaptation.
-- **Next Steps**:
-  1. Monitor logs over next token-expiry cycles to confirm 401s resolved
-  2. Await Jumio's confirmation
-  3. Merge `feature/per-session-callback-url` → `feature/multitenant-support` once stable
 
 ## Previous Active Project
 - **Name**: TG SeQureMail

@@ -7,7 +7,7 @@
 - **Period**: 2026-04-16 - Active
 - **Tech Stack**: Java 17 + Spring Boot 3.0.9 + OpenFeign + Maven + Docker + Kubernetes
 - **Completion**: 100% (maintenance)
-- **Duration**: ~15.5 hours
+- **Duration**: ~16 hours
 - **Due Date**: TBD
 
 ## Project Context
@@ -24,14 +24,19 @@
 6. On non-`PROCESSED` status (e.g. `SESSION_EXPIRED`): skip MTSS, forward to Adacash directly
 
 ## Current Status
-- **Last Session**: 2026-07-09 - Fixed intermittent OAuth 401 errors (empty webHref) reported by Jumio
+- **Last Session**: 2026-07-16 - Missing userId (documentNumber) now treated as failed eKYC (MTSS skipped cleanly)
 - **Next Steps**:
-  1. Monitor logs over next token-expiry cycles to confirm 401s no longer recur
-  2. Await Jumio's confirmation after their own monitoring
-  3. Merge `feature/per-session-callback-url` → `feature/multitenant-support` after this fix is confirmed stable ← still remaining
-- **Known Issues**: None (pending confirmation from Jumio side after fix)
+  1. **Rebuild Docker image + redeploy to PROD** — the userId check (commit `03bf023`) is pushed but NOT yet deployed; prod still runs old image
+  2. Monitor logs over next token-expiry cycles to confirm 401s no longer recur
+  3. Await Jumio's confirmation after their own monitoring
+  4. Merge `feature/per-session-callback-url` → `feature/multitenant-support` after fixes confirmed stable ← still remaining
+- **Known Issues**: None (userId-check redeploy pending)
 
 ## Session History (Last 5)
+
+### 2026-07-16 - Missing userId = failed eKYC check
+- **Changes**: Prod logs showed workflows completing with empty extraction (`userId(documentNumber)=, fullname=`) → MTSS rejected with `-103 Missing userId` → RuntimeException + misleading ERROR stack trace, even though the real cause is a failed eKYC (Jumio couldn't extract the document). Fix: `MtssServiceImpl.callCallbackJumio` now checks `documentNumber` right after extraction — if blank, logs `eKYC FAILED — userId (documentNumber) not found...` at WARN, skips the MTSS SOAP call, returns `false` (signature changed `void` → `boolean` in `MtssService` interface). `JumioCallbackController.handleProcessed` logs the outcome accordingly; original payload still forwarded to Adacash unchanged. Also committed the previously uncommitted JumioClient 401 fix as its own commit. Verified with `mvn compile`, pushed both commits (`1050e82` 401 fix, `03bf023` userId check) to `origin/feature/per-session-callback-url`. **Redeploy to PROD still pending.**
+- **Time Spent**: ~30 min
 
 ### 2026-07-09 - OAuth 401 token bug fix (Jumio-reported)
 - **Changes**: Jumio reported intermittent HTTP 401 on `JumioAccountFeignClient#initiateWorkflow` for several `userReference`/borrowerIds (632780, 1241776, 1241760, etc.), causing empty `webHref` on session creation. Diagnosed from proxy logs (`issue no 4.txt`) — root cause: `JumioClient.java`'s per-project token cache had no synchronized refresh (race condition on concurrent cache miss) and no 401 retry (a rejected/expired Bearer token failed the call outright instead of recovering). Jumio sent a suggested fix, but their sample was single-tenant (global `JumioProperties`, single `cachedToken` field) — confirmed via git archaeology that `master` on the `jumio-proxy` repo (a separate nested repo at `trustgate/jumio-proxy.git`) is single-tenant, while production actually runs `feature/per-session-callback-url` (multi-tenant, per-project token cache keyed by `projectId`). Adapted the fix to preserve multi-tenancy: added per-project `synchronized` lock on cache-miss token fetch, and wrapped `initiateWorkflow`/`getWorkflowExecutionRaw` in a `executeWithAuthRetry` helper that catches `JumioFeignException` on status 401, invalidates that project's cached token, and retries once. Built and deployed to production. Replied to Jumio explaining the multi-tenant adaptation.
@@ -49,12 +54,8 @@
 - **Changes**: Diagnosed v1 pilot not forwarding to per-session `callbackUrl` — root cause was `imagePullPolicy: IfNotPresent` causing K8s to use cached old image (built from `feature/multitenant-support`, no SessionCallbackStore) instead of new image with callbackUrl feature. Fix: set `imagePullPolicy: Always`, cycled tag 1.07 → 1.08 to force fresh pull. Both v1 (NodePort 30241) and v2 (NodePort 30242) confirmed working end-to-end — MTSS SOAP success, forward to Adacash `callbackUrl` success.
 - **Time Spent**: ~45 min
 
-### 2026-06-18 - per-session callbackUrl feature + v1 pilot migration
-- **Changes**: Implemented `callbackUrl` feature on `feature/per-session-callback-url` branch — new `SessionCallbackStore` (ConcurrentHashMap), added optional `callbackUrl` to `CreateSessionRequest`, `resolveCallbackUrl()` in callback controller (falls back to ConfigMap URL). Tested on v2 — confirmed working. Migrated pilot v1 to use v2 JAR (multi-tenant + callbackUrl): updated `pilot/deployment.yaml` (image `1.08`, context `/jumio-proxy`, ConfigMap volume), `pilot/configmap.yaml` (fixed callback-base-url to `jumioproxy_pilot`). Updated nginx `nginx-multi-tenant.conf` for both pilot and pilot-v2 — combined API + actuator into single location block with dual rewrite directives.
-- **Time Spent**: ~2 hours
-
 ## Historical Summary
-Project started 2026-04-16 as Trustgate proxy layer between Adacash and Jumio eKYC API. Key milestones: full callback flow implemented (MTSS SOAP, image download, Adacash forward), image compression added, SESSION_EXPIRED bug fixed. Reactivated 2026-06-04 for multi-tenant support — path-based routing designed and coded. Master restored to clean single-tenant. pilot-v2 deployed to K8s (namespace `jumioproxy-pilot`, NodePort 30242). Per-session callbackUrl feature implemented and tested. pilot v1 migrated to use v2 multi-tenant JAR. PROD deployed and Adacash-tested 2026-06-26. Reactivated again 2026-07-09 after Jumio reported intermittent 401 auth errors — fixed with per-project synchronized token refresh + 401 retry-once logic, preserving multi-tenant architecture.
+Project started 2026-04-16 as Trustgate proxy layer between Adacash and Jumio eKYC API. Key milestones: full callback flow implemented (MTSS SOAP, image download, Adacash forward), image compression added, SESSION_EXPIRED bug fixed. Reactivated 2026-06-04 for multi-tenant support — path-based routing designed and coded. Master restored to clean single-tenant. pilot-v2 deployed to K8s (namespace `jumioproxy-pilot`, NodePort 30242). Per-session callbackUrl feature implemented and tested. pilot v1 migrated to use v2 multi-tenant JAR. PROD deployed and Adacash-tested 2026-06-26. Per-session callbackUrl feature implemented 2026-06-18 (`SessionCallbackStore`, optional `callbackUrl` in `CreateSessionRequest`, `resolveCallbackUrl()` fallback to ConfigMap) and pilot v1 migrated to the v2 multi-tenant JAR the same day. Reactivated again 2026-07-09 after Jumio reported intermittent 401 auth errors — fixed with per-project synchronized token refresh + 401 retry-once logic, preserving multi-tenant architecture.
 
 ## Technical Notes
 - **Repository**: `C:\PROJECTS\DOCKER GITLAB\docker\jumio-proxy\app\jumio-proxy\` — this is a separate nested git repo (`trustgate/jumio-proxy.git`), distinct from the outer `docker` repo (`trustgate/docker.git`)
@@ -76,4 +77,4 @@ Project started 2026-04-16 as Trustgate proxy layer between Adacash and Jumio eK
 - **JumioClient.java 401 fix (2026-07-09)**: per-project `synchronized` lock (`tokenLocks` map) on cache-miss token fetch; `executeWithAuthRetry()` wraps `initiateWorkflow`/`getWorkflowExecutionRaw` — on `JumioFeignException` status 401, invalidates that project's cached token and retries once
 
 ---
-**Last Updated**: 2026-07-09 | **Status**: Active — #1 — monitoring for 401 recurrence after fix
+**Last Updated**: 2026-07-16 | **Status**: Active — #1 — userId-check pushed, PROD redeploy pending; monitoring for 401 recurrence
