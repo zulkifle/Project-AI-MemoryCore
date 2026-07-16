@@ -4,7 +4,7 @@
 ## Session RAM Status
 **Current Session**: Active
 **Last Activity**: 2026-07-16
-**Session Focus**: MPAY QUICKREDIT MTSA Docker packaging (PROD + PILOT) — JDK 8 requirement discovered, WSP0061 + phantom wscredentials.xml root-caused
+**Session Focus**: MyTrustID Desktop — RSA-keygen crash troubleshooting (native PKCS#11 fault, unmanaged, no exception logged); MPAY QUICKREDIT MTSA Docker packaging also done today (see below)
 
 ## Recent Work (2026-07-16) — MPAY QUICKREDIT MTSA Packaging
 - Packaged both envs at `C:\PROJECTS\ELENDING\MPAY QUCKREDIT\Deployment\`:
@@ -16,10 +16,24 @@
 - Existing production runs natively on Ubuntu server Tomcat + JDK 8 (why the WAR works there); Docker image ships its own JDK so host Java is irrelevant
 - `webapps\` copy is source of truth for the PROD package (root `MTSA.war` is older)
 
-## 📚 Pending Study List
-See `main/study-list.md` for full list — 3 items pending as of 2026-07-16 (API Gateway system design, Jenkins, security-prompt.hamizi.net). Mention to Dejul if he hasn't studied them yet.
+## 📝 To-Do List
+See `main/to-do-list.md` for full list — 5 items pending as of 2026-07-16 (API Gateway system design, Jenkins, security-prompt.hamizi.net, ST3 ACE Token SDK, MyTrustID RSA-keygen crash repro). Mention to Dejul if pending items haven't been addressed.
 
 ## Active Project
+- **Name**: MyTrustID Desktop
+- **Session**: 18 — 2026-07-16
+- **Completion**: 95% (troubleshooting a long-standing rare crash)
+- **Repo**: `C:\repos\MyTrustIDv1_AATL-GENERIC` — main app: `MyTrustIDv1\`, installer: `MyTrustID\`
+- **Branch**: `fix/rsa-keygen-crash-handling` — branched off `fix/autoupdate-elevation`, will supersede it as the single branch merged to master in August 2026
+- **Context**: Long-standing rare crash — some users (token-specific) crash the app during Pickup Cert flow, right after `GenerateCSR.getCSR()` logs `"Generate RSA keypair"` and calls `session.GenerateKeyPair()` (native PKCS#11 call into `mytrustid_pkcs11.dll`). No exception was ever logged anywhere (try/catch, `App_DispatcherUnhandledException`) — root cause: a native fault the CLR never translates into a managed exception, so nothing in C# can see it. Added `[HandleProcessCorruptedStateExceptions]` + `catch(AccessViolationException)` in `GenerateCSR.cs` (logs, then triggers clean app restart via existing `App.IsRestarting` pattern from AutoUpdate.cs) and a global `AppDomain.CurrentDomain.UnhandledException` logger in `App.xaml.cs` (catches background-thread exceptions that were previously swallowed). Build verified via MSBuild (Debug). **Installer handed to helpdesk — crash still happened, still zero exception logged.** This confirms the fault is in the last, unfixable-in-C# category: a pure native SEH crash that bypasses the CLR entirely before either handler can intercept it. Added `tools/CrashDumpDiagnostics/EnableCrashDumps.ps1` + `DisableCrashDumps.ps1` (WER LocalDumps registry setup, full dump, 5 kept) so a real `.dmp` can be captured on repro instead of guessing further from logs.
+- **Next Steps**:
+  1. Dejul to get a token with matching hardware version from helpdesk (same as the crashing user's) to reproduce locally — planned for 2026-07-17
+  2. Run `EnableCrashDumps.ps1` as Admin on the test machine before reproducing
+  3. Reproduce via Pickup Cert flow, analyze the resulting `.dmp` (faulting module/thread in WinDbg) to confirm whether it's `mytrustid_pkcs11.dll` itself or a dependency it calls into
+  4. Security note: full dumps may contain the token PIN in plaintext in memory — keep local to the test machine, delete after analysis
+  5. Merge `fix/rsa-keygen-crash-handling` → master (August 2026 — hold until bpfk team done, carries over `fix/autoupdate-elevation`'s hold)
+
+## Previous Active Project
 - **Name**: jumio-proxy-integration
 - **Session**: 2026-07-16
 - **Completion**: 100% (maintenance)
@@ -40,15 +54,6 @@ See `main/study-list.md` for full list — 3 items pending as of 2026-07-16 (API
 - **Docker**: `docker compose up` in `C:\PROJECTS\SEQURE MAIL\Development\seqremail\` — starts db + key-api + admin
 - **Admin**: `http://localhost:8081/admin/login` — admin / 7ru57ga73
 - **Fresh test**: `TRUNCATE TABLE otp_verifications; TRUNCATE TABLE user_keys;` (container `seqremail-db-1`) + `chrome.storage.local.clear()` in extension console
-
-## Previous Active Project
-- **Name**: MyTrustID Desktop
-- **Session**: 17 — 2026-07-14
-- **Completion**: 100% (maintenance)
-- **Repo**: `C:\repos\MyTrustIDv1_AATL-GENERIC` — main app: `MyTrustIDv1\`, installer: `MyTrustID\`
-- **Context**: Tester rebuilt the Release installer with `Prefer32Bit=true` (session 15 fix) and retested token detection — confirmed OK. This closes the token-detection bug chain fully. All session 15+16 fixes committed (`e656f8e` on `fix/autoupdate-elevation`) and pushed, up to date with origin.
-- **Next Steps**:
-  1. Merge `fix/autoupdate-elevation` → master (August 2026 — hold until bpfk team done)
 
 ## Previous Active Project
 - **Name**: TG SeQureMail

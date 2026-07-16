@@ -56,6 +56,7 @@
 - **Information Processing**: Prefers flow summaries + tables; reads code directly in IDE
 - **Decision-Making Style**: Asks targeted questions ("is it still using signKeyword?") before confirming action
 - **Learning Preference**: Learn by doing — reads real production code, fixes real bugs
+- **Git Branching**: When a fix branch is already pending merge on hold for external sign-off, prefers stacking new related fixes on top of it rather than branching independently off master — consolidates into one MR instead of several pending ones (confirmed 2026-07-16, MyTrustID Desktop: `fix/rsa-keygen-crash-handling` stacked on `fix/autoupdate-elevation`)
 
 ## Interaction History
 
@@ -118,6 +119,14 @@
 - Controller simplified to `->get()` — one DB query, JS handles everything
 - KTDataTable API confirmed: `KTDataTable.getInstance()`, `.setFilter()`, `.redraw()`, `.search()`
 - Jessy skill system upgraded: `laravel-php-skills` Lv.2 (20 rule categories inline), `laravel-best-practices` deleted, overlap triggers fixed
+
+**Session 16 (2026-07-16)**: MyTrustID Desktop — RSA-keygen crash root-cause investigation
+- Traced rare "user token crashes app" helpdesk report to `GenerateCSR.getCSR()` → native PKCS#11 `session.GenerateKeyPair()` call; log gap analysis + spotting that Bootstrapper's `"OnStartUp Exception"` log line is misleadingly named (fires on every normal startup, not an actual exception) were the key moves
+- Diagnosed as an unmanaged native fault invisible to the CLR — added `[HandleProcessCorruptedStateExceptions]` + `catch(AccessViolationException)` in `GenerateCSR.cs`, and a global `AppDomain.UnhandledException` logger in `App.xaml.cs`; both verified via MSBuild build
+- Deployed to helpdesk — crash persisted with zero exception logged, confirming it's the unfixable-in-C# category (pure native SEH fault bypassing the CLR entirely)
+- Added WER local-dump PowerShell scripts (`tools/CrashDumpDiagnostics/`) rather than touching the fragile `.vdproj` installer, for Dejul's planned local repro with a matching-hardware token from helpdesk (2026-07-17)
+- New branch `fix/rsa-keygen-crash-handling`, stacked on pending `fix/autoupdate-elevation` — will be the single branch for the August 2026 MR
+- Renamed `study-list.md` → `to-do-list.md` (more generic — now holds both study items and action items)
 
 **Session 15 (2026-07-16)**: MPAY QUICKREDIT — MTSA Docker packaging + legacy-stack debugging
 - Packaged MTSA PROD (`/MTSA`, port 8000) + PILOT (`/MTSAPilot`, port 80) Docker ZIPs via mtsa-container-packaging skill
