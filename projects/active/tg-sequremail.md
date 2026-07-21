@@ -11,11 +11,38 @@
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-07-14 (session 14) - Fresh test E2E confirmed working; added Feature #9 (Revoke & Expiry Controls) to team checklist
+- **Last Session**: 2026-07-21 (session 16) - Feature #9 (Recall & Expiry Controls) implemented on new branch `feature/9-recall-expiry-controls`, manually tested by Dejul in Chrome/Gmail — **confirmed working** after fixing a CORS bug found during testing (see below). Still committed locally, **not pushed** — Dejul hasn't said push yet.
+- **Previous Session**: 2026-07-20 (session 15) - Resumed; git audit found + pushed unpushed session-13 code and docs commits (see Historical Summary)
 - **Next Steps**:
-  1. Merge `feature/6-user-management` → master (MR on GitLab)
-  2. Continue team feedback checklist: #5 (HSM), #4 (OWA), #2 (Firefox), #9 (Revoke & Expiry Controls)
+  1. Push `feature/9-recall-expiry-controls` when Dejul gives the word, open MR
+  2. Merge `feature/6-user-management` → master (MR on GitLab)
+  3. Continue team feedback checklist: #5 (HSM), #4 (OWA), #2 (Firefox)
 - **Known Issues**: None
+
+## Feature #9 — Recall & Expiry Controls (implemented 2026-07-21, session 16)
+Branch `feature/9-recall-expiry-controls` (off `feature/6-user-management`, includes its V6 migration). Full design at `docs/specs/2026-07-16-recall-expiry-controls-design.md`.
+
+**Envelope v4**: content encrypted once under a random CEK (AES-256); CEK wrapped for recipient+sender (inner double envelope, same shape as v3) then wrapped again under a new **Trustgate platform KEK** (ECDH P-256, singleton row in new `platform_keys` table, generated lazily on first encrypt). Result (`wrapped_envelope`) stored server-side in new `messages` table — the email itself carries zero key material: `seqremail:poc-v4`, `from`, `to`, `messageId`, `iv`, `ciphertext` only.
+
+**Recall** = crypto-shred: `POST /api/messages/{id}/recall` nulls `wrapped_envelope`. Sender-only (403 otherwise), idempotent, kills decrypt for the sender too (by design — same honesty as Outlook recall).
+
+**Expiry**: `GET/PUT /api/keys/settings` manages `user_keys.default_expiry_days`. Resolution order: compose-time override > sender's default > never expires. Checked before content decrypt.
+
+**New error codes**: `MESSAGE_RECALLED` / `MESSAGE_EXPIRED`, both HTTP 410 (Gone).
+
+**Backward compat**: v3 (legacy, no `messageId`) envelopes keep decrypting via the unchanged old code path (`decryptV3Legacy` — byte-for-byte the pre-v4 logic, just extracted into its own method) — they simply can't be recalled.
+
+**Refactor**: extracted `EcJwkUtil` + `AesGcmUtil` (new `util/` package) so `CryptoServiceImpl` and the new `PlatformKeyServiceImpl` share identical EC/JWK/AES-GCM primitives instead of duplicating ~80 lines.
+
+**New files**: `entity/Message.java`, `entity/PlatformKey.java`, `repository/MessageRepository.java`, `repository/PlatformKeyRepository.java`, `service/PlatformKeyService.java` + impl, `controller/MessageController.java`, `dto/request/RecallRequest.java` + `UpdateSettingsRequest.java`, `exception/{ForbiddenException,MessageRecalledException,MessageExpiredException}.java`, `util/{EcJwkUtil,AesGcmUtil}.java`, migration `V7__recall_expiry.sql`.
+
+**Extension**: compose modal gained an expiry picker (never/1/7/30 days, prefilled from sender's default via new `SeQureCrypto.getDefaultExpiry`); decrypted view gains a Recall button (confirm dialog, irreversible) when the viewer is the sender of a v4 message; recipient sees a dedicated terminal banner (no retry) on `MESSAGE_RECALLED`/`MESSAGE_EXPIRED`; popup gained a default-expiry select backed by `/api/keys/settings`.
+
+**Verified end-to-end via direct API calls** (rebuilt Docker key-api container, migration V7 applied cleanly): v4 envelope shape confirmed zero key material; decrypt succeeds for recipient + sender, fails for a stranger; recall — 403 for non-sender, success for sender, idempotent on 2nd call, decrypt blocked for **both** parties afterward with `MESSAGE_RECALLED`; settings GET (null default) → PUT (7) → GET (7); encrypt without override correctly applied sender's stored default (checked `expires_at` in DB = `sent_at`+7d); 0-day expiry override correctly blocked decrypt with `MESSAGE_EXPIRED`.
+
+**Manual Chrome/Gmail test — confirmed working (2026-07-21)**: Dejul reloaded the unpacked extension and exercised the real UI (expiry picker, send/decrypt, popup default-expiry setting). Hit one bug: PUT `/api/keys/settings` returned `403` — root cause was `CorsConfig.java` only allowlisting `GET, POST, OPTIONS`, so Spring's CORS filter rejected the PUT before it reached the controller. Fixed by adding `PUT` to `allowedMethods`, rebuilt + restarted the key-api container — confirmed resolved (404 for an unregistered test email instead of 403), then Dejul retried in the popup and confirmed success. Committed separately (`fix: allow PUT in CORS config...`) on top of the Feature #9 commit on `feature/9-recall-expiry-controls` — still not pushed.
+
+**Fresh test protocol update**: gains `TRUNCATE TABLE messages;` (add to the existing `otp_verifications`/`user_keys` truncate, before `user_keys` — no FK dependency, just for cleanliness, per spec §7).
 
 ## Session History (Last 5)
 
@@ -65,7 +92,7 @@ Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryp
   - [ ] #3 Safari support
   - [ ] #1 MyDigital ID onboarding
   - [ ] #8 Outlook plugin (if possible)
-  - [ ] #9 Revoke & Expiry Controls — admin can instantly revoke access to a sent email or set an attachment expiration date. Enterprise selling point native email lacks. Feasible via server-side gate (message-ID-keyed revoke/expiry flag checked before releasing decrypt material via Key API), similar pattern to existing `claimed` flag gate.
+  - [ ] #9 Recall & Expiry Controls — **design approved 2026-07-16**, spec at `docs/specs/2026-07-16-recall-expiry-controls-design.md`, not yet implemented. Sender-controlled only (no admin involvement). Envelope v4: double envelope moves server-side into new `messages` table, wrapped under a new Trustgate platform KEK (ECDH P-256) — email carries zero key material (`messageId`, `iv`, ciphertext` only). Recall = crypto-shred (delete `wrapped_envelope` row) — kills decrypt for sender too, not just recipient. Expiry: per-user `default_expiry_days` default, overridable at compose time. New key-api endpoints: `POST /api/messages/{id}/recall`, `GET/PUT /api/keys/settings`; encrypt/decrypt updated with `MESSAGE_RECALLED`/`MESSAGE_EXPIRED` (HTTP 410). New migration `V7__recall_expiry.sql` (key-api only). Extension: compose-time expiry picker, Recall button injected into sender's own sent messages (confirm dialog, irreversible), new recipient terminal states. v3 (legacy) emails keep working, can't be recalled. Out of scope: admin portal, attachment-only expiry, un-recall, migrating old mail.
 
 ---
-**Last Updated**: 2026-07-14 (session 14) | **Position**: #1/10 Active
+**Last Updated**: 2026-07-20 (session 15 — resumed) | **Position**: #1/10 Active

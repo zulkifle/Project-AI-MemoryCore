@@ -12,18 +12,30 @@
 - **Source Path**: `C:\PROJECTS\HANDOVER PROJECT\Petronas\source code\amg backup as per 29-06-2026\`
 
 ## Current Status
-- **Last Session**: 2026-07-01 - Fixed localhost socket error → host.docker.internal
+- **Last Session**: 2026-07-22 - Analyzed production log for two distinct issues (see below) — read-only investigation, no code changes
+- **Previous Session**: 2026-07-01 - Fixed localhost socket error → host.docker.internal
 - **Next Steps**:
   1. `docker compose down && docker compose up` — no rebuild needed (ini is volume-mounted)
   2. Verify logs show DB connected + "Start Loop"
   3. Test TCP port: `Test-NetConnection localhost -Port 6803`
   4. PROD deploy: uncomment `mysqlrouter.mysqlrouter:6446` block in ini + swap volume blocks in docker-compose
+  5. **NEW**: Investigate DB directly — `SELECT * FROM pm_staticmaster WHERE pmsm_id=3069;` + `SELECT * FROM pm_staticdetail WHERE pmsd_smid=3069;` — confirm orphaned record, decide fix (repopulate detail rows vs. reset `pmsm_manual` flag vs. archive/delete)
 - **Known Issues**:
   - HSM (SafeNet Crystoki) not available in Docker — must set `HSM=0` for local test
   - SFTP SSH keys not mounted (commented out in docker-compose)
   - `openssl rsautl` deprecated in OpenSSL 3.x (container) — still works, prod uses `openssl1` alias
+  - **Port 6803 `EADDRINUSE` crash-loop**: app logs show repeated `APPLICATION START` → `Error while binding the socket: 98 [Address already in use]` → `APPLICATION ENDED` every ~5 min (17:10, 17:15, 17:20 in the 2026-07-21 log). Something else already holds port 6803 — likely a previous instance/container that wasn't cleanly stopped before the next one started. Not yet root-caused to a specific process; check for a lingering container/process on the host before next restart.
+  - **`pm_staticmaster` record 3069 permanently stuck** (found 2026-07-22, see below) — orphaned master row with zero matching `pm_staticdetail` rows; the code has no retry/error path for this case, so it silently blocks forever at the "manual" verification stage.
 
 ## Session History (Last 5)
+
+### 2026-07-22 - Log Analysis: -13 Errors (Benign) + Stuck Record 3069 (Real Bug)
+- **Changes**: Read-only investigation of a production log Dejul pasted, no code changes.
+  - **`DB_GetStaticMaster(...,0,5,0)` / `(...,0,6,0)` returning `-13`**: traced to `DB.cpp:1095-1101` — `-13` means the `SELECT COUNT(*) FROM pm_staticmaster WHERE pmsm_upload='N'` (or `pmsm_done='N'`) query returned zero rows, i.e. "nothing pending at this stage right now." Logged at severity 5 with "xxx Failed," which is misleading — it's the normal empty-queue case, not an error. No action needed (same misleading-log-severity pattern previously flagged in MyTrustID Desktop's "OnStartUp Exception" line).
+  - **`VerifySSAD2(3069)` returning `-1`, root cause `DB_GetStaticDetailList(3069)` returning `-9`**: traced to `DB.cpp:1279` (`iFlag` stays at its initial `-9` because the `SELECT pmsd_id, pmsd_name FROM pm_staticdetail WHERE pmsd_smid=3069` query found zero matching rows) — master record 3069 in `pm_staticmaster` has no child rows in `pm_staticdetail` at all, so there's nothing to verify.
+  - **The actual bug**: in `SSAD.cpp:98-115`, when `VerifySSAD2()` fails, the code only logs the failure — it never calls `DB_SetFlagMaster(iReference, 4, 2)` (success) or any failure-state transition. Since `DB_SetFlagMaster(3069, 4, 1)` was called just before (marking `pmsm_manual='P'`, in-progress) and `DB_GetStaticMaster(...,0,4,0)` only re-selects rows where `pmsm_manual='N'`, record 3069 is now **permanently stuck** at "in progress" for the manual-verification stage — no retry, no error flag, silently ignored on every future loop.
+  - Gave Dejul the DB queries to confirm the orphan and next-step options (repopulate detail rows / reset the flag to retry / archive the dead record) — decision pending his call on what actually happened to that batch's data.
+- **Time Spent**: ~15 min
 
 ### 2026-07-01 - Fixed localhost Unix Socket Error
 - **Changes**:

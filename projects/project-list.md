@@ -6,11 +6,11 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-07-16 | TBD | 100% (maintenance) | userId→failed-eKYC check + 401 fix redeployed to PILOT & PROD. 401 resolved. Only branch merge remains. |
-| 2 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-07-14 | TBD | 99% | Fresh test E2E confirmed working. Added Feature #9 (Revoke & Expiry Controls) to checklist. Pending MR. |
+| 1 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-07-21 | TBD | 99% | Feature #9 (Recall & Expiry Controls) implemented + manually tested working in Chrome/Gmail (branch `feature/9-recall-expiry-controls`, local commits, not pushed). |
+| 2 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-07-16 | TBD | 100% (maintenance) | userId→failed-eKYC check + 401 fix redeployed to PILOT & PROD. 401 resolved. Only branch merge remains. |
 | 3 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-14 | TBD | 100% (maintenance) | Tester confirmed Release installer Prefer32Bit retest OK — token detection issue fully closed. Only merge to master remains (Aug 2026, on hold). |
 | 4 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-07-03 | TBD | 97% | Removed PDFBox. ClassCastException → 100/failed. isRebuilt auto-rp only. Ready for PROD deploy. |
-| 5 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-01 | 2026-06-05 ⚠️ | 87% | Fixed localhost→host.docker.internal. Pending: docker compose up + verify DB. |
+| 5 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-22 | 2026-06-05 ⚠️ | 87% | Log analysis found orphaned `pm_staticmaster` record 3069 (stuck, no retry path) + benign -13 "queue empty" log noise. Also known: port 6803 EADDRINUSE crash-loop. |
 | 6 | **[TGCA](./active/tgca.md)** | 2026-05-25 | TBD | 0% | Registered — pending study |
 | 7 | **[RSS Self Service Portal](./active/rss-self-service-portal.md)** | 2026-05-12 | Q2 2026 | 80% | Phase 1 complete — next: browser test + billing integration |
 
@@ -27,4 +27,4 @@
 ---
 ## System Status
 - **Total Projects**: 12 (7 active + 5 archived)
-- **Last Updated**: 2026-07-16 - jumio-proxy-integration (#1) saved — PILOT & PROD redeployed, 401 resolved, only branch merge remains
+- **Last Updated**: 2026-07-22 - TG SeQureMail Feature #9 tested working + CORS fix; Petronas log analysis (record 3069 stuck, port 6803 crash-loop)

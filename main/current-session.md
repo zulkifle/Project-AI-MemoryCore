@@ -3,8 +3,8 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-07-16
-**Session Focus**: MyTrustID Desktop — RSA-keygen crash troubleshooting (native PKCS#11 fault, unmanaged, no exception logged); MPAY QUICKREDIT MTSA Docker packaging also done today (see below)
+**Last Activity**: 2026-07-22
+**Session Focus**: TG SeQureMail — Feature #9 (Recall & Expiry Controls) implemented, tested working in Chrome/Gmail, CORS bug fixed; Petronas — log analysis found a stuck DB record + confirmed a benign log pattern (see below)
 
 ## Recent Work (2026-07-16) — MPAY QUICKREDIT MTSA Packaging
 - Packaged both envs at `C:\PROJECTS\ELENDING\MPAY QUCKREDIT\Deployment\`:
@@ -20,6 +20,26 @@
 See `main/to-do-list.md` for full list — 5 items pending as of 2026-07-16 (API Gateway system design, Jenkins, security-prompt.hamizi.net, ST3 ACE Token SDK, MyTrustID RSA-keygen crash repro). Mention to Dejul if pending items haven't been addressed.
 
 ## Active Project
+- **Name**: TG SeQureMail
+- **Resumed**: 2026-07-20 (session 15)
+- **Last worked**: 2026-07-21/22 (session 16) — Feature #9 implemented + tested working
+- **Completion**: 99%
+- **Repo**: Extension: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\extension\` | API: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\key-api\` | Admin: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\seqremail-admin\`
+- **Context**: E2E-encrypted Gmail Chrome extension (MV3) + Key API + admin portal. Feature #9 (Recall & Expiry Controls, envelope v4) fully implemented on branch `feature/9-recall-expiry-controls`, manually tested by Dejul in real Gmail — confirmed working after fixing a CORS bug (PUT not allowlisted). Branch has 2 local commits, **not pushed yet**.
+- **Recent progress**:
+  - Session 16 (2026-07-21/22): Feature #9 implemented — see `projects/active/tg-sequremail.md` for full technical detail (envelope v4 architecture, new entities/endpoints, CORS fix). Verified via direct API calls, then Dejul confirmed the real Chrome/Gmail UI working.
+  - Session 14 (2026-07-14): Fresh test E2E confirmed OK; Feature #9 proposed (server-side revoke/expiry gate, `claimed`-flag pattern)
+  - Session 13 (2026-07-07): Admin portal bulk delete, client-side datatable (pagination + sort), `provisioned_by_id` FK redesign (key-api V6 + admin V4)
+  - Session 12 (2026-07-03): Feature #6 admin portal fully implemented (Spring Security, Thymeleaf, AJAX search, bulk role change)
+- **Next Steps**:
+  1. Merge `feature/6-user-management` → master (MR on GitLab)
+  2. Continue team feedback checklist: #5 (HSM), #4 (OWA), #2 (Firefox), #9 (Recall & Expiry Controls — design approved, not yet implemented)
+- **Docker**: `docker compose up` in `C:\PROJECTS\SEQURE MAIL\Development\seqremail\` — db + key-api + admin | Admin: `http://localhost:8081/admin/login` (admin / 7ru57ga73)
+- **Fresh test**: `TRUNCATE TABLE otp_verifications; TRUNCATE TABLE user_keys;` (container `seqremail-db-1`) + `chrome.storage.local.clear()` in extension console
+- **Session 20 (2026-07-20)**: Git audit found unpushed work — pushed Feature #9 design spec doc + previously-uncommitted session-13 code (bulk delete, datatable, `provisioned_by_id` FK, V6/V4 migrations) to `feature/6-user-management`; pushed 4 pending docs commits on `feature/7-non-subscriber-role`. Read the Feature #9 spec in full — envelope v4 (server-side KEK-wrapped envelope in new `messages` table), recall = crypto-shred, per-user expiry default, new key-api endpoints, extension recall button + expiry picker.
+- **Session 21 (2026-07-21)**: Implemented Feature #9 in full on new branch `feature/9-recall-expiry-controls` (off `feature/6-user-management`) — key-api (V7 migration, Message/PlatformKey entities, Trustgate KEK service, encrypt/decrypt v4 rewrite, recall + settings endpoints, EcJwkUtil/AesGcmUtil refactor) + extension (expiry picker, Recall button, terminal banners, popup settings). Verified end-to-end via direct API calls against a rebuilt Docker container — envelope shape, recall auth/idempotency/crypto-shred, expiry fallback + blocking all confirmed working. Committed locally, **not pushed** — Dejul to review (including manual Chrome/Gmail UI test, not yet done) before push.
+
+## Previous Active Project
 - **Name**: MyTrustID Desktop
 - **Session**: 18 — 2026-07-16
 - **Completion**: 95% (troubleshooting a long-standing rare crash)
