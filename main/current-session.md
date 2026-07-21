@@ -46,12 +46,14 @@ See `main/to-do-list.md` for full list — 5 items pending as of 2026-07-16 (API
 - **Repo**: `C:\repos\MyTrustIDv1_AATL-GENERIC` — main app: `MyTrustIDv1\`, installer: `MyTrustID\`
 - **Branch**: `fix/rsa-keygen-crash-handling` — branched off `fix/autoupdate-elevation`, will supersede it as the single branch merged to master in August 2026
 - **Context**: Long-standing rare crash — some users (token-specific) crash the app during token read/pickup flow. Session 18 confirmed it's a native fault invisible to the CLR (installer to helpdesk still crashed with zero exception logged even after adding `[HandleProcessCorruptedStateExceptions]` + `AppDomain.UnhandledException` logging). **Session 19 (this session)**: Dejul reproduced on a second laptop with the matching-hardware token, captured a `.dmp` via the WER scripts from session 18. Installed WinDbg (`winget install Microsoft.WinDbg`) and analyzed it — confirmed `STATUS_INVALID_EXCEPTION_HANDLER` (SEH-chain corruption) in the `mytrustid_pkcs11.dll` → `WinSCard.dll` call chain, running as a 32-bit/WOW64 process (`Prefer32Bit=true`, set in commit `e656f8e` as a deliberate fix for the separate QUEST3PLUS 32-bit-only driver — a genuine architecture tradeoff, not a simple bug). Ruled out file-version mismatches (`mytrustid_pkcs11.dll`/`WinSCard.dll` identical on both laptops) via the token vendor's own diagnostic tool — found the real differentiator: same physical token (serial `D27ED54A37C8433E` matches) but different **Smart Card Mini Driver** version — `2.0.17.107` (Dejul's working laptop) vs `2.0.17.503` (failing laptop). Full chain documented in `projects/active/mytrustid-desktop.md`.
+- **Decision**: holding off on changing `Prefer32Bit` — QUEST3PLUS still actively used, field minidriver versions unknown/uncontrolled across MyTrustID token users. Treating this as a targeted driver-version problem, not an app-wide bitness change, since Dejul's own laptop runs the same 32-bit config fine (only the specific minidriver `2.0.17.503` is implicated so far).
 - **Next Steps**:
   1. Confirm minidriver-version causality — roll one laptop's minidriver to match the other's and retest
   2. Report to Longmai (token vendor) if minidriver `2.0.17.503` is confirmed as the regression
-  3. Decide on the `Prefer32Bit` tradeoff (QUEST3PLUS needs 32-bit vs. this crash wants native 64-bit) — possibly split into two installer builds long-term
-  4. Security note: full dumps may contain the token PIN in plaintext in memory — keep local, delete after analysis
-  5. Merge `fix/rsa-keygen-crash-handling` → master (August 2026 — hold until bpfk team done, carries over `fix/autoupdate-elevation`'s hold)
+  3. **Do not change `Prefer32Bit`** unless the rollback test fails or this recurs broadly — only then reconsider split-build/process-isolation architecture
+  4. Resolve `.vdproj` Debug/Release packaging question — found `.sln` has no `Build.0` for installer under `Debug|Any CPU` (installer never builds there), suggesting Release is what's actually been shipped despite the vdproj's stale-looking `obj\Debug\...` SourcePath text — confirm via rebuild + `git diff`
+  5. Security note: full dumps may contain the token PIN in plaintext in memory — keep local, delete after analysis
+  6. Merge `fix/rsa-keygen-crash-handling` → master (August 2026 — hold until bpfk team done, carries over `fix/autoupdate-elevation`'s hold)
 
 ## Previous Active Project
 - **Name**: jumio-proxy-integration
