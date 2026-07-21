@@ -23,9 +23,12 @@
 - Desktop installer via VS installer project
 
 ## Current Status
-- **Last Session**: 2026-07-14 - Tester confirmed Release installer rebuild with `Prefer32Bit=true` retested OK — token detection issue (session 15) fully closed
+- **Last Session**: 2026-07-22 (Session 19) - Captured and analyzed the RSA-keygen/token-read crash dump via WinDbg — root cause narrowed to a `WinSCard.dll` smart-card minidriver version difference under WOW64 (32-bit process)
 - **Next Steps**:
-  1. Merge `fix/autoupdate-elevation` → master (August 2026 — hold until bpfk team done)
+  1. Confirm minidriver-version causality — roll failing laptop's minidriver back to `2.0.17.107` or update working laptop's up to `2.0.17.503` (see To-Do List)
+  2. Report to Longmai (token vendor) if confirmed as a minidriver regression
+  3. Decide on `Prefer32Bit` architecture tradeoff (QUEST3PLUS needs 32-bit-only driver vs. this crash wants native 64-bit) — possibly split into two builds long-term
+  4. Merge `fix/autoupdate-elevation` → master (August 2026 — hold until bpfk team done)
 - **Decided**: `AUT103` UserCompName-vs-certificate check removed entirely per Dejul's request (2026-07-09) — only `AUT102` (UserCompID) company check remains active
 - **Known Issues**: bpfk outer iframe missing `allow="local-network-access"` — confirmed via Sec-Fetch-Dest + empty MTID header log
 
@@ -38,6 +41,19 @@
 - **Debug vs Release build difference**: only meaningful diff was `Prefer32Bit` (Debug=true, Release=false). No `#if DEBUG` blocks anywhere in codebase. PKCS#11 token driver (QUEST3PLUS) is 32-bit only — Release running AnyCPU/x64 couldn't load it, causing "token not detected". Fixed by setting `Prefer32Bit=true` in Release `PropertyGroup` in `MyTrustIDv1.csproj` (kept `Optimize=true`, `DebugType=pdbonly` — proper optimized build, not a Debug build shipped as Release).
 
 ## Session History (Last 5)
+
+### 2026-07-22 - RSA-Keygen Crash: Dump Captured + Root-Caused via WinDbg
+- **Changes**: Dejul reproduced the crash on a second ("failing") laptop using the matching-hardware token (`mToken CryptoID`, Longmai, serial `D27ED54A37C8433E`) — crash occurred right after token detection (`SelectStorageViewModel` log line), before PIN entry, i.e. during `LoginViewModel`'s token-read flow, not necessarily during `GenerateCSR`'s keygen call as originally assumed.
+- **Code-diff investigation**: `DetectToken.cs` is byte-identical between the "stable" `fix/npra-auth-async-vm` (v1.2) branch and current `fix/rsa-keygen-crash-handling` (v1.3.1) — ruled out a code-logic regression. Traced the only meaningful difference to commit `e656f8e` (2026-07-14, sessions 15-16): `Prefer32Bit` flipped `false→true` for the `Release|AnyCPU` build config, done deliberately as a fix for the **QUEST3PLUS** token driver (32-bit-only, couldn't load under a native-64-bit Release build). Also found `Debug|AnyCPU` has *always* been `Prefer32Bit=true`, on both branches — so Dejul's own dev-machine (Debug/F5) testing has always run 32-bit without issue.
+- **Installer packaging caveat found**: `MyTrustID.vdproj`'s `ProjectOutput.SourcePath` is hardcoded to `..\MyTrustIDv1\obj\Debug\MyTrustIDv1.exe` on *both* branches (unchanged by `e656f8e`) — genuinely unclear whether VS Installer Projects dynamically re-resolves this to the active Solution Configuration at build time or literally always packages Debug output; not yet resolved with Dejul.
+- **Dump analysis (WinDbg)**: Installed WinDbg Preview via `winget install Microsoft.WinDbg` (no debugger was present on this machine); ran `cdb.exe` (bundled at `...\Microsoft.WinDbg_.../amd64/cdb.exe`) against the `.dmp` with `!analyze -v` and `~*k` (all-thread stacks). Findings:
+  - `Failure.ProblemClass.Primary: BITNESS_MISMATCH_X86_INVALID_EXCEPTION_HANDLER`, `ExceptionCode: 0xc00001a5` (`STATUS_INVALID_EXCEPTION_HANDLER` — SEH-chain corruption detected by `ntdll`, happens below the CLR entirely, which is why no C# handler — including the `[HandleProcessCorruptedStateExceptions]` guard added in session 18 — ever caught it).
+  - Confirmed process ran as **x86/WOW64** (`CLR.BitnessMismatch: x86`, `OSPLATFORM_TYPE: x86`).
+  - Crashing thread's full stack (thread `343c.9ac`, the only thread with WER-related frames — all 28 others were idle) shows the call chain running through `<Unloaded_mytrustid_pkcs11.dll>` → `<Unloaded_WinSCard.dll>` → SEH corruption → `ntdll!RtlDispatchException`/`RtlIsValidHandler` → `WerpWaitForCrashReporting`. WinDbg flagged frames past the `WinSCard.dll` boundary as possibly-unreliable ("Frame IP not in any known module") — expected, since stack corruption itself breaks clean unwinding; the module identities are still trustworthy.
+  - Could not pull `mytrustid_pkcs11.dll`/`WinSCard.dll` version info *from the dump* — both modules were already unloaded by capture time, and unloaded-module entries only retain base address/size, not PE version resources.
+- **On-machine comparison (the actual breakthrough)**: `Get-Item ....VersionInfo` on both laptops showed `mytrustid_pkcs11.dll` and `WinSCard.dll` are byte-identical versions on both machines — ruled out a stale/missing driver file theory. But the token vendor's own "Token Manager" diagnostic tool revealed the real differentiator: **same physical token** (identical serial number, firmware 3.11) but **different Smart Card Mini Driver version** — `2.0.17.107` on Dejul's (working) laptop vs. `2.0.17.503` on the failing laptop. The mini driver is a separate OS component (likely Windows-Update-delivered) that `WinSCard.dll` loads to talk to this specific card model — lines up exactly with the crash's `WinSCard.dll` boundary.
+- **Conclusion**: Root cause is very likely a `mytrustid_pkcs11.dll` ↔ `WinSCard.dll` ↔ Smart Card Mini Driver interaction that only breaks under WOW64 (32-bit process, from `Prefer32Bit=true`) on mini driver `2.0.17.503` specifically. Not yet proven causally (would need to roll one machine's mini driver version to match the other and retest) — logged as the next to-do item.
+- **Time Spent**: ~2 hours
 
 ### 2026-07-14 - Release Installer Prefer32Bit Retest Confirmed
 - **Changes**: Tester rebuilt the Release installer with the `Prefer32Bit=true` fix (from session 15) and retested token detection — confirmed working. Closes the last open item from the token-detection bug chain.

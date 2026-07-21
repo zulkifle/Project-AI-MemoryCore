@@ -4,7 +4,7 @@
 ## Session RAM Status
 **Current Session**: Active
 **Last Activity**: 2026-07-22
-**Session Focus**: TG SeQureMail — Feature #9 (Recall & Expiry Controls) implemented, tested working in Chrome/Gmail, CORS bug fixed; Petronas — log analysis found a stuck DB record + confirmed a benign log pattern (see below)
+**Session Focus**: MyTrustID Desktop — RSA-keygen/token-read crash dump captured on failing laptop, analyzed via newly-installed WinDbg, root cause narrowed to `WinSCard.dll` smart-card minidriver version mismatch (2.0.17.107 vs 2.0.17.503) under WOW64. Full detail in `projects/active/mytrustid-desktop.md`.
 
 ## Recent Work (2026-07-16) — MPAY QUICKREDIT MTSA Packaging
 - Packaged both envs at `C:\PROJECTS\ELENDING\MPAY QUCKREDIT\Deployment\`:
@@ -19,7 +19,7 @@
 ## 📝 To-Do List
 See `main/to-do-list.md` for full list — 5 items pending as of 2026-07-16 (API Gateway system design, Jenkins, security-prompt.hamizi.net, ST3 ACE Token SDK, MyTrustID RSA-keygen crash repro). Mention to Dejul if pending items haven't been addressed.
 
-## Active Project
+## Previous Active Project
 - **Name**: TG SeQureMail
 - **Resumed**: 2026-07-20 (session 15)
 - **Last worked**: 2026-07-21/22 (session 16) — Feature #9 implemented + tested working
@@ -39,18 +39,18 @@ See `main/to-do-list.md` for full list — 5 items pending as of 2026-07-16 (API
 - **Session 20 (2026-07-20)**: Git audit found unpushed work — pushed Feature #9 design spec doc + previously-uncommitted session-13 code (bulk delete, datatable, `provisioned_by_id` FK, V6/V4 migrations) to `feature/6-user-management`; pushed 4 pending docs commits on `feature/7-non-subscriber-role`. Read the Feature #9 spec in full — envelope v4 (server-side KEK-wrapped envelope in new `messages` table), recall = crypto-shred, per-user expiry default, new key-api endpoints, extension recall button + expiry picker.
 - **Session 21 (2026-07-21)**: Implemented Feature #9 in full on new branch `feature/9-recall-expiry-controls` (off `feature/6-user-management`) — key-api (V7 migration, Message/PlatformKey entities, Trustgate KEK service, encrypt/decrypt v4 rewrite, recall + settings endpoints, EcJwkUtil/AesGcmUtil refactor) + extension (expiry picker, Recall button, terminal banners, popup settings). Verified end-to-end via direct API calls against a rebuilt Docker container — envelope shape, recall auth/idempotency/crypto-shred, expiry fallback + blocking all confirmed working. Committed locally, **not pushed** — Dejul to review (including manual Chrome/Gmail UI test, not yet done) before push.
 
-## Previous Active Project
+## Active Project
 - **Name**: MyTrustID Desktop
-- **Session**: 18 — 2026-07-16
-- **Completion**: 95% (troubleshooting a long-standing rare crash)
+- **Session**: 19 — 2026-07-22
+- **Completion**: 97% (crash root-caused to a specific driver-version variable; not yet fixed/confirmed)
 - **Repo**: `C:\repos\MyTrustIDv1_AATL-GENERIC` — main app: `MyTrustIDv1\`, installer: `MyTrustID\`
 - **Branch**: `fix/rsa-keygen-crash-handling` — branched off `fix/autoupdate-elevation`, will supersede it as the single branch merged to master in August 2026
-- **Context**: Long-standing rare crash — some users (token-specific) crash the app during Pickup Cert flow, right after `GenerateCSR.getCSR()` logs `"Generate RSA keypair"` and calls `session.GenerateKeyPair()` (native PKCS#11 call into `mytrustid_pkcs11.dll`). No exception was ever logged anywhere (try/catch, `App_DispatcherUnhandledException`) — root cause: a native fault the CLR never translates into a managed exception, so nothing in C# can see it. Added `[HandleProcessCorruptedStateExceptions]` + `catch(AccessViolationException)` in `GenerateCSR.cs` (logs, then triggers clean app restart via existing `App.IsRestarting` pattern from AutoUpdate.cs) and a global `AppDomain.CurrentDomain.UnhandledException` logger in `App.xaml.cs` (catches background-thread exceptions that were previously swallowed). Build verified via MSBuild (Debug). **Installer handed to helpdesk — crash still happened, still zero exception logged.** This confirms the fault is in the last, unfixable-in-C# category: a pure native SEH crash that bypasses the CLR entirely before either handler can intercept it. Added `tools/CrashDumpDiagnostics/EnableCrashDumps.ps1` + `DisableCrashDumps.ps1` (WER LocalDumps registry setup, full dump, 5 kept) so a real `.dmp` can be captured on repro instead of guessing further from logs.
+- **Context**: Long-standing rare crash — some users (token-specific) crash the app during token read/pickup flow. Session 18 confirmed it's a native fault invisible to the CLR (installer to helpdesk still crashed with zero exception logged even after adding `[HandleProcessCorruptedStateExceptions]` + `AppDomain.UnhandledException` logging). **Session 19 (this session)**: Dejul reproduced on a second laptop with the matching-hardware token, captured a `.dmp` via the WER scripts from session 18. Installed WinDbg (`winget install Microsoft.WinDbg`) and analyzed it — confirmed `STATUS_INVALID_EXCEPTION_HANDLER` (SEH-chain corruption) in the `mytrustid_pkcs11.dll` → `WinSCard.dll` call chain, running as a 32-bit/WOW64 process (`Prefer32Bit=true`, set in commit `e656f8e` as a deliberate fix for the separate QUEST3PLUS 32-bit-only driver — a genuine architecture tradeoff, not a simple bug). Ruled out file-version mismatches (`mytrustid_pkcs11.dll`/`WinSCard.dll` identical on both laptops) via the token vendor's own diagnostic tool — found the real differentiator: same physical token (serial `D27ED54A37C8433E` matches) but different **Smart Card Mini Driver** version — `2.0.17.107` (Dejul's working laptop) vs `2.0.17.503` (failing laptop). Full chain documented in `projects/active/mytrustid-desktop.md`.
 - **Next Steps**:
-  1. Dejul to get a token with matching hardware version from helpdesk (same as the crashing user's) to reproduce locally — planned for 2026-07-17
-  2. Run `EnableCrashDumps.ps1` as Admin on the test machine before reproducing
-  3. Reproduce via Pickup Cert flow, analyze the resulting `.dmp` (faulting module/thread in WinDbg) to confirm whether it's `mytrustid_pkcs11.dll` itself or a dependency it calls into
-  4. Security note: full dumps may contain the token PIN in plaintext in memory — keep local to the test machine, delete after analysis
+  1. Confirm minidriver-version causality — roll one laptop's minidriver to match the other's and retest
+  2. Report to Longmai (token vendor) if minidriver `2.0.17.503` is confirmed as the regression
+  3. Decide on the `Prefer32Bit` tradeoff (QUEST3PLUS needs 32-bit vs. this crash wants native 64-bit) — possibly split into two installer builds long-term
+  4. Security note: full dumps may contain the token PIN in plaintext in memory — keep local, delete after analysis
   5. Merge `fix/rsa-keygen-crash-handling` → master (August 2026 — hold until bpfk team done, carries over `fix/autoupdate-elevation`'s hold)
 
 ## Previous Active Project
