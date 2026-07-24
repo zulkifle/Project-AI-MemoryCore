@@ -40,6 +40,12 @@ See `main/to-do-list.md` for full list — 5 items pending as of 2026-07-16 (API
 - **Session 21 (2026-07-21)**: Implemented Feature #9 in full on new branch `feature/9-recall-expiry-controls` (off `feature/6-user-management`) — key-api (V7 migration, Message/PlatformKey entities, Trustgate KEK service, encrypt/decrypt v4 rewrite, recall + settings endpoints, EcJwkUtil/AesGcmUtil refactor) + extension (expiry picker, Recall button, terminal banners, popup settings). Verified end-to-end via direct API calls against a rebuilt Docker container — envelope shape, recall auth/idempotency/crypto-shred, expiry fallback + blocking all confirmed working. Committed locally, **not pushed** — Dejul to review (including manual Chrome/Gmail UI test, not yet done) before push.
 
 ## Active Project
+- **Name**: TradeVault
+- **Started**: 2026-07-22
+- **Context**: New build — self-hosted personal Trading OS (modular monolith). Spring Boot 3/Java 21/JWT auth backend + React/TS/Vite/Tailwind/shadcn frontend + PostgreSQL. Core rule: Trade Engine stores data only, all math lives in pluggable per-asset-class Calculator Engine (`TradeCalculator` interface), starting with Forex. V1 = Forex/Gold only, but schema/architecture must support future asset classes with zero DB redesign. Repo: `C:\PROJECTS\TRADEVAULT\tradevault\`. Building module by module per Dejul's spec: architecture → DB schema → backend → frontend → auth → dashboard → trade engine → forex calculator → reports → analytics → docker.
+- **Next Steps**: Deliver architecture doc + DB schema first, then backend skeleton.
+
+## Previous Active Project
 - **Name**: MyTrustID Desktop
 - **Session**: 19 — 2026-07-22
 - **Completion**: 97% (crash root-caused to a specific driver-version variable; not yet fixed/confirmed)
