@@ -14,6 +14,7 @@ Jessy AI companion skill plugins for Claude Code.
 | `save-memory` | "save", "save memory", "save progress" | Persists conversation insights to memory files |
 | `async-wpf-patterns` | "screen hang", "not responding", "UI freeze", "async", "Task.Run", blocking call on WPF | Fix UI freezes with async/await, disable buttons + loading cursor in WPF + Caliburn.Micro |
 | `signing-labs` | "signing lab", "signing test", "new hash class", "PDF_prepareHash", "MyTrustPDFSigner_IT5" | iText5 deferred signing lab: hash prep classes, embed classes, test runners, PKIWS integration |
+| `dotnet-native-crash-diagnosis` | Native crash w/ no managed exception, WinDbg, WOW64/Prefer32Bit, PKCS#11 driver crash, .vdproj architecture mismatch | WinDbg dump analysis, PE-header bitness verification, MSI architecture verification via COM, process isolation for native SEH faults, pkcs11-logger setup |
 
 ## Adding New Skills
 

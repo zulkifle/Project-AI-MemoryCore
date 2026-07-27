@@ -3,8 +3,8 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-07-22
-**Session Focus**: MyTrustID Desktop — RSA-keygen/token-read crash dump captured on failing laptop, analyzed via newly-installed WinDbg, root cause narrowed to `WinSCard.dll` smart-card minidriver version mismatch (2.0.17.107 vs 2.0.17.503) under WOW64. Full detail in `projects/active/mytrustid-desktop.md`.
+**Last Activity**: 2026-07-27
+**Session Focus**: MyTrustID Desktop — dropped 32-bit support entirely (QUEST3PLUS accepted as lost), locked app+installer to genuine x64, implemented Phase 1 process isolation for token detection (`MyTrustIDv1.TokenHelper.exe`). Crash still reproduces on the real failing user PC despite the bitness fix — now troubleshooting via `pkcs11-logger`, first attempt produced no log output (unresolved). Full detail in `projects/active/mytrustid-desktop.md`.
 
 ## Recent Work (2026-07-16) — MPAY QUICKREDIT MTSA Packaging
 - Packaged both envs at `C:\PROJECTS\ELENDING\MPAY QUCKREDIT\Deployment\`:
@@ -40,6 +40,28 @@ See `main/to-do-list.md` for full list — 5 items pending as of 2026-07-16 (API
 - **Session 21 (2026-07-21)**: Implemented Feature #9 in full on new branch `feature/9-recall-expiry-controls` (off `feature/6-user-management`) — key-api (V7 migration, Message/PlatformKey entities, Trustgate KEK service, encrypt/decrypt v4 rewrite, recall + settings endpoints, EcJwkUtil/AesGcmUtil refactor) + extension (expiry picker, Recall button, terminal banners, popup settings). Verified end-to-end via direct API calls against a rebuilt Docker container — envelope shape, recall auth/idempotency/crypto-shred, expiry fallback + blocking all confirmed working. Committed locally, **not pushed** — Dejul to review (including manual Chrome/Gmail UI test, not yet done) before push.
 
 ## Active Project
+- **Name**: Petronas Java Migration
+- **Started**: 2026-07-24
+- **Context**: Converting the legacy `PetronasService` C++ daemon (SFTP card-data exchange + SafeNet HSM SSAD signing) to a maintainable, fully-documented plain Java (Maven) application. Decisions: plain Java (no Spring Boot) to mirror original simplicity; SunPKCS11 provider for HSM access; new repo at `C:\PROJECTS\HANDOVER PROJECT\Petronas\source code\Petronas_java`, built/tested independently alongside the working C++/Docker version — no cutover until verified.
+- **Next Steps**: Explore full C++ source, map to Java package structure, set up Maven skeleton, convert module by module (DB → FTP → HSM/SSAD → main loop) with Javadoc on every function.
+
+## Previous Active Project
+- **Name**: Petronas Legacy C++ Dockerize
+- **Resumed**: 2026-07-24
+- **Last worked**: 2026-07-22 (log analysis: benign -13 errors + stuck `pm_staticmaster` record 3069)
+- **Context**: Legacy C++ daemon (`PetronasService`) — SFTP card data download, SafeNet HSM (PKCS#11) SSAD signing, upload back. Dockerized (multi-stage Dockerfile, docker-compose TEST/PROD toggle, entrypoint.sh, STEP.txt). Completion 87%, overdue since 2026-06-05, still in test phase.
+- **Recent progress**: Session 2026-07-22 traced two log issues in a Dejul-pasted production log — `-13` DB return codes are benign (empty queue, misleading severity), but `VerifySSAD2(3069)` failure revealed a real bug: `SSAD.cpp:98-115` never sets a failure-state flag when verification fails, so record 3069 is permanently stuck at "in progress" (`pmsm_manual='P'`) with zero matching `pm_staticdetail` rows. Read-only investigation — no code changes yet, decision pending on fix (repopulate/reset flag/archive).
+- **Next Steps**:
+  1. `docker compose down && docker compose up` — no rebuild needed (ini is volume-mounted)
+  2. Verify logs show DB connected + "Start Loop"
+  3. Test TCP port: `Test-NetConnection localhost -Port 6803`
+  4. Investigate DB directly for record 3069 — `SELECT * FROM pm_staticmaster WHERE pmsm_id=3069;` + matching `pm_staticdetail` rows — confirm orphan, decide fix
+  5. Root-cause port 6803 `EADDRINUSE` crash-loop — check for lingering container/process on host
+  6. PROD deploy: uncomment `mysqlrouter.mysqlrouter:6446` block in ini + swap volume blocks in docker-compose
+- **Known Issues**: HSM unavailable in Docker (`HSM=0` for local test); SFTP SSH keys not mounted; `openssl rsautl` deprecated in OpenSSL 3.x container (still works); port 6803 crash-loop; record 3069 stuck (see above)
+- **Repo**: `C:\PROJECTS\HANDOVER PROJECT\Petronas\source code\amg backup as per 29-06-2026\`
+
+## Previous Active Project
 - **Name**: TradeVault
 - **Started**: 2026-07-22
 - **Context**: New build — self-hosted personal Trading OS (modular monolith). Spring Boot 3/Java 21/JWT auth backend + React/TS/Vite/Tailwind/shadcn frontend + PostgreSQL. Core rule: Trade Engine stores data only, all math lives in pluggable per-asset-class Calculator Engine (`TradeCalculator` interface), starting with Forex. V1 = Forex/Gold only, but schema/architecture must support future asset classes with zero DB redesign. Repo: `C:\PROJECTS\TRADEVAULT\tradevault\`. Building module by module per Dejul's spec: architecture → DB schema → backend → frontend → auth → dashboard → trade engine → forex calculator → reports → analytics → docker.
@@ -47,19 +69,20 @@ See `main/to-do-list.md` for full list — 5 items pending as of 2026-07-16 (API
 
 ## Previous Active Project
 - **Name**: MyTrustID Desktop
-- **Session**: 19 — 2026-07-22
-- **Completion**: 97% (crash root-caused to a specific driver-version variable; not yet fixed/confirmed)
-- **Repo**: `C:\repos\MyTrustIDv1_AATL-GENERIC` — main app: `MyTrustIDv1\`, installer: `MyTrustID\`
+- **Session**: 20 — 2026-07-27
+- **Completion**: 90% (crash still reproduces on the real failing PC despite the x64 commitment; not yet resolved)
+- **Repo**: `C:\repos\MyTrustIDv1_AATL-GENERIC` — main app: `MyTrustIDv1\`, installer: `MyTrustID\`, new helper: `MyTrustIDv1.TokenHelper\`
 - **Branch**: `fix/rsa-keygen-crash-handling` — branched off `fix/autoupdate-elevation`, will supersede it as the single branch merged to master in August 2026
-- **Context**: Long-standing rare crash — some users (token-specific) crash the app during token read/pickup flow. Session 18 confirmed it's a native fault invisible to the CLR (installer to helpdesk still crashed with zero exception logged even after adding `[HandleProcessCorruptedStateExceptions]` + `AppDomain.UnhandledException` logging). **Session 19 (this session)**: Dejul reproduced on a second laptop with the matching-hardware token, captured a `.dmp` via the WER scripts from session 18. Installed WinDbg (`winget install Microsoft.WinDbg`) and analyzed it — confirmed `STATUS_INVALID_EXCEPTION_HANDLER` (SEH-chain corruption) in the `mytrustid_pkcs11.dll` → `WinSCard.dll` call chain, running as a 32-bit/WOW64 process (`Prefer32Bit=true`, set in commit `e656f8e` as a deliberate fix for the separate QUEST3PLUS 32-bit-only driver — a genuine architecture tradeoff, not a simple bug). Ruled out file-version mismatches (`mytrustid_pkcs11.dll`/`WinSCard.dll` identical on both laptops) via the token vendor's own diagnostic tool — found the real differentiator: same physical token (serial `D27ED54A37C8433E` matches) but different **Smart Card Mini Driver** version — `2.0.17.107` (Dejul's working laptop) vs `2.0.17.503` (failing laptop). Full chain documented in `projects/active/mytrustid-desktop.md`.
-- **Decision**: holding off on changing `Prefer32Bit` — QUEST3PLUS still actively used, field minidriver versions unknown/uncontrolled across MyTrustID token users. Treating this as a targeted driver-version problem, not an app-wide bitness change, since Dejul's own laptop runs the same 32-bit config fine (only the specific minidriver `2.0.17.503` is implicated so far).
+- **Context**: Session 19 root-caused the crash to `STATUS_INVALID_EXCEPTION_HANDLER` (SEH-chain corruption) in `mytrustid_pkcs11.dll`→`WinSCard.dll`, running under WOW64 (`Prefer32Bit=true`), narrowed to a specific smart-card minidriver version but held off changing bitness (QUEST3PLUS still needed 32-bit). **Session 20 (this session)**: reversed that decision after comparing against Pkcs11Admin (reference tool, same Pkcs11Interop author, runs native 64-bit, never crashes) — Dejul chose to drop 32-bit support entirely, accepting the loss of QUEST3PLUS. Implemented Phase 1 process isolation (`DetectToken.Token()`'s native calls can run in a new `MyTrustIDv1.TokenHelper.exe` child process, gated behind `UseIsolatedTokenDetect`, default off, zero behavior change for existing callers including `AuthServiceNpra.cs`). Locked `PlatformTarget=x64` (removed `Prefer32Bit`) in both `.csproj` files, set `MyTrustID.vdproj`'s `TargetPlatform` to x64 (verified via the built MSI's own `SummaryInformation.Template` = `"x64;1033"`), updated `mytrustid.bat` for the new install path and the x86→x64 migration period (checks both `Program Files` locations and both registry views). Diagnosed (partially, still open) a broken shortcut + "double-click exe does nothing, zero log entries" report after a raw `.msi` install — ruled out 4 still-32-bit bundled DLLs (`eToken.dll`, `IDPrimeTokenEngine.dll`, `InstallCertdll.dll`, `Uninstall.dll`) as the direct cause since none run at startup, flagged log4net's hardcoded log path possibly not existing on the machine as a likely culprit (silent failure, no exception). **Critically: after all of this, the crash still happened when Dejul tested the real failing user PC** — set up `pkcs11-logger` (bundled x64 copy found in `C:\repos\Pkcs11Admin-0.6.0\src\lib\pkcs11-logger\`) for call-level tracing, but the first attempt produced no log file and no error at all — unresolved at session end. Full chain documented in `projects/active/mytrustid-desktop.md`.
+- **Decision**: 32-bit support dropped entirely; app + helper + installer all locked to genuine x64 going forward (supersedes session 19's "hold off").
 - **Next Steps**:
-  1. Confirm minidriver-version causality — roll one laptop's minidriver to match the other's and retest
-  2. Report to Longmai (token vendor) if minidriver `2.0.17.503` is confirmed as the regression
-  3. **Do not change `Prefer32Bit`** unless the rollback test fails or this recurs broadly — only then reconsider split-build/process-isolation architecture
-  4. Resolve `.vdproj` Debug/Release packaging question — found `.sln` has no `Build.0` for installer under `Debug|Any CPU` (installer never builds there), suggesting Release is what's actually been shipped despite the vdproj's stale-looking `obj\Debug\...` SourcePath text — confirm via rebuild + `git diff`
+  1. Diagnose why `pkcs11-logger` produced zero output — check which machine was tested, whether the env vars were set as System vars + machine rebooted/relogged after `setx`, and whether the deployed `.exe.config` (not the repo `App.config`) was actually edited and the app relaunched fresh
+  2. Once a log is captured, interpret it to find why the crash still happens post-bitness-fix
+  3. Resolve the still-open shortcut/double-click-does-nothing symptom (Event Viewer, log folder existence, Task Manager checks asked but not yet answered)
+  4. Get 64-bit rebuilds of the 4 still-32-bit DLLs before their flows (Activation, Pickup New/Renew Cert, Select X509) get exercised under the new x64-only process
   5. Security note: full dumps may contain the token PIN in plaintext in memory — keep local, delete after analysis
-  6. Merge `fix/rsa-keygen-crash-handling` → master (August 2026 — hold until bpfk team done, carries over `fix/autoupdate-elevation`'s hold)
+  6. None of this session's changes are committed yet — still uncommitted on `fix/rsa-keygen-crash-handling`
+  7. Merge `fix/rsa-keygen-crash-handling` → master (August 2026 — hold until bpfk team done, carries over `fix/autoupdate-elevation`'s hold)
 
 ## Previous Active Project
 - **Name**: jumio-proxy-integration

@@ -29,6 +29,9 @@
 
 ## Session History (Last 5)
 
+### 2026-07-24 - Project Resumed
+- Project resumed from position #6
+
 ### 2026-07-22 - Log Analysis: -13 Errors (Benign) + Stuck Record 3069 (Real Bug)
 - **Changes**: Read-only investigation of a production log Dejul pasted, no code changes.
   - **`DB_GetStaticMaster(...,0,5,0)` / `(...,0,6,0)` returning `-13`**: traced to `DB.cpp:1095-1101` — `-13` means the `SELECT COUNT(*) FROM pm_staticmaster WHERE pmsm_upload='N'` (or `pmsm_done='N'`) query returned zero rows, i.e. "nothing pending at this stage right now." Logged at severity 5 with "xxx Failed," which is misleading — it's the normal empty-queue case, not an error. No action needed (same misleading-log-severity pattern previously flagged in MyTrustID Desktop's "OnStartUp Exception" line).
@@ -109,4 +112,4 @@
 - **K8s access**: `ssh -L 6443:10.5.1.42:6443 zul@10.5.1.42` — kubeconfig `server:` must be `https://127.0.0.1:6443`
 
 ---
-**Last Updated**: 2026-07-01 | **Position**: #1/10 Active
+**Last Updated**: 2026-07-24 | **Position**: #1/10 Active
