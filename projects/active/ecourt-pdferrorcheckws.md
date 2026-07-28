@@ -6,17 +6,17 @@
 - **Client**: Internal (POJ / e-Court)
 - **Period**: 2026-07-02 - Active
 - **Tech Stack**: Java 8 + JAX-WS + WildFly 18 + iText5 5.4.1 + log4j
-- **Completion**: 97%
-- **Duration**: ~3.5 hours
+- **Completion**: 98%
+- **Duration**: ~4 hours
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-07-03 — Removed PDFBox entirely; ClassCastException returns 100/failed
+- **Last Session**: 2026-07-28 — Fixed false-negative: checker wasn't catching a ClassCastException that only surfaces during real signing
 - **Next Steps**:
-  1. Clean and Build in NetBeans (remove pdfbox/fontbox from WEB-INF/lib in WAR)
-  2. Deploy to production server
+  1. Run `testCheck.java` against the actual offending PDF to confirm it now returns 100/failed
+  2. Clean and Build in NetBeans, redeploy WAR to WildFly
 - **Known Issues**:
-  - `ClassCastException: PdfArray/PdfNumber cast` → 100/failed, no auto-fix (AcroForm structure corruption — not fixable without external tools)
+  - `ClassCastException: PdfArray cannot be cast to PdfDictionary` → 100/failed, no auto-fix (AcroForm/Annots structure corruption — not fixable without external tools). Previously this could slip through as 000/success on some PDFs because the check didn't reach the code path where it occurs — see 2026-07-28 session.
   - `InvalidPdfException: Rebuild failed: trailer not found` → 100/failed, too corrupt for iText
 
 ## SOAP Methods
@@ -47,7 +47,7 @@
 ECOURT_PdfErrorCheckWS/
 ├── src/java/com/poj/pdferrorcheck/
 │   ├── PdfErrorCheckService.java   ← @WebService, 2 methods
-│   ├── PdfErrorCheckHelper.java    ← logic, isRebuilt auto-rp only
+│   ├── PdfErrorCheckHelper.java    ← logic: isRebuilt auto-rp + deep signature-placeholder check
 │   └── PdfCheckResult.java         ← errCode, status, errMsg
 ├── web/WEB-INF/
 │   ├── jboss-web.xml               ← context-root: /PdfErrorCheckWS
@@ -70,8 +70,13 @@ ECOURT_PdfErrorCheckWS/
 - **File handle safety**: `reader.close(); reader = null;` before `FileOutputStream` write — prevents Windows file lock overlap between check API and sign API
 - **isRebuilt repair**: Silent — returns `"pdf verification pass"`. Logs use `"rp"` shorthand.
 - **ClassCastException / trailer-not-found**: No auto-fix. Returns full exception message. External tools required if fix needed (QPDF / Acrobat Pro).
+- **Deep check (2026-07-28)**: `checkPdfError`/`checkPdfErrorFromPath` now also reserve a blank signature placeholder (`PdfStamper.createSignature` → `MakeSignature.signExternalContainer` against an in-memory `ByteArrayOutputStream`) after the `AcroFields` walk. This mirrors `PDF_prepareHash_seal.java`'s real signing path and drives `PdfStamperImp.close()` — the exact frame where the ClassCastException happens — so AcroForm/Annots corruption now surfaces during the check instead of only at production signing time.
 
 ## Session History (Last 5)
+
+### 2026-07-28 - Deep signature-placeholder check for ClassCastException false negatives
+- **Changes**: Root-caused why `CheckPdfError`/`CheckPdfErrorByPath` returned 000/success for a PDF that later threw `java.lang.ClassCastException: com.itextpdf.text.pdf.PdfArray cannot be cast to com.itextpdf.text.pdf.PdfDictionary` during real signing (traced via `PDF_prepareHash_seal.java:158-159` → `PdfStamperImp.close():217`, from the MyTrustPDFSigner_IT5 signing lab). Existing checker only ran `reader.isRebuilt()` + `AcroFields.getFields()` — neither exercises the code path where the crash actually lives. Added the deep check described above to both SOAP methods. Compiled clean against `itextpdf-5.4.1.jar` + `log4j.jar` via direct `javac` (no `ant` on PATH in this environment).
+- **Time Spent**: ~30 min
 
 ### 2026-07-03 - Remove PDFBox, ClassCastException returns error
 - **Changes**: Removed PDFBox entirely — PDFBox repaired the file but iText5 still triggered ClassCastException on every subsequent call (AcroForm corruption preserved by PDFBox's save). Decision: ClassCastException returns 100/failed with exception message. Removed `isClassCastIssue()` helper, removed PDFBox import, removed pdfbox + fontbox from project.xml and project.properties javac.classpath.
@@ -93,4 +98,4 @@ ECOURT_PdfErrorCheckWS/
 [No history yet — this section is populated when session count exceeds 5]
 
 ---
-**Last Updated**: 2026-07-03 | **Position**: #1/10 Active
+**Last Updated**: 2026-07-28 | **Position**: #1/10 Active

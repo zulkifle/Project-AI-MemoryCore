@@ -6,13 +6,13 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-28 | TBD | 90% | Helpdesk approved deploying the x64 build as release v1.3.2 without waiting for full root-cause fix. Added post-install restart prompt to mytrustid.bat (Yes/No popup, 10s countdown), IExpress restart setting set to "No restart" to avoid conflict. Dejul testing now. |
-| 2 | **[Petronas Java Migration](./active/petronas-java-migration.md)** | 2026-07-24 | TBD | 0% | Just created — converting legacy C++ PetronasService daemon to plain Java (Maven), SunPKCS11 for HSM, new repo alongside the C++ version. Next: explore C++ source, map Java package structure. |
-| 3 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-24 | 2026-06-05 ⚠️ | 87% | Log analysis found orphaned `pm_staticmaster` record 3069 (stuck, no retry path) + benign -13 "queue empty" log noise. Also known: port 6803 EADDRINUSE crash-loop. |
-| 4 | **[TradeVault](./active/tradevault.md)** | 2026-07-24 | TBD | 85% | Full app built (all 11 modules) + running live in Docker at localhost:8091, verified end-to-end. Fixed 2 real bugs (missing timestamp columns, LazyInitializationException). Next: real usage + eslint config + own git repo. |
-| 5 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-07-21 | TBD | 99% | Feature #9 (Recall & Expiry Controls) implemented + manually tested working in Chrome/Gmail (branch `feature/9-recall-expiry-controls`, local commits, not pushed). |
-| 6 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-07-16 | TBD | 100% (maintenance) | userId→failed-eKYC check + 401 fix redeployed to PILOT & PROD. 401 resolved. Only branch merge remains. |
-| 7 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-07-03 | TBD | 97% | Removed PDFBox. ClassCastException → 100/failed. isRebuilt auto-rp only. Ready for PROD deploy. |
+| 1 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-07-28 | TBD | 98% | Fixed false-negative: checker now reserves a blank signature placeholder to catch ClassCastException (AcroForm/Annots corruption) that previously only surfaced at real signing time. Next: test against offending PDF, redeploy WAR. |
+| 2 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-28 | TBD | 90% | Helpdesk approved deploying the x64 build as release v1.3.2 without waiting for full root-cause fix. Added post-install restart prompt to mytrustid.bat (Yes/No popup, 10s countdown), IExpress restart setting set to "No restart" to avoid conflict. Dejul testing now. |
+| 3 | **[Petronas Java Migration](./active/petronas-java-migration.md)** | 2026-07-24 | TBD | 0% | Just created — converting legacy C++ PetronasService daemon to plain Java (Maven), SunPKCS11 for HSM, new repo alongside the C++ version. Next: explore C++ source, map Java package structure. |
+| 4 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-24 | 2026-06-05 ⚠️ | 87% | Log analysis found orphaned `pm_staticmaster` record 3069 (stuck, no retry path) + benign -13 "queue empty" log noise. Also known: port 6803 EADDRINUSE crash-loop. |
+| 5 | **[TradeVault](./active/tradevault.md)** | 2026-07-24 | TBD | 85% | Full app built (all 11 modules) + running live in Docker at localhost:8091, verified end-to-end. Fixed 2 real bugs (missing timestamp columns, LazyInitializationException). Next: real usage + eslint config + own git repo. |
+| 6 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-07-21 | TBD | 99% | Feature #9 (Recall & Expiry Controls) implemented + manually tested working in Chrome/Gmail (branch `feature/9-recall-expiry-controls`, local commits, not pushed). |
+| 7 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-07-16 | TBD | 100% (maintenance) | userId→failed-eKYC check + 401 fix redeployed to PILOT & PROD. 401 resolved. Only branch merge remains. |
 | 8 | **[TGCA](./active/tgca.md)** | 2026-05-25 | TBD | 0% | Registered — pending study |
 | 9 | **[RSS Self Service Portal](./active/rss-self-service-portal.md)** | 2026-05-12 | Q2 2026 | 80% | Phase 1 complete — next: browser test + billing integration |
 
@@ -29,4 +29,4 @@
 ---
 ## System Status
 - **Total Projects**: 14 (9 active + 5 archived)
-- **Last Updated**: 2026-07-28 - MyTrustID Desktop: v1.3.2 deployed to helpdesk, post-install restart prompt added to mytrustid.bat
+- **Last Updated**: 2026-07-28 - ECOURT_PdfErrorCheckWS: fixed checker false-negative for ClassCastException (AcroForm/Annots corruption), moved to #1

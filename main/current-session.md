@@ -4,7 +4,11 @@
 ## Session RAM Status
 **Current Session**: Active
 **Last Activity**: 2026-07-28
-**Session Focus**: MyTrustID Desktop — helpdesk approved deploying the x64-only build as release v1.3.2 without waiting for the pkcs11-logger root-cause diagnosis to finish. Added a post-install restart prompt to `mytrustid.bat` (Yes/No popup → 10s-countdown `shutdown /r` or launch app), and set IExpress's restart wizard option to "No restart" since the batch script now owns that flow directly. Dejul is testing the new flow now. Session 20's x64-lock code changes are still uncommitted on `fix/rsa-keygen-crash-handling` despite being the basis of the deployed build — pending Dejul's confirmation to commit. Full detail in `projects/active/mytrustid-desktop.md`.
+**Session Focus**: ECOURT_PdfErrorCheckWS — fixed a checker false-negative. `CheckPdfError`/`CheckPdfErrorByPath` returned 000/success for a PDF that later threw `ClassCastException: PdfArray cannot be cast to PdfDictionary` during real signing (traced via MyTrustPDFSigner_IT5's `PDF_prepareHash_seal.java:158-159` → `PdfStamperImp.close():217`). Root cause: the checker only ran `isRebuilt()` + `AcroFields.getFields()`, neither of which exercises the code path where the crash lives. Added a deep check (blank signature placeholder against an in-memory buffer, mirroring the real signing flow) to both SOAP methods in `PdfErrorCheckHelper.java`; compiled clean via direct `javac` against `itextpdf-5.4.1.jar`. Next: test against the actual offending PDF via `testCheck.java`, then redeploy WAR. Full detail in `projects/active/ecourt-pdferrorcheckws.md`.
+
+## Previous Active Project
+- **Name**: MyTrustID Desktop
+- **Last worked**: 2026-07-28 — helpdesk approved deploying the x64-only build as release v1.3.2 without waiting for the pkcs11-logger root-cause diagnosis to finish. Added a post-install restart prompt to `mytrustid.bat` (Yes/No popup → 10s-countdown `shutdown /r` or launch app), and set IExpress's restart wizard option to "No restart" since the batch script now owns that flow directly. Dejul is testing the new flow now. Session 20's x64-lock code changes are still uncommitted on `fix/rsa-keygen-crash-handling` despite being the basis of the deployed build — pending Dejul's confirmation to commit. Full detail in `projects/active/mytrustid-desktop.md`.
 
 ## Recent Work (2026-07-16) — MPAY QUICKREDIT MTSA Packaging
 - Packaged both envs at `C:\PROJECTS\ELENDING\MPAY QUCKREDIT\Deployment\`:
