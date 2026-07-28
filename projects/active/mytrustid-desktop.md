@@ -5,9 +5,9 @@
 - **Type**: Desktop Application (WPF)
 - **Period**: 2026-03-31 - Active (reactivated 2026-07-09)
 - **Tech Stack**: C# + WPF + .NET Framework 4.8 + WebSocket
-- **Completion**: 90% (active bug — real crash still unresolved on failing user PC despite x64 commitment)
+- **Completion**: 90% (v1.3.2 x64 build deployed to helpdesk; crash root-cause still unresolved on failing user PC)
 - **Due Date**: TBD
-- **Duration**: ~23 hours
+- **Duration**: ~23.5 hours
 
 ## Solution Structure
 | Project | Purpose | Path |
@@ -23,15 +23,16 @@
 - Desktop installer via VS installer project
 
 ## Current Status
-- **Last Session**: 2026-07-27 (Session 20) — Reversed the session-19 "hold off" decision: Dejul chose to **drop 32-bit support entirely** and commit the whole app/installer to genuine 64-bit. Implemented Phase 1 process-isolation for token detection, locked `PlatformTarget=x64` across both `.csproj` files + the `.vdproj`, updated the deployment `.bat` for x64 paths. **Crash still reproduces on the real failing user PC after all of this** — the `Prefer32Bit`/WOW64 theory, while well-evidenced from the WinDbg dump, is not the complete picture (or there's a second issue on that machine). Root-causing continues via `pkcs11-logger`; first attempt produced no log file at all (unexplained — see Next Steps).
+- **Last Session**: 2026-07-28 (Session 21) — Helpdesk approved deploying the current x64-only build as **release v1.3.2** without waiting for the `pkcs11-logger` root-cause diagnosis to finish — Dejul already built and deployed it. Added a post-install restart prompt (Yes/No MessageBox → `shutdown /r /t 10` or launch app) to the deployment script `mytrustid.bat`. Clarified IExpress wizard's restart setting should be **"No restart"** since the batch script now owns the restart flow directly. Dejul beginning testing.
 - **Next Steps**:
-  1. **Diagnose why `pkcs11-logger` produced zero output** — no log file, no error — when Dejul tested it. Not yet asked: (a) which machine was tested — Dejul's own working machine (no crash expected, but a log should still appear from normal calls) vs. the actual failing user's PC; (b) were the `PKCS11_LOGGER_LIBRARY_PATH`/`_LOG_FILE_PATH` env vars set as **System** vars via `setx`, and was the machine rebooted/user re-logged-in after (setx doesn't affect the currently-running session); (c) was the edit made to the **deployed** `MyTrustIDv1.exe.config` (not the repo's `App.config`) and was the app relaunched fresh afterward.
-  2. Once a log is captured, interpret it to find why the crash still happens post-bitness-fix.
-  3. Unresolved from earlier this session: desktop shortcut not working + double-click `.exe` producing zero log output — diagnostic questions asked (Event Viewer, `C:\Trustgate\MyTrustID\logs\` folder existence, Task Manager during launch) but not yet answered by Dejul.
-  4. Get 64-bit builds of `eToken.dll`, `IDPrimeTokenEngine.dll`, `InstallCertdll.dll`, `Uninstall.dll` (confirmed still 32-bit via PE header check) — will `BadImageFormatException` crash when Activation/Pickup New-Renew Cert/Select X509 flows touch them, now that the process is locked to x64.
-  5. Phase 2 (isolating `GenerateCSR.getCSR()`/`ImportCertificate()` into the helper process, same pattern as Phase 1) was designed but not implemented — status unclear now that the pivot went to bitness-only; revisit if isolation is still wanted once the real crash is understood.
-  6. None of this session's changes are committed yet — still uncommitted on `fix/rsa-keygen-crash-handling`.
-  7. Merge `fix/rsa-keygen-crash-handling` → master (August 2026 — hold until bpfk team done, carries over `fix/autoupdate-elevation`'s hold)
+  1. **Verify the new restart-prompt flow in `mytrustid.bat` works end-to-end** — popup appears after install, Yes triggers the 10s-countdown restart, No launches the app as before. (Dejul testing now.)
+  2. **Diagnose why `pkcs11-logger` produced zero output** — no log file, no error — when Dejul tested it. Not yet asked: (a) which machine was tested — Dejul's own working machine (no crash expected, but a log should still appear from normal calls) vs. the actual failing user's PC; (b) were the `PKCS11_LOGGER_LIBRARY_PATH`/`_LOG_FILE_PATH` env vars set as **System** vars via `setx`, and was the machine rebooted/user re-logged-in after (setx doesn't affect the currently-running session); (c) was the edit made to the **deployed** `MyTrustIDv1.exe.config` (not the repo's `App.config`) and was the app relaunched fresh afterward.
+  3. Once a log is captured, interpret it to find why the crash still happens post-bitness-fix.
+  4. Unresolved from earlier: desktop shortcut not working + double-click `.exe` producing zero log output — diagnostic questions asked (Event Viewer, `C:\Trustgate\MyTrustID\logs\` folder existence, Task Manager during launch) but not yet answered by Dejul.
+  5. Get 64-bit builds of `eToken.dll`, `IDPrimeTokenEngine.dll`, `InstallCertdll.dll`, `Uninstall.dll` (confirmed still 32-bit via PE header check) — will `BadImageFormatException` crash when Activation/Pickup New-Renew Cert/Select X509 flows touch them, now that the process is locked to x64.
+  6. Phase 2 (isolating `GenerateCSR.getCSR()`/`ImportCertificate()` into the helper process, same pattern as Phase 1) was designed but not implemented — status unclear now that the pivot went to bitness-only; revisit if isolation is still wanted once the real crash is understood.
+  7. Session 20's code changes (x64 lock, Phase 1 isolation) are still **uncommitted** on `fix/rsa-keygen-crash-handling` despite being the basis for the deployed v1.3.2 build — asked Dejul whether to commit now, not yet answered.
+  8. Merge `fix/rsa-keygen-crash-handling` → master (August 2026 — hold until bpfk team done, carries over `fix/autoupdate-elevation`'s hold)
 - **Decided**:
   - `AUT103` UserCompName-vs-certificate check removed entirely per Dejul's request (2026-07-09) — only `AUT102` (UserCompID) company check remains active
   - **(2026-07-27, supersedes session-19 "hold off" decision)** 32-bit support dropped entirely. QUEST3PLUS (32-bit-only driver) accepted as lost. App + `TokenHelper` + installer all locked to genuine x64 (`PlatformTarget=x64`, not `AnyCPU`+`Prefer32Bit`) — verified via `CorFlags`, direct MSI `SummaryInformation.Template` inspection (`"x64;1033"`), and comparison against Pkcs11Admin (reference tool, same Pkcs11Interop author, runs native 64-bit, never crashes).
@@ -57,6 +58,10 @@
 - **`pkcs11-logger` set up for deeper diagnosis, but produced nothing on first attempt**: found a bundled copy already in `C:\repos\Pkcs11Admin-0.6.0\src\lib\pkcs11-logger\pkcs11-logger-x64.dll`, verified genuinely x64 via PE header. Instructed Dejul to set `PKCS11_LOGGER_LIBRARY_PATH`/`PKCS11_LOGGER_LOG_FILE_PATH` env vars and repoint the deployed config's `MyTrustID` key at the logger DLL. Result: "no error or file generated" — the logger apparently never engaged at all. Not yet diagnosed (see Next Steps #1) — candidates: wrong machine tested, `setx` env vars not yet live (needs reboot/relog), or the deployed `.exe.config` wasn't the one edited.
 
 ## Session History (Last 5)
+
+### 2026-07-28 - v1.3.2 Deployed to Helpdesk + Post-Install Restart Prompt
+- **Changes**: Helpdesk agreed to just deploy the current x64-only build (session 20's changes) as **release v1.3.2**, rather than waiting for the `pkcs11-logger` root-cause diagnosis to complete — Dejul had already built and deployed it. Added a post-install restart prompt to the deployment script `C:\PROJECTS\MTID_TOKEN_DELIVERY\Release\mytrustid.bat` (`:postInstall` section, after `msiexec /passive /norestart`): a WinForms MessageBox asks "Restart now?" — Yes runs `shutdown /r /t 10` (10s countdown, cancellable via `shutdown /a`), No launches `MyTrustIDv1.exe` immediately as before. Dejul then asked why IExpress's own "Only restart if needed" wizard option wasn't showing a restart popup — clarified that's a separate mechanism gated on the launched process's exit code (`3010`/`1641`, the MSI reboot-required convention), which `mytrustid.bat` never propagates (ends on a bare `exit`, always reads as success) — so it was correctly staying silent, not misconfigured. Since the batch script now owns the restart prompt directly, recommended setting IExpress to **"No restart"** to avoid a second, conflicting reboot trigger; Dejul applied that and started testing.
+- **Time Spent**: ~25 min
 
 ### 2026-07-27 - x64-Only Commitment + Phase 1 Process Isolation (Crash Still Not Fully Resolved)
 - **Changes**: Major pivot from session 19's "hold off" decision. (1) Implemented Phase 1: `DetectToken.Token()`'s native PKCS#11 calls can now run isolated in a new `MyTrustIDv1.TokenHelper.exe` child process (new project, `TokenDetectCore.cs` holds the shared detection logic, gated behind `UseIsolatedTokenDetect` config flag, default off). (2) After comparing against Pkcs11Admin (reference tool, native 64-bit, same library author, never crashes), Dejul decided to drop 32-bit support entirely — accepted losing the QUEST3PLUS 32-bit-only driver. (3) Locked `PlatformTarget=x64` (removed `Prefer32Bit`) in both `MyTrustIDv1.csproj` and the new `MyTrustIDv1.TokenHelper.csproj`'s `Debug|AnyCPU`/`Release|AnyCPU` groups. (4) Set `MyTrustID.vdproj`'s `TargetPlatform` from x86 (`"3:0"`) to x64 (`"3:1"`) — verified the built MSI's own `SummaryInformation.Template` reads `"x64;1033"`. (5) Removed the 32-bit config branch from `App.config` (`pkcs11_32`, trailing-space SysWOW64 `SafeNet` key) and `TokenDetectCore.cs`. (6) Updated `C:\PROJECTS\MTID_TOKEN_DELIVERY\Release\mytrustid.bat` for the new x64 install path, then again to handle machines still carrying an old x86-packaged install during the migration period (checks both `Program Files` and `(x86)`, both registry views). (7) Diagnosed (partially — still open) a "double-click exe does nothing, zero log entries" report and a broken desktop shortcut after installing via the raw `.msi`. (8) Set up `pkcs11-logger` for call-level tracing as the next diagnostic step, since **the crash still reproduces on the real failing user PC even after all the above** — meaning the bitness fix alone did not resolve it. First `pkcs11-logger` test produced no output at all — unresolved at session end.
@@ -109,4 +114,4 @@ Earlier sessions (2026-03-31 to 2026-04-21): Project registered. Full solution e
 - **SafeNet Token installer**: `C:\PROJECTS\MYTRUSTID DESKTOP\Token\Safenet\Installation` — install this before signing EXE/MSI with real code signing cert
 
 ---
-**Last Updated**: 2026-07-27 (Session 20) | **Position**: #1/9 Active
+**Last Updated**: 2026-07-28 (Session 21) | **Position**: #1/9 Active

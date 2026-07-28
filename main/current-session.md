@@ -3,8 +3,8 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-07-27
-**Session Focus**: MyTrustID Desktop — dropped 32-bit support entirely (QUEST3PLUS accepted as lost), locked app+installer to genuine x64, implemented Phase 1 process isolation for token detection (`MyTrustIDv1.TokenHelper.exe`). Crash still reproduces on the real failing user PC despite the bitness fix — now troubleshooting via `pkcs11-logger`, first attempt produced no log output (unresolved). Full detail in `projects/active/mytrustid-desktop.md`.
+**Last Activity**: 2026-07-28
+**Session Focus**: MyTrustID Desktop — helpdesk approved deploying the x64-only build as release v1.3.2 without waiting for the pkcs11-logger root-cause diagnosis to finish. Added a post-install restart prompt to `mytrustid.bat` (Yes/No popup → 10s-countdown `shutdown /r` or launch app), and set IExpress's restart wizard option to "No restart" since the batch script now owns that flow directly. Dejul is testing the new flow now. Session 20's x64-lock code changes are still uncommitted on `fix/rsa-keygen-crash-handling` despite being the basis of the deployed build — pending Dejul's confirmation to commit. Full detail in `projects/active/mytrustid-desktop.md`.
 
 ## Recent Work (2026-07-16) — MPAY QUICKREDIT MTSA Packaging
 - Packaged both envs at `C:\PROJECTS\ELENDING\MPAY QUCKREDIT\Deployment\`:

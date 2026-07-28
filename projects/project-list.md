@@ -6,7 +6,7 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-27 | TBD | 90% | Reversed prior decision — dropped 32-bit support entirely, locked app/installer to x64, added Phase 1 process isolation for token detection. Crash still reproduces on the real failing PC; troubleshooting via pkcs11-logger (first attempt produced no output — unresolved). |
+| 1 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-28 | TBD | 90% | Helpdesk approved deploying the x64 build as release v1.3.2 without waiting for full root-cause fix. Added post-install restart prompt to mytrustid.bat (Yes/No popup, 10s countdown), IExpress restart setting set to "No restart" to avoid conflict. Dejul testing now. |
 | 2 | **[Petronas Java Migration](./active/petronas-java-migration.md)** | 2026-07-24 | TBD | 0% | Just created — converting legacy C++ PetronasService daemon to plain Java (Maven), SunPKCS11 for HSM, new repo alongside the C++ version. Next: explore C++ source, map Java package structure. |
 | 3 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-24 | 2026-06-05 ⚠️ | 87% | Log analysis found orphaned `pm_staticmaster` record 3069 (stuck, no retry path) + benign -13 "queue empty" log noise. Also known: port 6803 EADDRINUSE crash-loop. |
 | 4 | **[TradeVault](./active/tradevault.md)** | 2026-07-24 | TBD | 85% | Full app built (all 11 modules) + running live in Docker at localhost:8091, verified end-to-end. Fixed 2 real bugs (missing timestamp columns, LazyInitializationException). Next: real usage + eslint config + own git repo. |
@@ -29,4 +29,4 @@
 ---
 ## System Status
 - **Total Projects**: 14 (9 active + 5 archived)
-- **Last Updated**: 2026-07-27 - MyTrustID Desktop moved to position #1 (x64 commitment + Phase 1 isolation session)
+- **Last Updated**: 2026-07-28 - MyTrustID Desktop: v1.3.2 deployed to helpdesk, post-install restart prompt added to mytrustid.bat
