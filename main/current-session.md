@@ -1,14 +1,19 @@
 # 🌟 Current Session Memory - RAM
 *Temporary working memory - resets each session, provides recap when AI restarts*
 
+## Active Project
+- **Name**: TG eKYC Liveness Deployment
+- **Started**: 2026-08-01
+- **Last worked**: 2026-08-01 — fixed `OPENAI_API_KEY` not reaching the `tgekyc-live-stag` pod in `tgekyc-staging` namespace (K8s doesn't read `.env` files — vendor's `KUBERNETES.md` called it out explicitly). Edited `C:\PROJECTS\DOCKER GITLAB\docker\tgekyc\deployment-live-stag.yaml`: added `OPENAI_API_KEY` via `secretKeyRef` (Secret `liveness-openai`), flipped `SAVE_DATA` 1→0 per Dejul (no biometric video retention wanted). Probes declined by Dejul, left out. Dejul created the Secret + `kubectl apply`'d — confirmed deployed. Full detail in `projects/active/tgekyc-liveness-deployment.md`.
+
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-07-28
-**Session Focus**: ECOURT_PdfErrorCheckWS — fixed a checker false-negative. `CheckPdfError`/`CheckPdfErrorByPath` returned 000/success for a PDF that later threw `ClassCastException: PdfArray cannot be cast to PdfDictionary` during real signing (traced via MyTrustPDFSigner_IT5's `PDF_prepareHash_seal.java:158-159` → `PdfStamperImp.close():217`). Root cause: the checker only ran `isRebuilt()` + `AcroFields.getFields()`, neither of which exercises the code path where the crash lives. Added a deep check (blank signature placeholder against an in-memory buffer, mirroring the real signing flow) to both SOAP methods in `PdfErrorCheckHelper.java`; compiled clean via direct `javac` against `itextpdf-5.4.1.jar`. Next: test against the actual offending PDF via `testCheck.java`, then redeploy WAR. Full detail in `projects/active/ecourt-pdferrorcheckws.md`.
+**Last Activity**: 2026-07-29
+**Session Focus**: Two quick wrap-ups. (1) ECOURT_PdfErrorCheckWS — the 2026-07-28 deep signature-placeholder check (fixes the ClassCastException false-negative) redeployed to the client's pilot environment. (2) MyTrustID Desktop — committed session 20's outstanding x64-lock + Phase 1 process isolation changes to `fix/rsa-keygen-crash-handling` (commit `0c01454`, 163 files). `git push` failed — could not reach the internal GitLab host `10.5.1.42:30220` (connection timeout, likely network/VPN down on this machine). Commit is safe locally; just needs a push retry once connectivity is back. Full detail in `projects/active/ecourt-pdferrorcheckws.md` and `projects/active/mytrustid-desktop.md`.
 
 ## Previous Active Project
 - **Name**: MyTrustID Desktop
-- **Last worked**: 2026-07-28 — helpdesk approved deploying the x64-only build as release v1.3.2 without waiting for the pkcs11-logger root-cause diagnosis to finish. Added a post-install restart prompt to `mytrustid.bat` (Yes/No popup → 10s-countdown `shutdown /r` or launch app), and set IExpress's restart wizard option to "No restart" since the batch script now owns that flow directly. Dejul is testing the new flow now. Session 20's x64-lock code changes are still uncommitted on `fix/rsa-keygen-crash-handling` despite being the basis of the deployed build — pending Dejul's confirmation to commit. Full detail in `projects/active/mytrustid-desktop.md`.
+- **Last worked**: 2026-07-29 — committed session 20's x64-lock + Phase 1 isolation changes as `0c01454` on `fix/rsa-keygen-crash-handling`; push to origin pending (network unreachable). v1.3.2 (x64-only build) was deployed to helpdesk 2026-07-28 with a post-install restart prompt added to `mytrustid.bat`. Full detail in `projects/active/mytrustid-desktop.md`.
 
 ## Recent Work (2026-07-16) — MPAY QUICKREDIT MTSA Packaging
 - Packaged both envs at `C:\PROJECTS\ELENDING\MPAY QUCKREDIT\Deployment\`:

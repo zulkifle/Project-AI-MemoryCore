@@ -11,10 +11,9 @@
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-07-28 — Fixed false-negative: checker wasn't catching a ClassCastException that only surfaces during real signing
+- **Last Session**: 2026-07-29 — Deep signature-placeholder check redeployed to the client's pilot environment
 - **Next Steps**:
-  1. Run `testCheck.java` against the actual offending PDF to confirm it now returns 100/failed
-  2. Clean and Build in NetBeans, redeploy WAR to WildFly
+  1. Monitor pilot for the previously-false-negative PDF to confirm it now returns 100/failed in real client usage
 - **Known Issues**:
   - `ClassCastException: PdfArray cannot be cast to PdfDictionary` → 100/failed, no auto-fix (AcroForm/Annots structure corruption — not fixable without external tools). Previously this could slip through as 000/success on some PDFs because the check didn't reach the code path where it occurs — see 2026-07-28 session.
   - `InvalidPdfException: Rebuild failed: trailer not found` → 100/failed, too corrupt for iText
@@ -74,6 +73,10 @@ ECOURT_PdfErrorCheckWS/
 
 ## Session History (Last 5)
 
+### 2026-07-29 - Redeployed to client's pilot environment
+- **Changes**: Redeployed the WAR with the 2026-07-28 deep signature-placeholder check to the client's pilot environment.
+- **Time Spent**: —
+
 ### 2026-07-28 - Deep signature-placeholder check for ClassCastException false negatives
 - **Changes**: Root-caused why `CheckPdfError`/`CheckPdfErrorByPath` returned 000/success for a PDF that later threw `java.lang.ClassCastException: com.itextpdf.text.pdf.PdfArray cannot be cast to com.itextpdf.text.pdf.PdfDictionary` during real signing (traced via `PDF_prepareHash_seal.java:158-159` → `PdfStamperImp.close():217`, from the MyTrustPDFSigner_IT5 signing lab). Existing checker only ran `reader.isRebuilt()` + `AcroFields.getFields()` — neither exercises the code path where the crash actually lives. Added the deep check described above to both SOAP methods. Compiled clean against `itextpdf-5.4.1.jar` + `log4j.jar` via direct `javac` (no `ant` on PATH in this environment).
 - **Time Spent**: ~30 min
@@ -98,4 +101,4 @@ ECOURT_PdfErrorCheckWS/
 [No history yet — this section is populated when session count exceeds 5]
 
 ---
-**Last Updated**: 2026-07-28 | **Position**: #1/10 Active
+**Last Updated**: 2026-07-29 | **Position**: #1/10 Active
