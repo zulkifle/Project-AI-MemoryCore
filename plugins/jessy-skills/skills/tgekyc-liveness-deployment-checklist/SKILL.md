@@ -2,10 +2,12 @@
 name: tgekyc-liveness-deployment-checklist
 description: "MUST use when working on the tgekyc liveness service deployment —
              redeploying, upgrading the vendor image version, checking its K8s
-             config, or diagnosing 'OpenAI API key not configured' /
+             config, verifying the deployed version via /version.json, or
+             diagnosing 'OpenAI API key not configured' /
              FAKE_FACE errors from MPAY's doLivenessVideo flow. Also triggers on:
              'tgekyc liveness', 'liveness deployment', 'check liveness config',
-             'redeploy liveness', 'upgrade liveness image', 'tgekyc-live-stag'."
+             'redeploy liveness', 'upgrade liveness image', 'tgekyc-live-stag',
+             'check liveness version', 'confirm deployed version'."
 ---
 
 # TG eKYC Liveness Deployment Checklist
@@ -82,6 +84,61 @@ Read `reasoning` / `confidence_reason` in the response:
 | `service_error: no_frames` | Uploaded video couldn't be decoded — corrupt/empty/unsupported format |
 | Pod `OOMKilled` | Memory limit too low for the video length/resolution, or too many concurrent requests on one pod — current limits are `10Gi` request / `20Gi` limit, still above the vendor's baseline recommendation of 6Gi, so this is unlikely to be the first cause to check |
 
+## Protocol — Verify Deployed Version
+
+Vendor-documented endpoint, confirmed working. Full guide: `C:\PROJECTS\EKYC\Deployment\how-to-call-version.md`.
+
+`GET /version` (readable page) / `GET /version.json` (JSON) — plain GET, no auth, no request body, never cached. Container port is `5010` (matches the service port above).
+
+```bash
+# From inside the cluster
+curl http://tgekyc-live-stag.tgekyc-staging.svc.cluster.local/version.json
+
+# Or via port-forward
+kubectl port-forward -n tgekyc-staging deploy/tgekyc-live-stag 5010:5010
+curl http://localhost:5010/version.json
+# then open http://localhost:5010/version in a browser for the readable page
+
+# Or via ingress, if exposed — same host used for liveness requests
+curl https://<your-host>/version
+```
+
+Expected response:
+
+```json
+{
+  "data": {
+    "product": "Ctrl CV Liveness",
+    "system_version": "v1.3.1",
+    "openai_model": "gpt-4o-2024-08-06",
+    "prompt_package": "v1.2.1",
+    "prompt_sha256": "e236a4641f9ae5aafa57c270dbe5411c4394d1ac2449f9d526400e36a4b74839",
+    "frame_processor": "v1.1.2",
+    "decision_engine": "v1.0.1",
+    "backend_commit": "4e6688d",
+    "server_time": "2026-08-01 15:53:14 +0800"
+  },
+  "code": 200
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `system_version` | **the one to check** — release identifier, should match the release notes. `"unknown"` means the running build predates v1.3.1 |
+| `openai_model` | exact dated model snapshot in use, not a floating alias |
+| `prompt_package` / `prompt_sha256` | detection instruction set version / fingerprint (sha changes if the prompt changes) |
+| `frame_processor` | video decoding / frame-prep component version |
+| `decision_engine` | pass/decline logic version |
+| `backend_commit` | source revision the release was built from |
+| `server_time` | server time, Malaysia local |
+
+Notes:
+- Response is never cached — always reflects the build actually running. A browser tab open from before an upgrade needs a hard refresh (Ctrl+Shift+R), not a trust-the-cache assumption.
+- Safe as a K8s readiness/liveness probe target (responds in every configuration) — but see the Known Configuration table: probes are deliberately **not** configured here; don't add this as a probe without asking first.
+- `GET /ping` is a lighter health check (success/fail only) — use `/version.json` when you need to confirm *which* build is answering, not just that it's up.
+
+**Use this after every redeploy/upgrade** (step 7 of the protocol above) to confirm `system_version` actually changed to the intended tag, instead of assuming `kubectl apply` succeeded from exit code alone.
+
 ---
 
 ## Mandatory Rules
@@ -108,3 +165,4 @@ Read `reasoning` / `confidence_reason` in the response:
 ## Level History
 
 - **Lv.1** — Base: known config table, redeploy/upgrade protocol, verify/troubleshoot protocol, mandatory rules. (Origin: 2026-08-01, first deployment fix — `OPENAI_API_KEY` not reaching the pod because K8s doesn't read `.env`, `SAVE_DATA` disabled per Dejul, probes declined)
+- **Lv.2** — Verify Deployed Version protocol: vendor-documented `/version` and `/version.json` endpoint (port 5010, no auth, never cached), expected response fields, in-cluster/port-forward/ingress call forms, `system_version` as the field to check. (Origin: 2026-08-03, vendor guide `C:\PROJECTS\EKYC\Deployment\how-to-call-version.md`)
