@@ -29,10 +29,11 @@ No history yet — this section is populated when session count exceeds 5.
 
 ## Technical Notes
 - **Repository**: Vendor build source: `C:\PROJECTS\EKYC\Deployment\liveness_detection-master` | K8s manifests: `C:\PROJECTS\DOCKER GITLAB\docker\tgekyc\` (`deployment.yaml`, `deployment-dev.yaml`, `deployment-staging.yaml`, `deployment-live-stag.yaml` — staging liveness lives in the last one)
-- **Namespace**: `tgekyc-staging` | **Deployment**: `tgekyc-live-stag` | **Image**: `localhost:30445/tgekyc-liveness:1.062` | **Port**: 5010 (NodePort 30031)
+- **Namespace**: `tgekyc-staging` | **Deployment**: `tgekyc-live-stag` | **Image**: `localhost:30445/tgekyc-liveness:1.063` | **Port**: 5010 (NodePort 30031) | **Memory**: 10Gi request / 20Gi limit
 - **Secret**: `liveness-openai` (key `OPENAI_API_KEY`) — must exist in `tgekyc-staging` namespace before `kubectl apply`, created manually by Dejul (not committed to any repo, per vendor's handling guidance)
 - **Key Dependencies**: OpenAI vision model API (authenticity/verification_type 4 only — other 4 endpoints unaffected by the key), MPAY third-party integration API (calls `doLivenessVideo`)
 - **Vendor doc reference**: `C:\Users\opera\OneDrive\Desktop\KUBERNETES.md` — authoritative setup/troubleshooting guide from Ctrl CV; also documents `/version.json` vs `/ping` probe gotcha and memory sizing (6Gi limit, `max_frame_length` tuning)
+- **Skill**: `tgekyc-liveness-deployment-checklist` — redeploy/upgrade/verify/troubleshoot checklist for this service lives there; this file tracks session history, that skill tracks the reusable procedure
 
 ---
 **Last Updated**: 2026-08-01 | **Position**: #1/10 Active
