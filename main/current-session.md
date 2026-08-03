@@ -1,11 +1,6 @@
 # 🌟 Current Session Memory - RAM
 *Temporary working memory - resets each session, provides recap when AI restarts*
 
-## Active Project
-- **Name**: TG eKYC Liveness Deployment
-- **Started**: 2026-08-01
-- **Last worked**: 2026-08-01 — fixed `OPENAI_API_KEY` not reaching the `tgekyc-live-stag` pod in `tgekyc-staging` namespace (K8s doesn't read `.env` files — vendor's `KUBERNETES.md` called it out explicitly). Edited `C:\PROJECTS\DOCKER GITLAB\docker\tgekyc\deployment-live-stag.yaml`: added `OPENAI_API_KEY` via `secretKeyRef` (Secret `liveness-openai`), flipped `SAVE_DATA` 1→0 per Dejul (no biometric video retention wanted). Probes declined by Dejul, left out. Dejul created the Secret + `kubectl apply`'d — confirmed deployed. Full detail in `projects/active/tgekyc-liveness-deployment.md`.
-
 ## Session RAM Status
 **Current Session**: Active
 **Last Activity**: 2026-07-29
