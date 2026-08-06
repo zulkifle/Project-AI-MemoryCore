@@ -6,14 +6,14 @@
 - **Client**: Internal (POJ / e-Court)
 - **Period**: 2026-07-02 - Active
 - **Tech Stack**: Java 8 + JAX-WS + WildFly 18 + iText5 5.4.1 + log4j
-- **Completion**: 98%
-- **Duration**: ~4 hours
+- **Completion**: 99%
+- **Duration**: ~4.5 hours
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-07-29 — Deep signature-placeholder check redeployed to the client's pilot environment
+- **Last Session**: 2026-08-06 — Dejul confirmed the deep-check fix is tested OK and live on the client's pilot server; false-negative resolved in real usage
 - **Next Steps**:
-  1. Monitor pilot for the previously-false-negative PDF to confirm it now returns 100/failed in real client usage
+  1. Decide on log retention: add the PowerShell cleanup script + Scheduled Task (10-day retention) for `PdfErrorCheck.log.*`, or leave logs unmanaged and close the project as-is — awaiting Dejul's call
 - **Known Issues**:
   - `ClassCastException: PdfArray cannot be cast to PdfDictionary` → 100/failed, no auto-fix (AcroForm/Annots structure corruption — not fixable without external tools). Previously this could slip through as 000/success on some PDFs because the check didn't reach the code path where it occurs — see 2026-07-28 session.
   - `InvalidPdfException: Rebuild failed: trailer not found` → 100/failed, too corrupt for iText
@@ -70,6 +70,8 @@ ECOURT_PdfErrorCheckWS/
 - **isRebuilt repair**: Silent — returns `"pdf verification pass"`. Logs use `"rp"` shorthand.
 - **ClassCastException / trailer-not-found**: No auto-fix. Returns full exception message. External tools required if fix needed (QPDF / Acrobat Pro).
 - **Deep check (2026-07-28)**: `checkPdfError`/`checkPdfErrorFromPath` now also reserve a blank signature placeholder (`PdfStamper.createSignature` → `MakeSignature.signExternalContainer` against an in-memory `ByteArrayOutputStream`) after the `AcroFields` walk. This mirrors `PDF_prepareHash_seal.java`'s real signing path and drives `PdfStamperImp.close()` — the exact frame where the ClassCastException happens — so AcroForm/Annots corruption now surfaces during the check instead of only at production signing time.
+- **No document storage, either API**: `CheckPdfError` (Base64) processes entirely in memory (`ByteArrayOutputStream` buffers) — no `File`/`FileOutputStream` calls in that path at all. `CheckPdfErrorByPath` only reads a file the *caller* already placed on disk and, on repair, overwrites that same file in place — it never creates a second stored copy. Confirmed by reading `PdfErrorCheckHelper.java` end to end (2026-08-06) in response to a client question about storage capacity at 100K+ docs/day — answer: not applicable, nothing is stored.
+- **Logging caveat**: `log4j.properties` uses `DailyRollingFileAppender` (date-based rolling, one file per day at `C:\Trustgate\MyTrustSignServer\logs\PdfErrorCheck.log`). `MaxBackupIndex` is a `RollingFileAppender`-only property (size-based rolling) — log4j 1.x silently ignores it on `DailyRollingFileAppender`, so it does **not** cap retention despite looking like it should. Log content is filenames/gUid/status/exception text only, never PDF bytes — so this is a housekeeping concern, not a data-sensitivity one. Real fix for bounded retention: an external scheduled cleanup (PowerShell + Windows Scheduled Task deleting files older than N days), not a log4j property.
 
 ## Session History (Last 5)
 

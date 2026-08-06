@@ -6,7 +6,7 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-07-28 | TBD | 98% | Fixed false-negative: checker now reserves a blank signature placeholder to catch ClassCastException (AcroForm/Annots corruption) that previously only surfaced at real signing time. Next: test against offending PDF, redeploy WAR. |
+| 1 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-08-06 | TBD | 99% | False-negative fix confirmed working live on client's pilot server. Answered client's document-storage question (neither API stores documents). Found `MaxBackupIndex` doesn't work on `DailyRollingFileAppender` — cleanup script proposed, awaiting Dejul's go-ahead. |
 | 2 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-28 | TBD | 90% | Helpdesk approved deploying the x64 build as release v1.3.2 without waiting for full root-cause fix. Added post-install restart prompt to mytrustid.bat (Yes/No popup, 10s countdown), IExpress restart setting set to "No restart" to avoid conflict. Dejul testing now. |
 | 3 | **[Petronas Java Migration](./active/petronas-java-migration.md)** | 2026-07-24 | TBD | 0% | Just created — converting legacy C++ PetronasService daemon to plain Java (Maven), SunPKCS11 for HSM, new repo alongside the C++ version. Next: explore C++ source, map Java package structure. |
 | 4 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-24 | 2026-06-05 ⚠️ | 87% | Log analysis found orphaned `pm_staticmaster` record 3069 (stuck, no retry path) + benign -13 "queue empty" log noise. Also known: port 6803 EADDRINUSE crash-loop. |
@@ -29,4 +29,4 @@
 ---
 ## System Status
 - **Total Projects**: 14 (9 active + 5 archived)
-- **Last Updated**: 2026-08-01 - Removed TG eKYC Liveness Deployment from project tracking; the tgekyc-liveness-deployment-checklist skill retains the reusable config/checklist
+- **Last Updated**: 2026-08-06 - ECOURT_PdfErrorCheckWS: fix confirmed working on client's pilot server, client storage question answered, log retention issue found and pending decision

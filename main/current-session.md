@@ -3,8 +3,8 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-07-29
-**Session Focus**: Two quick wrap-ups. (1) ECOURT_PdfErrorCheckWS — the 2026-07-28 deep signature-placeholder check (fixes the ClassCastException false-negative) redeployed to the client's pilot environment. (2) MyTrustID Desktop — committed session 20's outstanding x64-lock + Phase 1 process isolation changes to `fix/rsa-keygen-crash-handling` (commit `0c01454`, 163 files). `git push` failed — could not reach the internal GitLab host `10.5.1.42:30220` (connection timeout, likely network/VPN down on this machine). Commit is safe locally; just needs a push retry once connectivity is back. Full detail in `projects/active/ecourt-pdferrorcheckws.md` and `projects/active/mytrustid-desktop.md`.
+**Last Activity**: 2026-08-06
+**Session Focus**: ECOURT_PdfErrorCheckWS — Dejul confirmed the 2026-07-28 deep signature-placeholder fix is tested OK and live on the client's pilot server; the checker's false-negative for AcroForm/Annots `ClassCastException` is resolved in real usage. Answered a client question (does the service store documents during checking, and can it handle 100K+/day): traced both SOAP methods in code — `CheckPdfError` (Base64) never touches disk, `CheckPdfErrorByPath` only reads/overwrites a file the caller already placed on disk, so no document storage happens either way; confirmed both methods run the identical deep-check logic. Also found `log4j.properties`' `MaxBackupIndex` property has no effect on `DailyRollingFileAppender` (it's a `RollingFileAppender`-only property, log4j 1.x silently ignores it) — proposed a PowerShell cleanup script + Scheduled Task as the real fix for 10-day log retention, **still awaiting Dejul's go-ahead** (add script, or close project as-is). Full detail in `projects/active/ecourt-pdferrorcheckws.md`.
 
 ## Previous Active Project
 - **Name**: MyTrustID Desktop
