@@ -3,8 +3,22 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-08-06
-**Session Focus**: ECOURT_PdfErrorCheckWS — Dejul confirmed the 2026-07-28 deep signature-placeholder fix is tested OK and live on the client's pilot server; the checker's false-negative for AcroForm/Annots `ClassCastException` is resolved in real usage. Answered a client question (does the service store documents during checking, and can it handle 100K+/day): traced both SOAP methods in code — `CheckPdfError` (Base64) never touches disk, `CheckPdfErrorByPath` only reads/overwrites a file the caller already placed on disk, so no document storage happens either way; confirmed both methods run the identical deep-check logic. Also found `log4j.properties`' `MaxBackupIndex` property has no effect on `DailyRollingFileAppender` (it's a `RollingFileAppender`-only property, log4j 1.x silently ignores it) — proposed a PowerShell cleanup script + Scheduled Task as the real fix for 10-day log retention, **still awaiting Dejul's go-ahead** (add script, or close project as-is). Full detail in `projects/active/ecourt-pdferrorcheckws.md`.
+**Last Activity**: 2026-08-12
+**Session Focus**: jumio-proxy check-in (branch state review, no changes needed), then **TG SeQureMail / MyTrustMail** (position #1): pushed the `chore/rename-to-mytrustmail` branch, ran a full BRS gap analysis against `BRS_MyTrustMail_V1.0.pdf`, and implemented + API-verified the Digital Signing module (envelope v5) per Dejul's priority order.
+
+## Active Project
+- **Name**: TG SeQureMail (now MyTrustMail)
+- **Resumed**: 2026-08-12 (session 19) — was already at position #1
+- **Last worked**: 2026-08-12 (session 19) — Digital Signing module (envelope v5) implemented + verified via direct API calls (round-trip sign/encrypt/decrypt/verify all confirmed, tamper test rejected correctly)
+- **Context**: E2E-encrypted Gmail Chrome extension (MV3) + Key API + admin portal, rebranded SeQureMail → MyTrustMail (branch `chore/rename-to-mytrustmail`, pushed, 19 commits, MR not yet opened). Full BRS gap analysis (13 modules vs. codebase) saved to `docs/specs/2026-08-12-brs-gap-analysis.md`. Dejul's priority order: Digital Signing (Chrome/Gmail scope) → admin portal polish. Signing module done at API level; Chrome/Gmail manual UI test still pending Dejul.
+- **Next Steps**:
+  1. Dejul: manual Chrome/Gmail test of the signing badge (reload unpacked extension)
+  2. Admin portal polish to BRS §5.2.3/§5.2.13 criteria
+  3. Open MRs: `chore/rename-to-mytrustmail` → master, `feature/9-recall-expiry-controls` → master (covers Feature #6 + #9)
+  4. Continue team feedback checklist: #5 (HSM), #4 (OWA), #2 (Firefox)
+- **Docker**: `docker compose up` in `C:\PROJECTS\SEQURE MAIL\Development\seqremail\` (Compose project `mytrustmail`) — db + key-api + admin | Admin: `http://localhost:8081/admin/login` (admin / 7ru57ga73)
+- **Fresh test**: `TRUNCATE TABLE messages; TRUNCATE TABLE otp_verifications; TRUNCATE TABLE user_keys;` (container `mytrustmail-db-1`, user `mytrustmail`/`mytrustmail123`) + `chrome.storage.local.clear()` in extension console
+- Full detail in `projects/active/tg-sequremail.md`
 
 ## Previous Active Project
 - **Name**: MyTrustID Desktop

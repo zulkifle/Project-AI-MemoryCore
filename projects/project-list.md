@@ -6,12 +6,12 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-08-06 | TBD | 99% | False-negative fix confirmed working live on client's pilot server. Answered client's document-storage question (neither API stores documents). Found `MaxBackupIndex` doesn't work on `DailyRollingFileAppender` — cleanup script proposed, awaiting Dejul's go-ahead. |
-| 2 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-28 | TBD | 90% | Helpdesk approved deploying the x64 build as release v1.3.2 without waiting for full root-cause fix. Added post-install restart prompt to mytrustid.bat (Yes/No popup, 10s countdown), IExpress restart setting set to "No restart" to avoid conflict. Dejul testing now. |
-| 3 | **[Petronas Java Migration](./active/petronas-java-migration.md)** | 2026-07-24 | TBD | 0% | Just created — converting legacy C++ PetronasService daemon to plain Java (Maven), SunPKCS11 for HSM, new repo alongside the C++ version. Next: explore C++ source, map Java package structure. |
-| 4 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-24 | 2026-06-05 ⚠️ | 87% | Log analysis found orphaned `pm_staticmaster` record 3069 (stuck, no retry path) + benign -13 "queue empty" log noise. Also known: port 6803 EADDRINUSE crash-loop. |
-| 5 | **[TradeVault](./active/tradevault.md)** | 2026-07-24 | TBD | 85% | Full app built (all 11 modules) + running live in Docker at localhost:8091, verified end-to-end. Fixed 2 real bugs (missing timestamp columns, LazyInitializationException). Next: real usage + eslint config + own git repo. |
-| 6 | **[TG SeQureMail](./active/tg-sequremail.md)** | 2026-07-21 | TBD | 99% | Feature #9 (Recall & Expiry Controls) implemented + manually tested working in Chrome/Gmail (branch `feature/9-recall-expiry-controls`, local commits, not pushed). |
+| 1 | **[TG SeQureMail](./active/tg-sequremail.md)** (now MyTrustMail) | 2026-08-12 | TBD | 99% (Phase 1 POC) | Rebranded SeQureMail→MyTrustMail, pushed. Full BRS gap analysis done (`docs/specs/2026-08-12-brs-gap-analysis.md`). Digital Signing module (envelope v5) implemented + API-verified — Chrome/Gmail manual test pending. Next: admin portal polish. |
+| 2 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-08-06 | TBD | 99% | False-negative fix confirmed working live on client's pilot server. Answered client's document-storage question (neither API stores documents). Found `MaxBackupIndex` doesn't work on `DailyRollingFileAppender` — cleanup script proposed, awaiting Dejul's go-ahead. |
+| 3 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-28 | TBD | 90% | Helpdesk approved deploying the x64 build as release v1.3.2 without waiting for full root-cause fix. Added post-install restart prompt to mytrustid.bat (Yes/No popup, 10s countdown), IExpress restart setting set to "No restart" to avoid conflict. Dejul testing now. |
+| 4 | **[Petronas Java Migration](./active/petronas-java-migration.md)** | 2026-07-24 | TBD | 0% | Just created — converting legacy C++ PetronasService daemon to plain Java (Maven), SunPKCS11 for HSM, new repo alongside the C++ version. Next: explore C++ source, map Java package structure. |
+| 5 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-24 | 2026-06-05 ⚠️ | 87% | Log analysis found orphaned `pm_staticmaster` record 3069 (stuck, no retry path) + benign -13 "queue empty" log noise. Also known: port 6803 EADDRINUSE crash-loop. |
+| 6 | **[TradeVault](./active/tradevault.md)** | 2026-07-24 | TBD | 85% | Full app built (all 11 modules) + running live in Docker at localhost:8091, verified end-to-end. Fixed 2 real bugs (missing timestamp columns, LazyInitializationException). Next: real usage + eslint config + own git repo. |
 | 7 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-07-16 | TBD | 100% (maintenance) | userId→failed-eKYC check + 401 fix redeployed to PILOT & PROD. 401 resolved. Only branch merge remains. |
 | 8 | **[TGCA](./active/tgca.md)** | 2026-05-25 | TBD | 0% | Registered — pending study |
 | 9 | **[RSS Self Service Portal](./active/rss-self-service-portal.md)** | 2026-05-12 | Q2 2026 | 80% | Phase 1 complete — next: browser test + billing integration |
@@ -29,4 +29,4 @@
 ---
 ## System Status
 - **Total Projects**: 14 (9 active + 5 archived)
-- **Last Updated**: 2026-08-06 - ECOURT_PdfErrorCheckWS: fix confirmed working on client's pilot server, client storage question answered, log retention issue found and pending decision
+- **Last Updated**: 2026-08-12 - TG SeQureMail (MyTrustMail) saved — Digital Signing module implemented, position #1 unchanged

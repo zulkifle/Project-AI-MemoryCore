@@ -44,7 +44,7 @@ Project files stored in projects/active/ and projects/archived/.
 ### 🔌 **Skill Plugin System**
 - Plugin: `jessy-skills` (Claude Code plugin)
 - Location: `plugins/jessy-skills/`
-- Skills: 21 active skills
+- Skills: 22 active skills
   - `springboot-restful` — Auto-triggers on all Spring Boot / Java REST tasks
   - `save-memory` — Triggers on "save", "save memory", "save progress"
   - `mygpki-signing` — Triggers on MyGPKI INTERNAL signing, MTSA PDF signing, iText5 CMS flow
@@ -65,6 +65,7 @@ Project files stored in projects/active/ and projects/archived/.
   - `wildfly-soap-ws` — Triggers on "create WildFly WS project", "new SOAP WS project", "scaffold JAX-WS WildFly", "create .war SOAP service", "JBoss SOAP WS", or any request to scaffold a SOAP webservice provider/client on WildFly/JBoss with JDK 8 + .war + NetBeans Ant
   - `dotnet-native-crash-diagnosis` — Triggers on a .NET native crash with no managed exception logged, WER dump analysis, WinDbg, "STATUS_INVALID_EXCEPTION_HANDLER"/0xc00... codes, PKCS#11/smart-card driver crashes, AnyCPU vs x86 vs x64 confusion, Prefer32Bit, WOW64, or a .vdproj install-path/architecture mismatch
   - `tgekyc-liveness-deployment-checklist` — Triggers on redeploying/upgrading the tgekyc liveness K8s service, checking its config, or diagnosing "OpenAI API key not configured"/FAKE_FACE errors from MPAY's doLivenessVideo flow — tgekyc-specific, not a general K8s skill
+  - `infra-change-request-form` — Triggers on "create CRF", "change request form", "request mount", "CRF for [project]" — generates a filled 7-section CRF (Description of Change/Purpose/Reason/Impact/Note/Activities/Planning Date & Time) for infra team requests; NFS mount is the first documented convention (`tgnas-dc:/volume7/appshared/<client>/<project>` → `/opt/<project>`)
 - Add new skills: Create folder in `plugins/jessy-skills/skills/`
 
 ## 🔥 Essential Components (Always Load)

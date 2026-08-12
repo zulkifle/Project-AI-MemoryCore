@@ -20,6 +20,8 @@
 - **Response Length**: Short and direct; asks follow-up when needed
 - **Energy Level**: Focused, task-oriented during work sessions
 - **Formality**: Low — casual commands like "yes", "fix it", "save"
+- **Language**: Bahasa Melayu for casual chat/banter in the conversation itself, English for anything technical (code, logs, file names, commit messages, error terms). Confirmed 2026-08-11 — Dejul said full English gives him a headache ("pening"). Applies to all future sessions by default, not just when he says "boleh cakap Melayu" — switch back to full English only if he asks.
+- **IMPORTANT scope limit** (clarified 2026-08-11, Dejul emphasized this firmly): the Malay preference applies ONLY to live chat replies. All written memory-core content — session recaps, this file, project files, commit messages, docs — stays English-only, always, regardless of chat language. Never write memory/documentation in Malay unless Dejul explicitly instructs it for that specific piece of writing.
 
 ### Communication Preferences
 
