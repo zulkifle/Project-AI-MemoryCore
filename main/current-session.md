@@ -4,15 +4,16 @@
 ## Session RAM Status
 **Current Session**: Active
 **Last Activity**: 2026-08-13
-**Session Focus**: Resumed **ECOURT_PdfErrorCheckWS** (now position #1) — awaiting Zul's direction on next work (log retention decision still open). Also did a one-off production-readiness audit on **MyGPKI-SKALA JKR** deployment package (see Recent Work below) — found + fixed real bugs, repackaged, shared with client. Zul confirmed preferred address is **"Zul"** (full name Dejul) — updated identity-core.md + relationship-memory.md.
+**Session Focus**: **ECOURT_PdfErrorCheckWS** (position #1) — resumed, then added a new byte-array Stream API (servlet, JSON response) to cut Base64 network overhead; client integration doc + Postman/.NET/Java/curl samples ready. Also did a one-off production-readiness audit on **MyGPKI-SKALA JKR** deployment package (see Recent Work below) — found + fixed real bugs, repackaged, shared with client. Zul confirmed preferred address is **"Zul"** (full name Dejul) — updated identity-core.md + relationship-memory.md.
 
 ## Active Project
 - **Name**: ECOURT_PdfErrorCheckWS
 - **Resumed**: 2026-08-13
-- **Last worked**: 2026-08-06 — Dejul confirmed the deep-check fix (ClassCastException false-negative) is tested OK and live on client's pilot server; also answered client's document-storage question (neither SOAP method stores documents) and found `MaxBackupIndex` doesn't work on `DailyRollingFileAppender` (log retention gap)
+- **Last worked**: 2026-08-13 — Added `PdfErrorCheckStreamServlet` (`POST /PdfErrorCheckWS/PdfErrorCheckStream`): raw PDF bytes in body (`application/octet-stream`) + `X-File-Name` header, JSON response, same errCode/status/errMsg as the SOAP methods. Refactored `PdfErrorCheckHelper` to share checking logic with `CheckPdfError` via new private `checkPdfErrorBytes()` — zero drift risk. Added `org.json` dependency (`json-20230618.jar`), wrote client integration doc (`docs/pdf-error-check-stream-api.md` — curl/Java/.NET/Postman) and a local test client (`testCheckStream.java`). Compiled clean via direct `javac` against WildFly's bundled servlet-api jar; **not yet deployed/live-tested**.
 - **Context**: JAX-WS SOAP service on WildFly to check/auto-repair PDFs before digital signing (POJ / e-Court). Repo: `C:\PROJECTS\ECOURT\WebServiceProject\POJ\ECOURT_PdfErrorCheckWS`. 99% complete.
 - **Next Steps**:
-  1. Decide on log retention: add PowerShell cleanup script + Scheduled Task (10-day retention) for `PdfErrorCheck.log.*`, or leave logs unmanaged and close the project as-is — awaiting Dejul's call
+  1. Zul: deploy updated WAR to dev/pilot WildFly, run `testCheckStream.java` or Postman against a known-good and known-corrupt PDF to confirm parity with the SOAP method, then share `docs/pdf-error-check-stream-api.md` with the client
+  2. Decide on log retention: add PowerShell cleanup script + Scheduled Task (10-day retention) for `PdfErrorCheck.log.*`, or leave logs unmanaged and close the project as-is — awaiting Zul's call
 - Full detail in `projects/active/ecourt-pdferrorcheckws.md`
 
 ## Previous Active Project
