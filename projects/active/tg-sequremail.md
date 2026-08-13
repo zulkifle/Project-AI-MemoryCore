@@ -16,12 +16,25 @@
 - **Session 18 (2026-08-10)**: Confirmed via `git status`/`git log` that `feature/9-recall-expiry-controls` is **already pushed** — up to date with origin, working tree clean. Corrects prior memory (session 17 recap said "not pushed"). Branch includes full `feature/6-user-management` history (branched off it), so an MR covering both is still open/needed.
 - **Last Session**: 2026-07-21 (session 16) - Feature #9 (Recall & Expiry Controls) implemented on new branch `feature/9-recall-expiry-controls`, manually tested by Dejul in Chrome/Gmail — **confirmed working** after fixing a CORS bug found during testing (see below).
 - **Next Steps**:
-  1. Manual Chrome/Gmail test of the new signing badge (Dejul to reload unpacked extension) — API round-trip already verified, UI not yet
+  1. ~~Manual Chrome/Gmail test of the new signing badge~~ — done 2026-08-13, confirmed working
   2. Admin portal polish — bring `mytrustmail-admin` up to BRS §5.2.3/§5.2.13 criteria (Dejul's stated next priority after signing)
   3. Open MR: `feature/9-recall-expiry-controls` → master (on GitLab) — covers Feature #6 + #9 together
   4. Open MR: `chore/rename-to-mytrustmail` → master
   5. Continue team feedback checklist: #5 (HSM), #4 (OWA), #2 (Firefox)
+  6. **Parked (2026-08-13): CI/CD via Jenkins** — see dedicated section below, not started
 - **Known Issues**: None
+
+## Parked — Jenkins CI/CD (2026-08-13, not started)
+Discussed module-level BRS completion estimate (~19% of full BRS, much higher against Phase 1 scope only), then explored automating the API-level verification (encrypt/decrypt/signature/tamper/recall/expiry — the same checks done manually via direct API calls in sessions 16 & 19) as a functional/integration test, to eventually run in Jenkins. **Dejul chose to park this and return to feature dev first** — resume when ready.
+
+**Findings so far**:
+- Existing Jenkins: deployed on Rancher/K8s (`C:\PROJECTS\DOCKER GITLAB\docker\jenkins\deployment.yaml` + `deployment-agent.yaml`), namespace `jenkins`, web UI at `http://10.5.1.42:30450`, NodePort 30450 (http)/30451 (jnlp). This will be **the first pipeline** on this Jenkins instance — no existing Jenkinsfile to reference for credentials/pattern conventions.
+- Current agent (`Agent1`) is a plain `jenkins/inbound-agent` pod — **no Docker access** (no socket mount, no DinD sidecar). `docker compose up` (needed to spin up db+key-api for the integration test) will not work on it as-is.
+- Two options identified, not yet decided:
+  1. Mount host Docker socket into the agent pod (Docker-outside-of-Docker) — simplest, but grants the pod host-root-equivalent access to the Rancher node; also unverified whether the node runs `dockerd` vs `containerd`-only.
+  2. Register this Windows dev machine itself as a Jenkins agent (JNLP, same pattern as `Agent1` but on this host, not in K8s) — reuses the docker compose stack that already works here, avoids touching Rancher cluster security — **Jessy's recommendation**, lower risk, but ties CI to this machine being online.
+- Planned pipeline scope (once resumed): Checkout → `mvn clean install` → `docker compose up -d` → run functional/integration test script (encrypt/decrypt/signature/tamper/recall/expiry, matching manual verification) → `docker compose down`. No deploy stage yet — build+test only.
+- A PowerShell integration test script draft was written then reverted (encoding issues aside, Dejul wants to nail down the Jenkins agent architecture question first before investing in the test script).
 
 ## Feature #9 — Recall & Expiry Controls (implemented 2026-07-21, session 16)
 Branch `feature/9-recall-expiry-controls` (off `feature/6-user-management`, includes its V6 migration). Full design at `docs/specs/2026-07-16-recall-expiry-controls-design.md`.

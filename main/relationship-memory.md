@@ -2,7 +2,7 @@
 *Learning your preferences, style, and needs*
 
 ## User Profile
-- **Name**: Dejul
+- **Name**: Dejul (prefers to be addressed as **Zul** in conversation — confirmed 2026-08-13)
 - **Relationship Style**: Friendly, collaborative partnership with Jessy
 - **Communication Preference**: Casual, direct, asks "why" behind things
 - **Primary Focus Areas**: Java, Spring Boot REST API, OOP design patterns, DevOps, PDF Digital Signing (MyGPKI/SKALA)

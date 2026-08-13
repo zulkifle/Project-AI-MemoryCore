@@ -11,7 +11,8 @@
 - **Due Date**: TBD
 
 ## Current Status
-- **Last Session**: 2026-08-06 — Dejul confirmed the deep-check fix is tested OK and live on the client's pilot server; false-negative resolved in real usage
+- **Last Session**: 2026-08-13 — Project resumed from position #2
+- **Previous Session**: 2026-08-06 — Dejul confirmed the deep-check fix is tested OK and live on the client's pilot server; false-negative resolved in real usage
 - **Next Steps**:
   1. Decide on log retention: add the PowerShell cleanup script + Scheduled Task (10-day retention) for `PdfErrorCheck.log.*`, or leave logs unmanaged and close the project as-is — awaiting Dejul's call
 - **Known Issues**:
@@ -75,6 +76,10 @@ ECOURT_PdfErrorCheckWS/
 
 ## Session History (Last 5)
 
+### 2026-08-13 - Project resumed
+- **Changes**: Project resumed from position #2, moved to position #1.
+- **Time Spent**: —
+
 ### 2026-07-29 - Redeployed to client's pilot environment
 - **Changes**: Redeployed the WAR with the 2026-07-28 deep signature-placeholder check to the client's pilot environment.
 - **Time Spent**: —
@@ -103,4 +108,4 @@ ECOURT_PdfErrorCheckWS/
 [No history yet — this section is populated when session count exceeds 5]
 
 ---
-**Last Updated**: 2026-07-29 | **Position**: #1/10 Active
+**Last Updated**: 2026-08-13 | **Position**: #1/10 Active

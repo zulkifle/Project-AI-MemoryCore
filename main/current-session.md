@@ -3,10 +3,19 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-08-12
-**Session Focus**: jumio-proxy check-in (branch state review, no changes needed), then **TG SeQureMail / MyTrustMail** (position #1): pushed the `chore/rename-to-mytrustmail` branch, ran a full BRS gap analysis against `BRS_MyTrustMail_V1.0.pdf`, and implemented + API-verified the Digital Signing module (envelope v5) per Dejul's priority order.
+**Last Activity**: 2026-08-13
+**Session Focus**: Resumed **ECOURT_PdfErrorCheckWS** (now position #1) — awaiting Zul's direction on next work (log retention decision still open). Also did a one-off production-readiness audit on **MyGPKI-SKALA JKR** deployment package (see Recent Work below) — found + fixed real bugs, repackaged, shared with client. Zul confirmed preferred address is **"Zul"** (full name Dejul) — updated identity-core.md + relationship-memory.md.
 
 ## Active Project
+- **Name**: ECOURT_PdfErrorCheckWS
+- **Resumed**: 2026-08-13
+- **Last worked**: 2026-08-06 — Dejul confirmed the deep-check fix (ClassCastException false-negative) is tested OK and live on client's pilot server; also answered client's document-storage question (neither SOAP method stores documents) and found `MaxBackupIndex` doesn't work on `DailyRollingFileAppender` (log retention gap)
+- **Context**: JAX-WS SOAP service on WildFly to check/auto-repair PDFs before digital signing (POJ / e-Court). Repo: `C:\PROJECTS\ECOURT\WebServiceProject\POJ\ECOURT_PdfErrorCheckWS`. 99% complete.
+- **Next Steps**:
+  1. Decide on log retention: add PowerShell cleanup script + Scheduled Task (10-day retention) for `PdfErrorCheck.log.*`, or leave logs unmanaged and close the project as-is — awaiting Dejul's call
+- Full detail in `projects/active/ecourt-pdferrorcheckws.md`
+
+## Previous Active Project
 - **Name**: TG SeQureMail (now MyTrustMail)
 - **Resumed**: 2026-08-12 (session 19) — was already at position #1
 - **Last worked**: 2026-08-12 (session 19) — Digital Signing module (envelope v5) implemented + verified via direct API calls (round-trip sign/encrypt/decrypt/verify all confirmed, tamper test rejected correctly)
@@ -23,6 +32,20 @@
 ## Previous Active Project
 - **Name**: MyTrustID Desktop
 - **Last worked**: 2026-07-29 — committed session 20's x64-lock + Phase 1 isolation changes as `0c01454` on `fix/rsa-keygen-crash-handling`; push to origin pending (network unreachable). v1.3.2 (x64-only build) was deployed to helpdesk 2026-07-28 with a post-install restart prompt added to `mytrustid.bat`. Full detail in `projects/active/mytrustid-desktop.md`.
+
+## Recent Work (2026-08-13) — MyGPKI-SKALA JKR Production Package Audit
+- Zul asked to verify `C:\PROJECTS\MyGPKI-SKALA\Deployment\PRODUCTION\` before sharing with client (JKR) — suspected the install guide was actually the Pilot one.
+- Cross-referenced against `switch-env.ps1` (the env-switch/packaging automation) and `ENV PATH.txt` (its spec) — found the script's `Set-ProductionEnv` function never touches `MTSA/META-INF/context.xml`, `Install_Guide.md`, or `gpki.properties`'s `environmentMode`/`debugLog` fields, so these were stuck at stale/copy-pasted values.
+- **Bugs found + fixed**:
+  1. `MTSA/META-INF/context.xml` — `<Context path="/MTSAJKR"/>` → `/MTSA` (real production-breaking bug: app would've deployed at the wrong URL, mismatching deploy.sh's health check and every `gpki.baseUrl` reference)
+  2. `Install_Guide.md` — was a verbatim copy of the Pilot guide (title, `PILOT-PACKAGE-*.zip` filename, `/MTSAPilot` context, `jkr-mtsa.pilot.properties` filename) — rewritten correctly for Production
+  3. `gpki.properties`: `gpki.environmentMode=pilot` → `production`
+  4. `gpki.properties`: `gpki.signing.debugLog=true` → `false`
+  5. Removed leftover inert comment line referencing `MTSAPilotJKR`
+- Investigated `gpki.mampu.*` roaming URLs (`localhost:18888`) — Zul confirmed this is an intentional local tunnel/sidecar, not a bug — left as-is.
+- Investigated `jax-ws-catalog.xml` "Pilot" WSDL entries — turned out to be harmless dead/duplicate catalog entries (each service has both a Pilot-systemId entry, unused, and a correct production-systemId entry that's actually matched at runtime) — not a functional bug, no fix needed. Only `ekycV4` lacks a production entry, but it's not referenced in `jkr-mtsa.prod.properties` either, so likely dormant.
+- Left `MTSAProdJKR/` (leftover extracted folder, not in the zip) and `deployment.yaml` (MSCTG's internal K8s sandbox manifest, not in the zip) untouched per Zul's call.
+- Regenerated the package via `.\switch-env.ps1 package-prod` → `PRODUCTION-PACKAGE-20260813-154101.zip` (42 MB), verified all 5 fixes present inside the zip. **This is the package Zul shared with the client** — the earlier `...20260812-161327.zip` is stale/buggy, superseded.
 
 ## Recent Work (2026-07-16) — MPAY QUICKREDIT MTSA Packaging
 - Packaged both envs at `C:\PROJECTS\ELENDING\MPAY QUCKREDIT\Deployment\`:
