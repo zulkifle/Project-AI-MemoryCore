@@ -12,17 +12,16 @@
 
 ## Current Status
 - **Resumed**: 2026-08-12 (session 19) - from position #1 (never left top spot)
+- **Session 20 (2026-08-13/17)**: Admin portal polish started — designed + is implementing "multiple admins per company" (BRS §5.2.3/§5.2.13, invitation-based per Figure 9/13). Spec at `docs/specs/2026-08-13-admin-multi-tenant-design.md`. **Implementation in progress, NOT yet built/tested this session** — see dedicated section below for exactly what's done vs pending.
 - **Session 19 (2026-08-12)**: Project rebranded **SeQureMail → MyTrustMail** — pushed the `chore/rename-to-mytrustmail` branch (19 commits) after resolving a GCM unsafe-HTTP-remote push block. Read the full `BRS_MyTrustMail_V1.0.pdf` (13 functional modules, ~350 FR items) + 5 key workflow diagrams, saved a gap-analysis + roadmap reference doc to `docs/specs/2026-08-12-brs-gap-analysis.md`. Dejul set priority: Digital Signing module first (Chrome/Gmail scope), then admin portal polish. **Digital Signing module (envelope v5) implemented and verified this session** — see dedicated section below.
 - **Session 18 (2026-08-10)**: Confirmed via `git status`/`git log` that `feature/9-recall-expiry-controls` is **already pushed** — up to date with origin, working tree clean. Corrects prior memory (session 17 recap said "not pushed"). Branch includes full `feature/6-user-management` history (branched off it), so an MR covering both is still open/needed.
-- **Last Session**: 2026-07-21 (session 16) - Feature #9 (Recall & Expiry Controls) implemented on new branch `feature/9-recall-expiry-controls`, manually tested by Dejul in Chrome/Gmail — **confirmed working** after fixing a CORS bug found during testing (see below).
 - **Next Steps**:
-  1. ~~Manual Chrome/Gmail test of the new signing badge~~ — done 2026-08-13, confirmed working
-  2. Admin portal polish — bring `mytrustmail-admin` up to BRS §5.2.3/§5.2.13 criteria (Dejul's stated next priority after signing)
-  3. Open MR: `feature/9-recall-expiry-controls` → master (on GitLab) — covers Feature #6 + #9 together
-  4. Open MR: `chore/rename-to-mytrustmail` → master
-  5. Continue team feedback checklist: #5 (HSM), #4 (OWA), #2 (Firefox)
-  6. **Parked (2026-08-13): CI/CD via Jenkins** — see dedicated section below, not started
-- **Known Issues**: None
+  1. **Resume admin multi-tenant implementation** — finish UserController + DashboardController company-scoping (tasks 9-10 of 11), then rebuild `docker compose up --build` and run the 5-step manual test plan from the design doc (task 11). Nothing has been compiled or run yet this session.
+  2. Open MR: `feature/9-recall-expiry-controls` → master (on GitLab) — covers Feature #6 + #9 together
+  3. Open MR: `chore/rename-to-mytrustmail` → master
+  4. Continue team feedback checklist: #5 (HSM), #4 (OWA), #2 (Firefox)
+  5. **Parked (2026-08-13): CI/CD via Jenkins** — see dedicated section below, not started
+- **Known Issues**: Working tree has substantial uncommitted changes across key-api, extension, and mytrustmail-admin (digital signing module from session 19 + this session's admin multi-tenant work) — nothing committed since the `chore/rename-to-mytrustmail` push. Nothing this session has been compiled or run — verify `mvn compile` on mytrustmail-admin before continuing.
 
 ## Parked — Jenkins CI/CD (2026-08-13, not started)
 Discussed module-level BRS completion estimate (~19% of full BRS, much higher against Phase 1 scope only), then explored automating the API-level verification (encrypt/decrypt/signature/tamper/recall/expiry — the same checks done manually via direct API calls in sessions 16 & 19) as a functional/integration test, to eventually run in Jenkins. **Dejul chose to park this and return to feature dev first** — resume when ready.
@@ -74,7 +73,29 @@ Adds a second, separate ECDSA P-256 signing keypair per user (distinct from the 
 
 **Not yet done**: manual Chrome/Gmail test of the badge UI (API-level only so far — same two-step verification pattern used for Feature #9).
 
+## Admin Multi-Tenant — Multiple Admins per Company (in progress, session 20, started 2026-08-13)
+BRS §5.2.3/§5.2.13 slice, scoped via brainstorming skill — full design at `docs/specs/2026-08-13-admin-multi-tenant-design.md`. Invitation-based onboarding (email link, not a temp password) per BRS Figure 9/13. Dejul chose this slice over the alternatives (full Platform/Enterprise role split; platform dashboard) — deliberately kept to just: multiple `AdminUser`s per `Company`, invitation flow, and company-scoped data visibility.
+
+**Done this session** (none of it compiled or run yet):
+- Migration `V5__admin_multi_tenant.sql` (mytrustmail-admin) — `admin_users` gains `company_id` (nullable FK, null = platform-wide), `status` (PENDING/ACTIVE, backfills existing seeded admin to ACTIVE), `invitation_token`, `invitation_expires_at`; `password_hash` made nullable.
+- `AdminUser` entity + new `AdminStatus` enum; `AdminUserRepository` gains `findByInvitationToken`/`findByCompanyIdOrderByCreatedAtAsc`.
+- Mail capability added to mytrustmail-admin (`spring-boot-starter-mail`, same Gmail SMTP relay as key-api) + `ADMIN_BASE_URL` env var (docker-compose) for building the invite link.
+- `AdminInviteService`/Impl — invite (creates PENDING admin + UUID token, 24h expiry, sends email), validateToken, acceptInvite (sets password, status=ACTIVE), remove.
+- `InviteController` — public `GET/POST /admin/invite/accept?token=`, new `invite/accept.html` template; `login.html` updated with activated/pending messages.
+- `SecurityConfig` — `/admin/invite/**` permitAll, custom `AuthenticationFailureHandler` mapping `DisabledException` → `?pending=true` (distinct message from wrong-password). `AdminUserDetailsService` — `disabled = status != ACTIVE`.
+- `CurrentAdminService`/Impl — resolves the logged-in `AdminUser` from `Authentication` for scoping checks.
+- `CompanyController` rewritten: invite/remove-admin endpoints (`POST /admin/companies/{id}/admins`, `.../admins/{adminId}/delete`); scoping — company-scoped admin's `/admin/companies` redirects to their own company, blocked from others, can't create/delete companies. `companies/detail.html` gained an Admins section (list + invite form + remove button).
+
+**Not done yet** (tasks 9-11 of an 11-task plan):
+- `UserController` company-scoping (list/ajax search/CSV/bulk actions/detail all need filtering to the scoped admin's own company) — was mid-edit (a `UserService.uploadCsv` signature change to add a `forcedCompanyId` param) when Dejul called "save project"; that specific edit was rejected/not applied, so `UserService`/`UserServiceImpl`/`UserController` are all still untouched (original state).
+- `DashboardController` company-scoping (stats scoped to the admin's own company, `totalCompanies` omitted for them).
+- Rebuild (`docker compose up --build`) + the 5-step manual test plan from the design doc's Testing section — nothing in this feature has been compiled or run yet.
+
 ## Session History (Last 5)
+
+### 2026-08-13/17 (Session 20) - BRS Completion Estimate, Jenkins CI/CD Scoping (Parked), Admin Multi-Tenant (In Progress)
+- **Changes**: Gave Dejul a module-level BRS completion estimate (~19% of the full 13-module BRS; much higher against Phase 1 scope alone) from the existing gap-analysis doc. Explored automating the API-level verification (encrypt/decrypt/signature/tamper/recall/expiry) as a Jenkins CI pipeline — found the existing Rancher-hosted Jenkins' only agent has no Docker access, identified two fix options, **parked at Dejul's request** to focus on feature dev instead (full detail in the dedicated Jenkins section above). Then scoped and designed "multiple admins per company" (BRS §5.2.3/§5.2.13) via the brainstorming skill — spec approved and implementation started (see dedicated section above for exact done/not-done breakdown). Session ended mid-implementation on "save project" — nothing built or tested yet.
+- **Time Spent**: ~2.5 hours (estimate — no commit-based time tracking available, seqremail repo has no new commits this session)
 
 ### 2026-08-12 (Session 19) - MyTrustMail Rebrand Pushed, BRS Gap Analysis, Digital Signing Module
 - **Changes**: Pushed the `chore/rename-to-mytrustmail` branch (19 commits, full SeQureMail→MyTrustMail rename) after committing the last pending piece (`docker-compose.yml` project name) and resolving a GCM unsafe-HTTP-remote push block. Read the full `BRS_MyTrustMail_V1.0.pdf` (13 functional modules, ~350 FR items) plus 5 key workflow diagrams, cross-checked against actual codebase entities/controllers, and saved a gap-analysis + roadmap reference doc to `docs/specs/2026-08-12-brs-gap-analysis.md`. Dejul set the priority order: Digital Signing module first (Chrome/Gmail scope only), then admin portal polish. Implemented and verified the Digital Signing module (envelope v5) — see dedicated section above.
@@ -111,7 +132,7 @@ Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryp
 - **Envelope Format v5**: `mytrustmail: poc-v5`, `algorithm`, `from`, `to`, `messageId`, `iv`, `ciphertext`, `signature` (base64, ECDSA P-256, optional — absent for pre-signing accounts). Legacy v3 (`seqremail: poc-v3`, no messageId) and v4 (`mytrustmail: poc-v4`, no signature) still decrypt.
 - **Security Model**: Auto-provision (`claimed=false`) → receiver registers via OTP → `claimed=true` → decrypt unlocked. Each party decrypts with own private key via own block. Strangers blocked by `selectBlock()` check. Signature (when present) verified against the sender's separate signing keypair after decrypt.
 - **Flyway Migrations (key-api)**: V1 (user_keys) | V2 (otp_verifications) | V3 (private_key) | V4 (claimed flag) | V5 (role) | V6 (provisioned_by_id self-referencing FK) | V7 (messages + platform_keys tables, default_expiry_days — Feature #9) | V8 (signing_public_key/signing_private_key columns — Digital Signing module)
-- **Flyway Migrations (admin)**: V1 baseline | V2 (company_id + provisioned_by on user_keys, companies table) | V3 (admin_users) | V4 (drops legacy provisioned_by VARCHAR — superseded by key-api's V6) — isolated via `flyway_schema_history_admin`
+- **Flyway Migrations (admin)**: V1 baseline | V2 (company_id + provisioned_by on user_keys, companies table) | V3 (admin_users) | V4 (drops legacy provisioned_by VARCHAR — superseded by key-api's V6) | V5 (admin multi-tenant — company_id/status/invitation_token/invitation_expires_at on admin_users, password_hash nullable — not yet run/verified) — isolated via `flyway_schema_history_admin`
 - **provisioned_by_id**: self-referencing FK on `user_keys.id` — the sender (SUBSCRIBER) whose send-to-unregistered-recipient triggered auto-provisioning. Set in `CryptoServiceImpl.generateKeyPair(email, provisionedBy)`. NULL = admin pre-registered / self-registered (no triggering sender). Existing pre-fix rows stay NULL — no way to backfill who triggered them.
 - **Fresh test protocol**: `TRUNCATE TABLE messages; TRUNCATE TABLE otp_verifications; TRUNCATE TABLE user_keys;` (in that order — no FK dependency between them) + `chrome.storage.local.clear()` in extension console + reload extension. DB access: `docker exec -it mytrustmail-db-1 mysql -umytrustmail -pmytrustmail123 mytrustmail_db` (container/creds renamed in the 2026-08-10 MyTrustMail rebrand — was `seqremail-db-1` / `seqremail` / `seqremail123` / `seqremail_db`)
 - **Team Feedback Checklist** (branching strategy: one branch per feature, merge to master sequentially):
@@ -119,13 +140,14 @@ Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryp
   - [x] #6 User management — `feature/6-user-management` ✅ pushed, pending MR
   - [x] #9 Recall & Expiry Controls — implemented + verified 2026-07-21, on `feature/9-recall-expiry-controls` (pushed), pending MR. Sender-controlled only (no admin involvement). Envelope v4: double envelope moves server-side into new `messages` table, wrapped under a new Trustgate platform KEK (ECDH P-256) — email carries zero key material (`messageId`, `iv`, `ciphertext` only). Recall = crypto-shred (delete `wrapped_envelope` row) — kills decrypt for sender too, not just recipient. Expiry: per-user `default_expiry_days` default, overridable at compose time. New key-api endpoints: `POST /api/messages/{id}/recall`, `GET/PUT /api/keys/settings`; encrypt/decrypt updated with `MESSAGE_RECALLED`/`MESSAGE_EXPIRED` (HTTP 410). Migration `V7__recall_expiry.sql`. Extension: compose-time expiry picker, Recall button, terminal states. v3 (legacy) emails keep working, can't be recalled.
   - [x] **Digital Signing (not on the original numbered list — added from the 2026-08-12 BRS gap analysis, Dejul's #1 priority)** — implemented + API-verified 2026-08-12, envelope v5, `signing_public_key`/`signing_private_key` columns (V8). See dedicated section above for full detail. Chrome/Gmail manual UI test still pending.
+  - [ ] **Admin multi-tenant / multiple admins per company (from the 2026-08-12 BRS gap analysis, Dejul's priority right after signing)** — in progress since 2026-08-13, ~70% through the 11-task plan, **nothing compiled or run yet**. See dedicated section above for exact done/not-done breakdown.
   - [ ] #5 HSM integration
   - [ ] #4 Outlook Web (OWA) support
   - [ ] #2 Firefox support
   - [ ] #3 Safari support
   - [ ] #1 MyDigital ID onboarding
   - [ ] #8 Outlook plugin (if possible)
-  - [ ] Admin portal polish to BRS §5.2.3/§5.2.13 criteria — Dejul's stated priority right after signing, not yet started
+  - [ ] ~~Admin portal polish to BRS §5.2.3/§5.2.13 criteria~~ — in progress, see "Admin multi-tenant" item above
 
 ---
-**Last Updated**: 2026-08-12 (session 19) | **Position**: #1/10 Active
+**Last Updated**: 2026-08-17 (session 20) | **Position**: #1/10 Active

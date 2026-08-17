@@ -7,7 +7,7 @@
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
 | 1 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-08-13 | TBD | 99% | Added new byte-array Stream API (servlet, JSON response) to cut Base64 network overhead — compiled clean, not yet deployed/live-tested. Client integration doc (curl/Java/.NET/Postman) ready. Log retention decision still awaiting Zul's call. |
-| 2 | **[TG SeQureMail](./active/tg-sequremail.md)** (now MyTrustMail) | 2026-08-12 | TBD | 99% (Phase 1 POC) | Rebranded SeQureMail→MyTrustMail, pushed. Full BRS gap analysis done (`docs/specs/2026-08-12-brs-gap-analysis.md`). Digital Signing module (envelope v5) implemented + API-verified — Chrome/Gmail manual test pending. Next: admin portal polish. |
+| 2 | **[TG SeQureMail](./active/tg-sequremail.md)** (now MyTrustMail) | 2026-08-17 | TBD | 99% (Phase 1 POC) | Admin multi-tenant (multiple admins per company, BRS §5.2.3/§5.2.13) implementation ~70% done — migration/entity/invite-flow/security/company-scoping written, NOT yet compiled or run. Next: finish UserController + DashboardController scoping, rebuild, manual test. |
 | 3 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-28 | TBD | 90% | Helpdesk approved deploying the x64 build as release v1.3.2 without waiting for full root-cause fix. Added post-install restart prompt to mytrustid.bat (Yes/No popup, 10s countdown), IExpress restart setting set to "No restart" to avoid conflict. Dejul testing now. |
 | 4 | **[Petronas Java Migration](./active/petronas-java-migration.md)** | 2026-07-24 | TBD | 0% | Just created — converting legacy C++ PetronasService daemon to plain Java (Maven), SunPKCS11 for HSM, new repo alongside the C++ version. Next: explore C++ source, map Java package structure. |
 | 5 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-24 | 2026-06-05 ⚠️ | 87% | Log analysis found orphaned `pm_staticmaster` record 3069 (stuck, no retry path) + benign -13 "queue empty" log noise. Also known: port 6803 EADDRINUSE crash-loop. |
@@ -29,4 +29,4 @@
 ---
 ## System Status
 - **Total Projects**: 14 (9 active + 5 archived)
-- **Last Updated**: 2026-08-13 - ECOURT_PdfErrorCheckWS saved — Stream API added (byte-array, servlet, JSON)
+- **Last Updated**: 2026-08-17 - TG SeQureMail saved — admin multi-tenant implementation in progress

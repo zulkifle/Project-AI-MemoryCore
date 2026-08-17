@@ -19,13 +19,14 @@
 ## Previous Active Project
 - **Name**: TG SeQureMail (now MyTrustMail)
 - **Resumed**: 2026-08-12 (session 19) — was already at position #1
-- **Last worked**: 2026-08-12 (session 19) — Digital Signing module (envelope v5) implemented + verified via direct API calls (round-trip sign/encrypt/decrypt/verify all confirmed, tamper test rejected correctly)
-- **Context**: E2E-encrypted Gmail Chrome extension (MV3) + Key API + admin portal, rebranded SeQureMail → MyTrustMail (branch `chore/rename-to-mytrustmail`, pushed, 19 commits, MR not yet opened). Full BRS gap analysis (13 modules vs. codebase) saved to `docs/specs/2026-08-12-brs-gap-analysis.md`. Dejul's priority order: Digital Signing (Chrome/Gmail scope) → admin portal polish. Signing module done at API level; Chrome/Gmail manual UI test still pending Dejul.
+- **Last worked**: 2026-08-17 (session 20) — Admin multi-tenant feature (multiple admins per company, BRS §5.2.3/§5.2.13) ~70% implemented: migration, entity, invite-flow service+controller+templates, security wiring, CurrentAdminService, CompanyController scoping all written. **Nothing compiled or run this session.** Interrupted mid-`UserController` scoping edit on "save project".
+- **Context**: E2E-encrypted Gmail Chrome extension (MV3) + Key API + admin portal, rebranded SeQureMail → MyTrustMail (branch `chore/rename-to-mytrustmail`, pushed, 19 commits, MR not yet opened). Full BRS gap analysis (13 modules vs. codebase) saved to `docs/specs/2026-08-12-brs-gap-analysis.md`. Design spec for the current feature at `docs/specs/2026-08-13-admin-multi-tenant-design.md`. Dejul's priority order: Digital Signing (done, Chrome/Gmail manual test still pending) → admin portal polish (in progress).
 - **Next Steps**:
-  1. Dejul: manual Chrome/Gmail test of the signing badge (reload unpacked extension)
-  2. Admin portal polish to BRS §5.2.3/§5.2.13 criteria
+  1. Resume admin multi-tenant: finish `UserController` + `DashboardController` company-scoping (tasks 9-10 of 11), then `docker compose up --build` + run the design doc's 5-step manual test plan (task 11)
+  2. Dejul: manual Chrome/Gmail test of the signing badge (reload unpacked extension)
   3. Open MRs: `chore/rename-to-mytrustmail` → master, `feature/9-recall-expiry-controls` → master (covers Feature #6 + #9)
   4. Continue team feedback checklist: #5 (HSM), #4 (OWA), #2 (Firefox)
+  5. Parked: Jenkins CI/CD (existing Rancher-hosted Jenkins agent has no Docker access — 2 fix options identified, not decided) — see `projects/active/tg-sequremail.md` "Parked" section
 - **Docker**: `docker compose up` in `C:\PROJECTS\SEQURE MAIL\Development\seqremail\` (Compose project `mytrustmail`) — db + key-api + admin | Admin: `http://localhost:8081/admin/login` (admin / 7ru57ga73)
 - **Fresh test**: `TRUNCATE TABLE messages; TRUNCATE TABLE otp_verifications; TRUNCATE TABLE user_keys;` (container `mytrustmail-db-1`, user `mytrustmail`/`mytrustmail123`) + `chrome.storage.local.clear()` in extension console
 - Full detail in `projects/active/tg-sequremail.md`
