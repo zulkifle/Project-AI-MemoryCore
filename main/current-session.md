@@ -3,8 +3,8 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-08-13
-**Session Focus**: **ECOURT_PdfErrorCheckWS** (position #1) — resumed, then added a new byte-array Stream API (servlet, JSON response) to cut Base64 network overhead; client integration doc + Postman/.NET/Java/curl samples ready. Also did a one-off production-readiness audit on **MyGPKI-SKALA JKR** deployment package (see Recent Work below) — found + fixed real bugs, repackaged, shared with client. Zul confirmed preferred address is **"Zul"** (full name Dejul) — updated identity-core.md + relationship-memory.md.
+**Last Activity**: 2026-08-17
+**Session Focus**: One-off deliverable for **MyGPKI-SKALA JKR** — functional test script (Internal/External API) for the real `gpki-signing-service` REST API, handed to team analisis as a draft (see Recent Work below). **ECOURT_PdfErrorCheckWS** remains active project #1, untouched this session. Also did a one-off production-readiness audit on **MyGPKI-SKALA JKR** deployment package on 2026-08-13 (see Recent Work below) — found + fixed real bugs, repackaged, shared with client. Zul confirmed preferred address is **"Zul"** (full name Dejul) — updated identity-core.md + relationship-memory.md.
 
 ## Active Project
 - **Name**: ECOURT_PdfErrorCheckWS
@@ -34,6 +34,14 @@
 ## Previous Active Project
 - **Name**: MyTrustID Desktop
 - **Last worked**: 2026-07-29 — committed session 20's x64-lock + Phase 1 isolation changes as `0c01454` on `fix/rsa-keygen-crash-handling`; push to origin pending (network unreachable). v1.3.2 (x64-only build) was deployed to helpdesk 2026-07-28 with a post-install restart prompt added to `mytrustid.bat`. Full detail in `projects/active/mytrustid-desktop.md`.
+
+## Recent Work (2026-08-17) — MyGPKI-SKALA JKR Functional Test Script (Internal/External API)
+- Zul asked for SIT + UAT test scripts covering the OTP+PIN signing API exposed to JKR/ZEN, to hand to team analisis as a draft for formal documentation.
+- First draft was built against the wrong API surface — the legacy SOAP WS methods (`RequestSMSOTP`, `SignPDF`, `GetCertInfo`, etc. in `com.msctg.mtsa.MyTrustSignerAgentWSWP`) — which turned out to be commented-out/unused. Zul caught this by asking if the draft matched the real endpoints he sees in practice (`/MTSAProdJKR/api/verify`, `/api/status`, `/api/sign/init`, `/api/sign/batch/init`).
+- Corrected by reading the actual system: **`gpki-signing-service`** (a separate REST API, package `my.gov.gpki.servlet`, context `/MTSAProdJKR` prod / `/MTSAPilotJKR` pilot), grounded in `GPKI_Signing_Service_API_Technical_Document.txt` (v1.4.1) plus servlet source (`SignInit`, `BatchSignInit`, `SignCert`, `SignComplete`, `ExternalSign`, `Verify`, `Status`, `Landing`).
+- Key finding (code-verified, not just docs): batch signing is **INTERNAL-only in practice** — `ExternalSign.java` has no batch-loop logic at all (always saves a single file, always hardcodes `batchComplete:true`), so an EXTERNAL session created via `/api/sign/batch/init` breaks at the external-sign step. Flagged as BAT-008 in the test script — an undocumented gap the team needs to confirm/handle explicitly.
+- Final deliverable: `C:\PROJECTS\MyGPKI-SKALA\Development\docs\MyGPKI-SKALA_JKR_Functional_TestScript.md` — single functional-only script (Zul found the earlier SIT/UAT split "complicated"), organized by INTERNAL single-doc / INTERNAL batch / EXTERNAL single-doc-only / common Verify / common Status, using real error codes (`MISSING_USER_ID`, `WRONG_USER_TYPE`, `ALREADY_COMPLETED`, `INVALID_PDF_REF_ID`, etc.) from the technical doc.
+- Two earlier draft files (`MyGPKI-SKALA_JKR_API_TestScript_SIT.md`, `MyGPKI-SKALA_JKR_API_TestScript_UAT.md`) are now known-incorrect (wrong API basis) — still on disk in the same `docs/` folder, Zul hasn't said whether to delete them yet.
 
 ## Recent Work (2026-08-13) — MyGPKI-SKALA JKR Production Package Audit
 - Zul asked to verify `C:\PROJECTS\MyGPKI-SKALA\Deployment\PRODUCTION\` before sharing with client (JKR) — suspected the install guide was actually the Pilot one.
