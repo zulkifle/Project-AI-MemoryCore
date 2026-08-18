@@ -6,13 +6,13 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-08-13 | TBD | 99% | Added new byte-array Stream API (servlet, JSON response) to cut Base64 network overhead — compiled clean, not yet deployed/live-tested. Client integration doc (curl/Java/.NET/Postman) ready. Log retention decision still awaiting Zul's call. |
-| 2 | **[TG SeQureMail](./active/tg-sequremail.md)** (now MyTrustMail) | 2026-08-17 | TBD | 99% (Phase 1 POC) | Admin multi-tenant (multiple admins per company, BRS §5.2.3/§5.2.13) implementation ~70% done — migration/entity/invite-flow/security/company-scoping written, NOT yet compiled or run. Next: finish UserController + DashboardController scoping, rebuild, manual test. |
-| 3 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-28 | TBD | 90% | Helpdesk approved deploying the x64 build as release v1.3.2 without waiting for full root-cause fix. Added post-install restart prompt to mytrustid.bat (Yes/No popup, 10s countdown), IExpress restart setting set to "No restart" to avoid conflict. Dejul testing now. |
-| 4 | **[Petronas Java Migration](./active/petronas-java-migration.md)** | 2026-07-24 | TBD | 0% | Just created — converting legacy C++ PetronasService daemon to plain Java (Maven), SunPKCS11 for HSM, new repo alongside the C++ version. Next: explore C++ source, map Java package structure. |
-| 5 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-24 | 2026-06-05 ⚠️ | 87% | Log analysis found orphaned `pm_staticmaster` record 3069 (stuck, no retry path) + benign -13 "queue empty" log noise. Also known: port 6803 EADDRINUSE crash-loop. |
-| 6 | **[TradeVault](./active/tradevault.md)** | 2026-07-24 | TBD | 85% | Full app built (all 11 modules) + running live in Docker at localhost:8091, verified end-to-end. Fixed 2 real bugs (missing timestamp columns, LazyInitializationException). Next: real usage + eslint config + own git repo. |
-| 7 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-07-16 | TBD | 100% (maintenance) | userId→failed-eKYC check + 401 fix redeployed to PILOT & PROD. 401 resolved. Only branch merge remains. |
+| 1 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-08-18 | TBD | 100% (maintenance) | Root-caused `"Bogus input colorspace"` compression failure — Jumio serves images as PNG-with-alpha, JPEG writer can't hold alpha; fixed with `toRgb()` flatten. Added manual `reprocess-images` recovery API. Bulk-recovered 113/113 stuck production records. Fix pending commit/push + deploy to real `jumioproxy` namespace. |
+| 2 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-08-13 | TBD | 99% | Added new byte-array Stream API (servlet, JSON response) to cut Base64 network overhead — compiled clean, not yet deployed/live-tested. Client integration doc (curl/Java/.NET/Postman) ready. Log retention decision still awaiting Zul's call. |
+| 3 | **[TG SeQureMail](./active/tg-sequremail.md)** (now MyTrustMail) | 2026-08-17 | TBD | 99% (Phase 1 POC) | Admin multi-tenant (multiple admins per company, BRS §5.2.3/§5.2.13) implementation ~70% done — migration/entity/invite-flow/security/company-scoping written, NOT yet compiled or run. Next: finish UserController + DashboardController scoping, rebuild, manual test. |
+| 4 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-28 | TBD | 90% | Helpdesk approved deploying the x64 build as release v1.3.2 without waiting for full root-cause fix. Added post-install restart prompt to mytrustid.bat (Yes/No popup, 10s countdown), IExpress restart setting set to "No restart" to avoid conflict. Dejul testing now. |
+| 5 | **[Petronas Java Migration](./active/petronas-java-migration.md)** | 2026-07-24 | TBD | 0% | Just created — converting legacy C++ PetronasService daemon to plain Java (Maven), SunPKCS11 for HSM, new repo alongside the C++ version. Next: explore C++ source, map Java package structure. |
+| 6 | **[Petronas Legacy C++ Dockerize](./active/petronas-legacy-cpp-dockerize.md)** | 2026-07-24 | 2026-06-05 ⚠️ | 87% | Log analysis found orphaned `pm_staticmaster` record 3069 (stuck, no retry path) + benign -13 "queue empty" log noise. Also known: port 6803 EADDRINUSE crash-loop. |
+| 7 | **[TradeVault](./active/tradevault.md)** | 2026-07-24 | TBD | 85% | Full app built (all 11 modules) + running live in Docker at localhost:8091, verified end-to-end. Fixed 2 real bugs (missing timestamp columns, LazyInitializationException). Next: real usage + eslint config + own git repo. |
 | 8 | **[TGCA](./active/tgca.md)** | 2026-05-25 | TBD | 0% | Registered — pending study |
 | 9 | **[RSS Self Service Portal](./active/rss-self-service-portal.md)** | 2026-05-12 | Q2 2026 | 80% | Phase 1 complete — next: browser test + billing integration |
 
@@ -29,4 +29,4 @@
 ---
 ## System Status
 - **Total Projects**: 14 (9 active + 5 archived)
-- **Last Updated**: 2026-08-17 - TG SeQureMail saved — admin multi-tenant implementation in progress
+- **Last Updated**: 2026-08-18 - jumio-proxy-integration saved — alpha-channel compression bug fixed, 113 stuck records bulk-recovered

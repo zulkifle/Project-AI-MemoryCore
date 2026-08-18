@@ -3,12 +3,22 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-08-17
-**Session Focus**: One-off deliverable for **MyGPKI-SKALA JKR** — functional test script (Internal/External API) for the real `gpki-signing-service` REST API, handed to team analisis as a draft (see Recent Work below). **ECOURT_PdfErrorCheckWS** remains active project #1, untouched this session. Also did a one-off production-readiness audit on **MyGPKI-SKALA JKR** deployment package on 2026-08-13 (see Recent Work below) — found + fixed real bugs, repackaged, shared with client. Zul confirmed preferred address is **"Zul"** (full name Dejul) — updated identity-core.md + relationship-memory.md.
+**Last Activity**: 2026-08-18
+**Session Focus**: **jumio-proxy-integration** resumed and saved as active project #1 — root-caused a `"Bogus input colorspace"` image compression bug (Jumio serves images as PNG-with-alpha; JPEG writer can't hold an alpha channel), fixed it, added a manual recovery API, and bulk-recovered 113/113 real stuck production eKYC records. Fix still pending commit/push and deploy to the real `jumioproxy` production namespace (only verified in `jumioproxy-test` so far, which shares real prod credentials).
 
 ## Active Project
+- **Name**: jumio-proxy-integration
+- **Resumed**: 2026-08-18
+- **Last worked**: 2026-08-18 — Root cause: `ImageCompressionUtil.compress()` always re-encodes to JPEG regardless of input format; Jumio's FRONT/BACK/FACE images can be PNG with an alpha channel (RGBA), and JPEG has no alpha channel, so writing the ARGB `BufferedImage` through a JPEG `ImageWriter` throws `"Bogus input colorspace"` — compression silently falls back to the original oversized image, which then gets rejected by MTSS's SOAP endpoint with `413 Request Entity Too Large`. Confirmed via raw byte download (Postman) + ImageMagick/exiftool inspection, and reproduced standalone with a synthetic ARGB image. Fix: new `toRgb()` flattens alpha onto white before the JPEG write. Also added `POST /api/v1/{projectId}/jumio/accounts/{accountId}/workflow-executions/{workflowId}/reprocess-images` — a manual recovery endpoint to re-download/recompress/re-push a specific stuck record to MTSS on demand. Verified the fix end-to-end in a new `production-test` K8s/Nginx lane (namespace `jumioproxy-test`, real prod `adacash` credentials), then wrote a PowerShell script to loop the new endpoint across Zul's `jumio-failed-user.txt` backlog (113 unique stuck records, 11–18 Aug) — **all 113 succeeded**. Along the way, diagnosed a K8s trap where reusing the same image tag across rebuilds leaves `kubectl apply` seeing no spec diff, so the pod never actually restarts even with `imagePullPolicy: Always`.
+- **Context**: Spring Boot proxy between Adacash and Jumio for eKYC — on `PROCESSED` callback status, downloads ID/selfie images, compresses, and pushes to MTSS via SOAP. Repo: `C:\PROJECTS\DOCKER GITLAB\docker\jumio-proxy\app\jumio-proxy\` (separate nested git repo). 100% (maintenance).
+- **Next Steps**:
+  1. Commit + push branch `fix/cmyk-jpeg-compression` (pom.xml, `AdacashTrustgateJumioProxyApplication.java`, `JumioCallbackController.java`, `ImageCompressionUtil.java`)
+  2. Deploy the same build to the real `jumioproxy` production namespace — new incoming callbacks through true prod still hit the bug until this happens
+  3. Merge `feature/per-session-callback-url` → `feature/multitenant-support` ← carried over, still outstanding
+- Full detail in `projects/active/jumio-proxy-integration.md`
+
+## Previous Active Project
 - **Name**: ECOURT_PdfErrorCheckWS
-- **Resumed**: 2026-08-13
 - **Last worked**: 2026-08-13 — Added `PdfErrorCheckStreamServlet` (`POST /PdfErrorCheckWS/PdfErrorCheckStream`): raw PDF bytes in body (`application/octet-stream`) + `X-File-Name` header, JSON response, same errCode/status/errMsg as the SOAP methods. Refactored `PdfErrorCheckHelper` to share checking logic with `CheckPdfError` via new private `checkPdfErrorBytes()` — zero drift risk. Added `org.json` dependency (`json-20230618.jar`), wrote client integration doc (`docs/pdf-error-check-stream-api.md` — curl/Java/.NET/Postman) and a local test client (`testCheckStream.java`). Compiled clean via direct `javac` against WildFly's bundled servlet-api jar; **not yet deployed/live-tested**.
 - **Context**: JAX-WS SOAP service on WildFly to check/auto-repair PDFs before digital signing (POJ / e-Court). Repo: `C:\PROJECTS\ECOURT\WebServiceProject\POJ\ECOURT_PdfErrorCheckWS`. 99% complete.
 - **Next Steps**:
