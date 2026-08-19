@@ -6,7 +6,7 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-08-18 | TBD | 100% (maintenance) | Root-caused `"Bogus input colorspace"` compression failure — Jumio serves images as PNG-with-alpha, JPEG writer can't hold alpha; fixed with `toRgb()` flatten. Added manual `reprocess-images` recovery API. Bulk-recovered 113/113 stuck production records. Fix pending commit/push + deploy to real `jumioproxy` namespace. |
+| 1 | **[jumio-proxy-integration](./active/jumio-proxy-integration.md)** | 2026-08-19 | TBD | 100% (maintenance) | Root-caused `"Bogus input colorspace"` compression failure — Jumio serves images as PNG-with-alpha, JPEG writer can't hold alpha; fixed with `toRgb()` flatten. Added manual `reprocess-images` recovery API, bulk-recovered 113/113 stuck production records. Fix live in real `jumioproxy` production namespace; repo consolidated to a single `master` branch. Nothing outstanding. |
 | 2 | **[ECOURT_PdfErrorCheckWS](./active/ecourt-pdferrorcheckws.md)** | 2026-08-13 | TBD | 99% | Added new byte-array Stream API (servlet, JSON response) to cut Base64 network overhead — compiled clean, not yet deployed/live-tested. Client integration doc (curl/Java/.NET/Postman) ready. Log retention decision still awaiting Zul's call. |
 | 3 | **[TG SeQureMail](./active/tg-sequremail.md)** (now MyTrustMail) | 2026-08-17 | TBD | 99% (Phase 1 POC) | Admin multi-tenant (multiple admins per company, BRS §5.2.3/§5.2.13) implementation ~70% done — migration/entity/invite-flow/security/company-scoping written, NOT yet compiled or run. Next: finish UserController + DashboardController scoping, rebuild, manual test. |
 | 4 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-07-28 | TBD | 90% | Helpdesk approved deploying the x64 build as release v1.3.2 without waiting for full root-cause fix. Added post-install restart prompt to mytrustid.bat (Yes/No popup, 10s countdown), IExpress restart setting set to "No restart" to avoid conflict. Dejul testing now. |
@@ -29,4 +29,4 @@
 ---
 ## System Status
 - **Total Projects**: 14 (9 active + 5 archived)
-- **Last Updated**: 2026-08-18 - jumio-proxy-integration saved — alpha-channel compression bug fixed, 113 stuck records bulk-recovered
+- **Last Updated**: 2026-08-19 - jumio-proxy-integration saved — fix live in production, repo consolidated to a single master branch
