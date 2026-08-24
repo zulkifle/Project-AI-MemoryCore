@@ -12,16 +12,16 @@
 
 ## Current Status
 - **Resumed**: 2026-08-12 (session 19) - from position #1 (never left top spot)
-- **Session 20 (2026-08-13/17)**: Admin portal polish started — designed + is implementing "multiple admins per company" (BRS §5.2.3/§5.2.13, invitation-based per Figure 9/13). Spec at `docs/specs/2026-08-13-admin-multi-tenant-design.md`. **Implementation in progress, NOT yet built/tested this session** — see dedicated section below for exactly what's done vs pending.
-- **Session 19 (2026-08-12)**: Project rebranded **SeQureMail → MyTrustMail** — pushed the `chore/rename-to-mytrustmail` branch (19 commits) after resolving a GCM unsafe-HTTP-remote push block. Read the full `BRS_MyTrustMail_V1.0.pdf` (13 functional modules, ~350 FR items) + 5 key workflow diagrams, saved a gap-analysis + roadmap reference doc to `docs/specs/2026-08-12-brs-gap-analysis.md`. Dejul set priority: Digital Signing module first (Chrome/Gmail scope), then admin portal polish. **Digital Signing module (envelope v5) implemented and verified this session** — see dedicated section below.
-- **Session 18 (2026-08-10)**: Confirmed via `git status`/`git log` that `feature/9-recall-expiry-controls` is **already pushed** — up to date with origin, working tree clean. Corrects prior memory (session 17 recap said "not pushed"). Branch includes full `feature/6-user-management` history (branched off it), so an MR covering both is still open/needed.
+- **Session 22 (2026-08-24)**: Discovered (via direct `git log`/`git status` check — prior memory was stale) that sessions on 2026-08-19/20/21 had already fully finished and verified both Admin Multi-Tenant (26/26 test cases) and a brand-new **Subscriber Status Lifecycle** feature (Suspend/Reactivate, BRS §5.2.1 — not previously in memory at all), all committed locally but unpushed. **Pushed all 6 commits** to `chore/rename-to-mytrustmail` (`ce42335..f5d93a3`); confirmed via `git merge-base` that this branch already contains the full history of `feature/6-user-management` and `feature/9-recall-expiry-controls`, so **one MR covers all of it** — GitLab create-MR link: `http://gitlab.msctrustgate.com/trustgate/sequremail/-/merge_requests/new?merge_request%5Bsource_branch%5D=chore%2Frename-to-mytrustmail` (target `master`, not yet submitted). Then scoped **Firefox support** (BRS §5.2.9) via brainstorming skill — design approved, doc committed on new branch `feature/firefox-support` (off `chore/rename-to-mytrustmail` tip). See dedicated sections below.
+- **Session 20 (2026-08-13→21, spans multiple actual work dates not reflected in earlier recaps)**: Admin multi-tenant designed + implemented + fully verified (26/26, 2026-08-19/20). Digital Signing module verified (2026-08-12). Subscriber Status Lifecycle (Suspend/Reactivate) designed + implemented + verified (10/10, 2026-08-20/21) — see dedicated sections below.
+- **Session 19 (2026-08-12)**: Project rebranded **SeQureMail → MyTrustMail** — pushed the `chore/rename-to-mytrustmail` branch (19 commits) after resolving a GCM unsafe-HTTP-remote push block. Read the full `BRS_MyTrustMail_V1.0.pdf` (13 functional modules, ~350 FR items) + 5 key workflow diagrams, saved a gap-analysis + roadmap reference doc to `docs/specs/2026-08-12-brs-gap-analysis.md`. Dejul set priority: Digital Signing module first (Chrome/Gmail scope), then admin portal polish.
 - **Next Steps**:
-  1. **Resume admin multi-tenant implementation** — finish UserController + DashboardController company-scoping (tasks 9-10 of 11), then rebuild `docker compose up --build` and run the 5-step manual test plan from the design doc (task 11). Nothing has been compiled or run yet this session.
-  2. Open MR: `feature/9-recall-expiry-controls` → master (on GitLab) — covers Feature #6 + #9 together
-  3. Open MR: `chore/rename-to-mytrustmail` → master
-  4. Continue team feedback checklist: #5 (HSM), #4 (OWA), #2 (Firefox)
+  1. Zul: submit the MR (`chore/rename-to-mytrustmail` → `master`) via the GitLab link above
+  2. Implement Firefox support per the approved design (`docs/specs/2026-08-24-firefox-support-design.md`, branch `feature/firefox-support`) — manifest `browser_specific_settings.gecko.id` addition + manual test plan against real Firefox/Gmail; no JS logic changes expected
+  3. Digital Signing — Chrome/Gmail manual UI test of the signature badge still not done (API-level only)
+  4. Continue team feedback checklist: #5 (HSM), #4 (OWA)
   5. **Parked (2026-08-13): CI/CD via Jenkins** — see dedicated section below, not started
-- **Known Issues**: Working tree has substantial uncommitted changes across key-api, extension, and mytrustmail-admin (digital signing module from session 19 + this session's admin multi-tenant work) — nothing committed since the `chore/rename-to-mytrustmail` push. Nothing this session has been compiled or run — verify `mvn compile` on mytrustmail-admin before continuing.
+- **Known Issues**: None currently — working tree on `chore/rename-to-mytrustmail` was clean and fully pushed before branching for Firefox work. Local `feature/6-user-management` and `feature/9-recall-expiry-controls` branches are now redundant (fully contained in `chore/rename-to-mytrustmail`) — safe to delete after the MR merges.
 
 ## Parked — Jenkins CI/CD (2026-08-13, not started)
 Discussed module-level BRS completion estimate (~19% of full BRS, much higher against Phase 1 scope only), then explored automating the API-level verification (encrypt/decrypt/signature/tamper/recall/expiry — the same checks done manually via direct API calls in sessions 16 & 19) as a functional/integration test, to eventually run in Jenkins. **Dejul chose to park this and return to feature dev first** — resume when ready.
@@ -86,10 +86,32 @@ BRS §5.2.3/§5.2.13 slice, scoped via brainstorming skill — full design at `d
 - `CurrentAdminService`/Impl — resolves the logged-in `AdminUser` from `Authentication` for scoping checks.
 - `CompanyController` rewritten: invite/remove-admin endpoints (`POST /admin/companies/{id}/admins`, `.../admins/{adminId}/delete`); scoping — company-scoped admin's `/admin/companies` redirects to their own company, blocked from others, can't create/delete companies. `companies/detail.html` gained an Admins section (list + invite form + remove button).
 
-**Not done yet** (tasks 9-11 of an 11-task plan):
-- `UserController` company-scoping (list/ajax search/CSV/bulk actions/detail all need filtering to the scoped admin's own company) — was mid-edit (a `UserService.uploadCsv` signature change to add a `forcedCompanyId` param) when Dejul called "save project"; that specific edit was rejected/not applied, so `UserService`/`UserServiceImpl`/`UserController` are all still untouched (original state).
-- `DashboardController` company-scoping (stats scoped to the admin's own company, `totalCompanies` omitted for them).
-- Rebuild (`docker compose up --build`) + the 5-step manual test plan from the design doc's Testing section — nothing in this feature has been compiled or run yet.
+**Done 2026-08-19 (tasks 9-11 of the 11-task plan — feature now fully implemented)**:
+- `UserService`/`UserServiceImpl`/`UserController` — every user-facing method now takes a `forcedCompanyId` (null = platform admin unrestricted); list/ajax-search/add/CSV-upload/bulk role-change/bulk delete/single detail/single role/single delete all scope or reject accordingly. New `UserKeyRepository` count/findTop10 overloads scoped by `Company`.
+- `DashboardController` — stats scoped by company; `totalCompanies` tile omitted entirely for scoped admins (`dashboard/index.html` grid drops 4→3 columns via `th:if`).
+- `mvn compile` clean. Rebuilt full stack (`docker compose up --build`), migration V5 applied cleanly, no errors in logs.
+- Ran the design doc's 5-step manual test plan (+ extra edge cases) via curl against the live containers: platform admin unrestricted ✅, invite→accept→login flow ✅, company-scoped dashboard/companies/users all correctly scoped ✅, cross-company reads/writes blocked (detail view, delete, company creation, company detail) ✅, admin removal revokes login ✅. All test data cleaned up afterward — DB back to pre-test state.
+- Full test case list saved to `docs/specs/2026-08-19-admin-multi-tenant-test-cases.md` — 26 test cases total.
+
+**Done 2026-08-20**: ran all 10 remaining code-only test cases via curl against the running containers (expired-token rejection, company-delete block, Add User form scoping, new-user/CSV-upload forced-company, own-company detail/role-change, bulk role/delete out-of-scope rejection, pending-invite cancellation) — all 10 passed on the first attempt, no code changes needed. Test data cleaned up. Commit `1ecb4c6`.
+
+**Status: 26/26 test cases verified. Feature is sign-off ready.** Pushed to origin 2026-08-24 as part of `f5d93a3` (commit `f9287a6` for the feature itself).
+
+## Subscriber Status Lifecycle — Suspend/Reactivate (implemented + verified 2026-08-20/21)
+BRS §5.2.1 slice — design at `docs/specs/2026-08-20-subscriber-status-lifecycle-design.md`. Replaces the `claimed` boolean with a `SubscriberStatus` enum (Pending/Active/Suspended, plus an unused Expired placeholder for future licensing). Adds admin Suspend/Reactivate actions, company-scoped like existing role-change/delete. Dejul's call: no separate Deactivated status since hard-delete already covers permanent removal.
+
+**Changed**: `encrypt()` now enforces status for both sender and an already-registered recipient (previously checked nothing); `decrypt()` distinguishes "not yet claimed" from "suspended" via new `USER_SUSPENDED` error (HTTP 403), same pattern as `MESSAGE_RECALLED`/`MESSAGE_EXPIRED`. `claimKeyPair()` refuses to reactivate a suspended account via OTP (closes an admin-lock bypass). Extension renders a terminal banner for `USER_SUSPENDED` the same way it does for message-level terminal states. New `V9__subscriber_status.sql` migration (key-api) drops `claimed`, adds `status`, backfills existing rows correctly.
+
+**Verified**: 10/10 test cases via curl against rebuilt Docker stack (both containers rebuilt, `mvn compile` clean) — decrypt/encrypt blocking for suspended sender + recipient, reactivate restores access, fresh auto-provision unaffected (regression guard), OTP-claim defensive rule, dashboard status-count accuracy, company-scoped admin can suspend own-company user but not out-of-scope, existing delete action unaffected. Full list: `docs/specs/2026-08-20-subscriber-status-lifecycle-test-cases.md`. **Status: sign-off ready.** Commits: `e252939`/`fae19a2` (design), `f5d93a3` (implementation).
+
+## Firefox Support (scoped 2026-08-24, not yet implemented)
+BRS §5.2.9 slice — design at `docs/specs/2026-08-24-firefox-support-design.md`, branch `feature/firefox-support` (off `chore/rename-to-mytrustmail`). Scoped via brainstorming skill.
+
+**Key finding**: extension's `chrome.*` API surface is tiny (5 call sites: `runtime.onInstalled`/`onMessage`/`sendMessage`, `storage.local`, `downloads.download`), all natively Firefox-compatible as written — **no JS logic changes needed**, only a manifest addition.
+
+**Decisions**: single shared `manifest.json` for both browsers (add `browser_specific_settings.gecko.id`, Firefox-only field, harmless on Chrome) — no per-browser folder split; assume latest-stable Firefox only (older/ESR Firefox's lack of MV3 `service_worker` support accepted as a known, low-priority risk — fallback is swapping to `background.scripts` event page if it ever surfaces); distribution channel (AMO listed vs. unlisted self-distribute) deliberately deferred — doesn't block building/testing now, but note that Firefox requires Mozilla-signing to run in release Firefox even for internal-only distribution, so an AMO "unlisted" submission is the minimum eventual step; testing = manual test plan mirroring the existing fresh-test protocol, run against real Firefox + Gmail (register, encrypt/decrypt, signing badge, recall/expiry, suspend/reactivate, plus extra attention on `downloads.download` filename/extension behavior).
+
+**Not yet done**: no code/manifest changes made yet — design only. Next: add `browser_specific_settings` to `manifest.json`, load unpacked in Firefox (`about:debugging`), run the manual test plan, document results in a dated test-cases doc.
 
 ## Session History (Last 5)
 
@@ -140,14 +162,15 @@ Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryp
   - [x] #6 User management — `feature/6-user-management` ✅ pushed, pending MR
   - [x] #9 Recall & Expiry Controls — implemented + verified 2026-07-21, on `feature/9-recall-expiry-controls` (pushed), pending MR. Sender-controlled only (no admin involvement). Envelope v4: double envelope moves server-side into new `messages` table, wrapped under a new Trustgate platform KEK (ECDH P-256) — email carries zero key material (`messageId`, `iv`, `ciphertext` only). Recall = crypto-shred (delete `wrapped_envelope` row) — kills decrypt for sender too, not just recipient. Expiry: per-user `default_expiry_days` default, overridable at compose time. New key-api endpoints: `POST /api/messages/{id}/recall`, `GET/PUT /api/keys/settings`; encrypt/decrypt updated with `MESSAGE_RECALLED`/`MESSAGE_EXPIRED` (HTTP 410). Migration `V7__recall_expiry.sql`. Extension: compose-time expiry picker, Recall button, terminal states. v3 (legacy) emails keep working, can't be recalled.
   - [x] **Digital Signing (not on the original numbered list — added from the 2026-08-12 BRS gap analysis, Dejul's #1 priority)** — implemented + API-verified 2026-08-12, envelope v5, `signing_public_key`/`signing_private_key` columns (V8). See dedicated section above for full detail. Chrome/Gmail manual UI test still pending.
-  - [ ] **Admin multi-tenant / multiple admins per company (from the 2026-08-12 BRS gap analysis, Dejul's priority right after signing)** — in progress since 2026-08-13, ~70% through the 11-task plan, **nothing compiled or run yet**. See dedicated section above for exact done/not-done breakdown.
+  - [x] **Admin multi-tenant / multiple admins per company (from the 2026-08-12 BRS gap analysis)** — 26/26 test cases verified, sign-off ready. See dedicated section above.
+  - [x] **Subscriber Status Lifecycle / Suspend & Reactivate (BRS §5.2.1, not on the original numbered list)** — 10/10 test cases verified 2026-08-20/21, sign-off ready. See dedicated section above.
   - [ ] #5 HSM integration
   - [ ] #4 Outlook Web (OWA) support
-  - [ ] #2 Firefox support
+  - [ ] #2 Firefox support — **design approved 2026-08-24** (`docs/specs/2026-08-24-firefox-support-design.md`), implementation not started. See dedicated section above.
   - [ ] #3 Safari support
   - [ ] #1 MyDigital ID onboarding
   - [ ] #8 Outlook plugin (if possible)
   - [ ] ~~Admin portal polish to BRS §5.2.3/§5.2.13 criteria~~ — in progress, see "Admin multi-tenant" item above
 
 ---
-**Last Updated**: 2026-08-17 (session 20) | **Position**: #1/10 Active
+**Last Updated**: 2026-08-24 (session 22) | **Position**: #1/10 Active

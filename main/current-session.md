@@ -3,10 +3,22 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-08-19
-**Session Focus**: **jumio-proxy-integration** — alpha-channel JPEG compression fix deployed to the real `jumioproxy` production namespace, and the repo consolidated to a single `master` branch (feature branches deleted after confirming they were fully contained). Project fully closed out — nothing outstanding.
+**Last Activity**: 2026-08-24
+**Session Focus**: **TG SeQureMail (MyTrustMail)** — corrected stale memory against real repo state: Admin Multi-Tenant (26/26) and a previously-undocumented Subscriber Status Lifecycle feature (Suspend/Reactivate, 10/10) were already fully verified in prior unlogged sessions (2026-08-19/20/21). Pushed 6 unpushed local commits to `chore/rename-to-mytrustmail`, confirmed one MR covers feature/6 + feature/9 + everything since (link in project file, not yet submitted by Zul). Then scoped **Firefox support** (BRS §5.2.9) via brainstorming skill — design approved, committed on new branch `feature/firefox-support`; no JS changes needed, just a manifest addition + manual test plan. Implementation not started yet.
 
 ## Active Project
+- **Name**: TG SeQureMail (MyTrustMail)
+- **Resumed**: 2026-08-24 (session 22) — from position #1 (never left top spot)
+- **Last worked**: 2026-08-24 — See Session Focus above. Full detail in `projects/active/tg-sequremail.md`.
+- **Context**: E2E-encrypted Gmail Chrome extension (MV3) + Key API + admin portal. Repo: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\` (nested git repo → GitLab `trustgate/sequremail`). Current branch `chore/rename-to-mytrustmail`, 6 commits pushed this session, MR not yet submitted.
+- **Next Steps**:
+  1. Zul: submit MR `chore/rename-to-mytrustmail` → `master` (GitLab link in project file)
+  2. Implement Firefox support per approved design (`docs/specs/2026-08-24-firefox-support-design.md`)
+  3. Digital Signing — Chrome/Gmail manual UI test of signature badge still pending
+  4. Team feedback checklist: #5 HSM, #4 OWA still not started
+- Full detail in `projects/active/tg-sequremail.md`
+
+## Previous Active Project
 - **Name**: jumio-proxy-integration
 - **Resumed**: 2026-08-18
 - **Last worked**: 2026-08-19 — Deployed the `fix/cmyk-jpeg-compression` fix (alpha-channel PNG → JPEG "Bogus input colorspace" bug, root-caused 2026-08-18) to the real `jumioproxy` production namespace. Then consolidated the repo: confirmed the fix branch fully contained both `feature/multitenant-support` and `feature/per-session-callback-url`, merged into `master` (GitLab blocked a force-push attempt on protected `master`, so reconciled via a real `merge -X ours` commit instead — cleaned up one leftover duplicate `image:` block in `application.yml` along the way), pushed, and deleted both stale branches locally + remotely.
@@ -22,21 +34,6 @@
   1. Zul: deploy updated WAR to dev/pilot WildFly, run `testCheckStream.java` or Postman against a known-good and known-corrupt PDF to confirm parity with the SOAP method, then share `docs/pdf-error-check-stream-api.md` with the client
   2. Decide on log retention: add PowerShell cleanup script + Scheduled Task (10-day retention) for `PdfErrorCheck.log.*`, or leave logs unmanaged and close the project as-is — awaiting Zul's call
 - Full detail in `projects/active/ecourt-pdferrorcheckws.md`
-
-## Previous Active Project
-- **Name**: TG SeQureMail (now MyTrustMail)
-- **Resumed**: 2026-08-12 (session 19) — was already at position #1
-- **Last worked**: 2026-08-17 (session 20) — Admin multi-tenant feature (multiple admins per company, BRS §5.2.3/§5.2.13) ~70% implemented: migration, entity, invite-flow service+controller+templates, security wiring, CurrentAdminService, CompanyController scoping all written. **Nothing compiled or run this session.** Interrupted mid-`UserController` scoping edit on "save project".
-- **Context**: E2E-encrypted Gmail Chrome extension (MV3) + Key API + admin portal, rebranded SeQureMail → MyTrustMail (branch `chore/rename-to-mytrustmail`, pushed, 19 commits, MR not yet opened). Full BRS gap analysis (13 modules vs. codebase) saved to `docs/specs/2026-08-12-brs-gap-analysis.md`. Design spec for the current feature at `docs/specs/2026-08-13-admin-multi-tenant-design.md`. Dejul's priority order: Digital Signing (done, Chrome/Gmail manual test still pending) → admin portal polish (in progress).
-- **Next Steps**:
-  1. Resume admin multi-tenant: finish `UserController` + `DashboardController` company-scoping (tasks 9-10 of 11), then `docker compose up --build` + run the design doc's 5-step manual test plan (task 11)
-  2. Dejul: manual Chrome/Gmail test of the signing badge (reload unpacked extension)
-  3. Open MRs: `chore/rename-to-mytrustmail` → master, `feature/9-recall-expiry-controls` → master (covers Feature #6 + #9)
-  4. Continue team feedback checklist: #5 (HSM), #4 (OWA), #2 (Firefox)
-  5. Parked: Jenkins CI/CD (existing Rancher-hosted Jenkins agent has no Docker access — 2 fix options identified, not decided) — see `projects/active/tg-sequremail.md` "Parked" section
-- **Docker**: `docker compose up` in `C:\PROJECTS\SEQURE MAIL\Development\seqremail\` (Compose project `mytrustmail`) — db + key-api + admin | Admin: `http://localhost:8081/admin/login` (admin / 7ru57ga73)
-- **Fresh test**: `TRUNCATE TABLE messages; TRUNCATE TABLE otp_verifications; TRUNCATE TABLE user_keys;` (container `mytrustmail-db-1`, user `mytrustmail`/`mytrustmail123`) + `chrome.storage.local.clear()` in extension console
-- Full detail in `projects/active/tg-sequremail.md`
 
 ## Previous Active Project
 - **Name**: MyTrustID Desktop
