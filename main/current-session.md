@@ -4,17 +4,17 @@
 ## Session RAM Status
 **Current Session**: Active
 **Last Activity**: 2026-08-26
-**Session Focus**: **TradeVault** — moved to position #1. Brainstormed and built a full moomoo (Futu OpenAPI) trading integration across two sessions: Feature A (journal auto-sync bridge — real-time deal-push listener, FIFO matching, dedup, REAL MY account) and Feature B (order-submission — Dejul's own "EMAS Calculator" risk-based position sizing ported from his personal spreadsheet, auto TP/SL placement on entry fill, self-built OCO cancel-on-fill). Backend compiles, frontend builds, `moomoo-bridge` (standalone Python, extended in place for both features) syntax-checked. Neither feature has been run live yet — next step is Dejul's manual deployment (Docker, TradeVault UI account creation, bridge `.env`/`accounts.json`).
+**Session Focus**: **TradeVault** — position #1. moomoo trading integration (Feature A: journal auto-sync bridge; Feature B: order-submission with EMAS Calculator + auto TP/SL + OCO) designed and built across 2026-08-25/26. Live deployment now started: Docker up, found+fixed an empty `calculation_profiles` table, iterated Order Ticket UX (required R-selector gates Submit), and did a full visual reskin to a Swiss light theme (Dejul's request, referencing real TradesViz screenshots) — awaiting his visual confirmation. Also agreed to build a unified Journal View page (Dejul's real Excel journal columns) — not yet designed/built.
 
 ## Active Project
 - **Name**: TradeVault
 - **Resumed**: 2026-08-26 (moved to #1 from #6)
-- **Last worked**: 2026-08-26 — Feature B (order-submission) designed and built: `integration/moomoo` backend proxy module, EMAS Calculator (frontend, client-side, formulas verified against Dejul's real spreadsheet including the exact `ROUND(x,-2)/100` lot-sizing formula he supplied), new Order Ticket page, and `moomoo-bridge` extended with a FastAPI submit-order endpoint + auto TP/SL + OCO cancel-on-fill logic. Spec: `docs/specs/2026-08-25-moomoo-order-submission-design.md`. Previous session (2026-08-25) built Feature A (journal auto-sync) — spec: `docs/specs/2026-08-25-moomoo-journal-sync-design.md`.
+- **Last worked**: 2026-08-26 — Deployment started (`docker compose up -d --build`, all 3 containers running). Root-caused Order Ticket's EMAS Calculator not appearing: `calculation_profiles` table was empty — inserted `STOCK_STANDARD` via direct SQL. Order Ticket UX iterated: required R-multiplier selector (1.00/0.50/0.25) now gates Submit + fills Quantity; placeholders added to all numeric fields. Then reskinned the whole app to a Swiss light theme (`frontend-design` skill) after Dejul shared TradesViz reference screenshots and chose to drop the original dark-mode-only rule — only `index.css`'s CSS tokens needed changing (no hardcoded colors/`dark:` variants anywhere), rebuilt + redeployed frontend container. Agreed (not yet built) to add a unified Journal View matching Dejul's real Excel columns (Tarikh/Saham/Setup/Lot/Entry/SL/TP/Exit/Result/R/Stop Loss/Profit%/Follow Plan/Note) — most map to existing Trade/TradeCalculationResult/TradePsychology fields, "Setup" has no clean home yet.
 - **Context**: Self-hosted personal trading journal/analytics platform (Spring Boot 3 + Java 21 backend, React/TS frontend, PostgreSQL). Repo: `C:\PROJECTS\TRADEVAULT\tradevault\` (no git repo of its own yet). New standalone bridge: `C:\PROJECTS\TRADEVAULT\moomoo-bridge\`.
 - **Next Steps**:
-  1. Deploy: `docker compose up -d --build`, create "moomoo MY (REAL)" Account + Calculation Profile in the UI, fill in `moomoo-bridge/accounts.json` + `.env`, `pip install -r requirements.txt`, `python bridge.py`
-  2. Verify Feature A live first (place a real trade via Claude Code as usual, confirm it journals correctly)
-  3. Then verify Feature B — submit-only dry run first (unfillable LIMIT price, confirm SUBMITTED, cancel manually) before letting a real entry fill and trigger auto TP/SL
+  1. Dejul to confirm the Swiss light reskin looks right (`localhost:8091`)
+  2. Design + build the Journal View page
+  3. Create the "moomoo MY (REAL)" Account in the UI (now has a Calculation Profile to pick), fill in `moomoo-bridge/accounts.json` + `.env`, `pip install -r requirements.txt`, `python bridge.py` — verify Feature A live first, then Feature B (submit-only dry run before any real fill)
   4. Continue real usage of TradeVault generally; consider `git init` for its own repo; add `frontend/eslint.config.js`
 - Full detail in `projects/active/tradevault.md`
 
