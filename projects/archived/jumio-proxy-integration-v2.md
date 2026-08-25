@@ -7,6 +7,7 @@
 - **Period**: 2026-04-16 - Active
 - **Tech Stack**: Java 17 + Spring Boot 3.0.9 + OpenFeign + Maven + Docker + Kubernetes
 - **Completion**: 100% (maintenance)
+- **Status**: Archived 2026-08-26 — nothing outstanding, fix live in production since 2026-08-19, repo consolidated to single master branch
 - **Duration**: ~20.5 hours
 - **Due Date**: TBD
 

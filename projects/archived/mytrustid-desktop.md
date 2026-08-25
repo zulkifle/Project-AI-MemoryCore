@@ -6,6 +6,7 @@
 - **Period**: 2026-03-31 - Active (reactivated 2026-07-09)
 - **Tech Stack**: C# + WPF + .NET Framework 4.8 + WebSocket
 - **Completion**: 90% (v1.3.2 x64 build deployed to helpdesk; crash root-cause still unresolved on failing user PC)
+- **Status**: Archived 2026-08-26 — parked as settled-for-now per Zul; crash root-cause on the one failing PC remains unresolved but deprioritized, not a blocking issue for current usage
 - **Due Date**: TBD
 - **Duration**: ~23.5 hours
 

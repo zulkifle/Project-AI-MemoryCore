@@ -21,13 +21,12 @@
 ## Previous Active Project
 - **Name**: Petronas Java Migration
 - **Resumed**: 2026-08-24
-- **Last worked**: 2026-08-24 — Resumed from position #4. Direction locked: Java rewrite should mirror the existing C++ daemon's flow, but the HSM/SSAD signing module specifically needs a security review (key handling, PIN/credential exposure, algorithm choices, error handling) with improvements applied where found — not a straight port.
-- **Context**: Full rewrite of the Petronas card-data SFTP + SafeNet HSM SSAD-signing daemon, C++ → Java 17 (Maven, no framework), SunPKCS11 for HSM access. Built and verified independently alongside the working C++/Docker version — no cutover until proven. Repo: `C:\PROJECTS\HANDOVER PROJECT\Petronas\source code\Petronas_java`. Sibling project (source of truth for existing C++ architecture/known bugs): `projects/active/petronas-legacy-cpp-dockerize.md`. 0% code written.
+- **Last worked**: 2026-08-26 — Full daemon wrapper built and runnable: DB layer (8 repositories, PreparedStatement-based), FTP layer (JSch, upload verification), record-splitting (`CardRecordExtractor`, handles old + new CR-delimited formats), signing core **verified byte-for-byte correct against a real production signature** (`SigningParityTest`, using only the issuer's public key), `.ssd`/`.err` report writers (verified against real production output), per-file orchestrator (`CardFileProcessor`), and the outer wrapper (`NextRunGate` wall-clock gating, `HealthCheckServer` TCP protocol, `ZipUtility`, `PetronasDaemonApplication` main()). `mvn package` produces a real runnable shaded jar; running it fails at exactly the right point (missing env config), proving the wiring is genuinely connected. 35 tests, all passing. Also: cracked the real EMV/card-scheme documentation (SSAD = Signed Static Application Data, written to the physical chip, Visa co-branded), and analyzed a real new-format UAT sample from the client (confirmed CR-delimiter + one new tag `NRCC`/payment-mode `CC`, both still unconfirmed with the client).
+- **Context**: Full rewrite of the Petronas card-data SFTP + SafeNet HSM SSAD-signing daemon, C++ → Java 17 (Maven, no framework). Local-key-file signing mode built first (matches confirmed real production `HSM=0` setting); HSM/SunPKCS11 mode deferred. Repo: `C:\PROJECTS\HANDOVER PROJECT\Petronas\source code\Petronas_java`. 75% complete.
 - **Next Steps**:
-  1. Explore full C++ source (`PetronasService`, `HSM.cpp`, `FTP.cpp`, `SSAD.cpp`, `DB.cpp`, `GenerateSSAD.cpp`, CronShell scripts), map to Java package structure
-  2. While mapping, security-review the SSAD/HSM signing flow specifically — note candidate improvements before locking the Java design
-  3. Set up Maven project skeleton
-  4. Convert module by module: DB → FTP → HSM/SSAD signing (security-reviewed) → main loop/health-check
+  1. Chase 3 of 4 Pre-BRS deliverables from Petronas/PDB Digital (new embossing file spec, business-rule mapping, supporting docs) — see `projects/active/petronas-java-migration-open-questions.md`
+  2. Operational setup for a real test run: convert an `issuer<N>.key` to PKCS#8, set `PETRONAS_DB_*`/`PETRONAS_SFTP_*` env vars against a test environment, get the SFTP `known_hosts` entry
+  3. Once new-value spec/samples confirmed: update `CardRecord` to recognize tag `NRCC`
 - Full detail in `projects/active/petronas-java-migration.md`
 
 ## Previous Active Project
