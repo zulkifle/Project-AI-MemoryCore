@@ -7,20 +7,22 @@
 - **Period**: 2026-05-21 - Active
 - **Tech Stack**: Frontend: Chrome Extension MV3 (thin client) | Backend: SeQureMail Key API (Spring Boot 3.2 + MySQL + Flyway) + seqremail-admin (Spring Boot 3.2, port 8081) — Software HSM | Crypto: ECDH P-256 + AES-256-GCM double-envelope (server-side, pure JDK) | Auth: OTP email verification (JavaMailSender)
 - **Completion**: 99% (of original Phase 1 POC scope — see BRS gap analysis below for the much larger full-product scope)
-- **Duration**: ~27 hours
+- **Duration**: ~27.5 hours
 - **Due Date**: TBD
 
 ## Current Status
 - **Resumed**: 2026-08-12 (session 19) - from position #1 (never left top spot)
+- **Session 23 (2026-08-26)**: Implemented Firefox support code changes. Added `browser_specific_settings.gecko.id` to `manifest.json` (commit `2114fab`). Zul tried loading the unpacked extension in real Firefox and hit: `background.service_worker is currently disabled. Add background.scripts.` — confirms the "known risk" flagged in the design doc (Firefox stable doesn't support MV3 service workers yet). Fixed by declaring both `service_worker` and `scripts` under `background` in the same manifest — standard cross-browser MV3 pattern, each browser uses the field it supports and ignores the other; `background.js` has no service-worker-specific code so it runs unmodified either way (commit `7412b68`). Also wrote a manual test checklist, then broadened it per Zul's feedback from Firefox-only to a general regression checklist covering the whole extension + admin portal (renamed to `docs/specs/2026-08-24-full-regression-test-checklist.md`, commit `caad4e0`). **Not yet re-tested in Firefox after the fix** — Zul to confirm the reload works.
 - **Session 22 (2026-08-24)**: Discovered (via direct `git log`/`git status` check — prior memory was stale) that sessions on 2026-08-19/20/21 had already fully finished and verified both Admin Multi-Tenant (26/26 test cases) and a brand-new **Subscriber Status Lifecycle** feature (Suspend/Reactivate, BRS §5.2.1 — not previously in memory at all), all committed locally but unpushed. **Pushed all 6 commits** to `chore/rename-to-mytrustmail` (`ce42335..f5d93a3`); confirmed via `git merge-base` that this branch already contains the full history of `feature/6-user-management` and `feature/9-recall-expiry-controls`, so **one MR covers all of it** — GitLab create-MR link: `http://gitlab.msctrustgate.com/trustgate/sequremail/-/merge_requests/new?merge_request%5Bsource_branch%5D=chore%2Frename-to-mytrustmail` (target `master`, not yet submitted). Then scoped **Firefox support** (BRS §5.2.9) via brainstorming skill — design approved, doc committed on new branch `feature/firefox-support` (off `chore/rename-to-mytrustmail` tip). See dedicated sections below.
 - **Session 20 (2026-08-13→21, spans multiple actual work dates not reflected in earlier recaps)**: Admin multi-tenant designed + implemented + fully verified (26/26, 2026-08-19/20). Digital Signing module verified (2026-08-12). Subscriber Status Lifecycle (Suspend/Reactivate) designed + implemented + verified (10/10, 2026-08-20/21) — see dedicated sections below.
 - **Session 19 (2026-08-12)**: Project rebranded **SeQureMail → MyTrustMail** — pushed the `chore/rename-to-mytrustmail` branch (19 commits) after resolving a GCM unsafe-HTTP-remote push block. Read the full `BRS_MyTrustMail_V1.0.pdf` (13 functional modules, ~350 FR items) + 5 key workflow diagrams, saved a gap-analysis + roadmap reference doc to `docs/specs/2026-08-12-brs-gap-analysis.md`. Dejul set priority: Digital Signing module first (Chrome/Gmail scope), then admin portal polish.
 - **Next Steps**:
-  1. Zul: submit the MR (`chore/rename-to-mytrustmail` → `master`) via the GitLab link above
-  2. Implement Firefox support per the approved design (`docs/specs/2026-08-24-firefox-support-design.md`, branch `feature/firefox-support`) — manifest `browser_specific_settings.gecko.id` addition + manual test plan against real Firefox/Gmail; no JS logic changes expected
-  3. Digital Signing — Chrome/Gmail manual UI test of the signature badge still not done (API-level only)
-  4. Continue team feedback checklist: #5 (HSM), #4 (OWA)
-  5. **Parked (2026-08-13): CI/CD via Jenkins** — see dedicated section below, not started
+  1. Zul: reload the unpacked extension in Firefox (`about:debugging`) and confirm the `background.service_worker` error is resolved
+  2. Zul: work through `docs/specs/2026-08-24-full-regression-test-checklist.md` on Firefox (and Chrome, if not already covered) — document results in a dated test-cases doc once done
+  3. Zul: submit the MR (`chore/rename-to-mytrustmail` → `master`) via the GitLab link above
+  4. Digital Signing — Chrome/Gmail manual UI test of the signature badge still not done (API-level only)
+  5. Continue team feedback checklist: #5 (HSM), #4 (OWA)
+  6. **Parked (2026-08-13): CI/CD via Jenkins** — see dedicated section below, not started
 - **Known Issues**: None currently — working tree on `chore/rename-to-mytrustmail` was clean and fully pushed before branching for Firefox work. Local `feature/6-user-management` and `feature/9-recall-expiry-controls` branches are now redundant (fully contained in `chore/rename-to-mytrustmail`) — safe to delete after the MR merges.
 
 ## Parked — Jenkins CI/CD (2026-08-13, not started)
@@ -111,9 +113,15 @@ BRS §5.2.9 slice — design at `docs/specs/2026-08-24-firefox-support-design.md
 
 **Decisions**: single shared `manifest.json` for both browsers (add `browser_specific_settings.gecko.id`, Firefox-only field, harmless on Chrome) — no per-browser folder split; assume latest-stable Firefox only (older/ESR Firefox's lack of MV3 `service_worker` support accepted as a known, low-priority risk — fallback is swapping to `background.scripts` event page if it ever surfaces); distribution channel (AMO listed vs. unlisted self-distribute) deliberately deferred — doesn't block building/testing now, but note that Firefox requires Mozilla-signing to run in release Firefox even for internal-only distribution, so an AMO "unlisted" submission is the minimum eventual step; testing = manual test plan mirroring the existing fresh-test protocol, run against real Firefox + Gmail (register, encrypt/decrypt, signing badge, recall/expiry, suspend/reactivate, plus extra attention on `downloads.download` filename/extension behavior).
 
-**Not yet done**: no code/manifest changes made yet — design only. Next: add `browser_specific_settings` to `manifest.json`, load unpacked in Firefox (`about:debugging`), run the manual test plan, document results in a dated test-cases doc.
+**Implemented 2026-08-26**: `browser_specific_settings.gecko.id` added to `manifest.json` (`2114fab`). First Firefox load attempt failed: `background.service_worker is currently disabled. Add background.scripts.` — Firefox stable doesn't support MV3 service workers yet, exactly the known risk called out in the design doc. Fixed by declaring both `service_worker` and `scripts` under `background` (`7412b68`) — the standard cross-browser MV3 pattern; Chrome uses `service_worker`, Firefox uses `scripts` as a non-persistent event page, each ignores the field it doesn't support. `background.js` needed no changes (no service-worker-specific APIs used). Test checklist written and then broadened, per Zul, from Firefox-only to a general regression checklist covering the whole extension + admin portal: `docs/specs/2026-08-24-full-regression-test-checklist.md` (`caad4e0`).
+
+**Not yet done**: re-test the unpacked load in Firefox after the `background.scripts` fix (not yet confirmed working), then run through the full regression checklist and document results in a dated test-cases doc.
 
 ## Session History (Last 5)
+
+### 2026-08-26 (Session 23) - Firefox Support Implementation, Regression Checklist Broadened
+- **Changes**: Added `browser_specific_settings.gecko.id` to `manifest.json` for Firefox support. Real Firefox load attempt hit `background.service_worker is currently disabled` — fixed by declaring both `service_worker` and `scripts` under `background` (cross-browser MV3 pattern), no JS changes needed. Wrote a manual test checklist, then broadened it (per Zul) from Firefox-specific to a general regression checklist covering every extension + admin portal function, added a missing Admin Portal section. Not yet re-verified working in Firefox after the fix.
+- **Time Spent**: ~40 min
 
 ### 2026-08-13/17 (Session 20) - BRS Completion Estimate, Jenkins CI/CD Scoping (Parked), Admin Multi-Tenant (In Progress)
 - **Changes**: Gave Dejul a module-level BRS completion estimate (~19% of the full 13-module BRS; much higher against Phase 1 scope alone) from the existing gap-analysis doc. Explored automating the API-level verification (encrypt/decrypt/signature/tamper/recall/expiry) as a Jenkins CI pipeline — found the existing Rancher-hosted Jenkins' only agent has no Docker access, identified two fix options, **parked at Dejul's request** to focus on feature dev instead (full detail in the dedicated Jenkins section above). Then scoped and designed "multiple admins per company" (BRS §5.2.3/§5.2.13) via the brainstorming skill — spec approved and implementation started (see dedicated section above for exact done/not-done breakdown). Session ended mid-implementation on "save project" — nothing built or tested yet.
@@ -173,4 +181,4 @@ Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryp
   - [ ] ~~Admin portal polish to BRS §5.2.3/§5.2.13 criteria~~ — in progress, see "Admin multi-tenant" item above
 
 ---
-**Last Updated**: 2026-08-24 (session 22) | **Position**: #1/10 Active
+**Last Updated**: 2026-08-26 (session 23) | **Position**: #1/10 Active

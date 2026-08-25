@@ -32,13 +32,14 @@
 ## Previous Active Project
 - **Name**: TG SeQureMail (MyTrustMail)
 - **Resumed**: 2026-08-24 (session 22) — from position #1 (never left top spot)
-- **Last worked**: 2026-08-24 — Corrected stale memory against real repo state: Admin Multi-Tenant (26/26) and a previously-undocumented Subscriber Status Lifecycle feature (Suspend/Reactivate, 10/10) were already fully verified in prior unlogged sessions (2026-08-19/20/21). Pushed 6 unpushed local commits to `chore/rename-to-mytrustmail`, confirmed one MR covers feature/6 + feature/9 + everything since (link in project file, not yet submitted by Zul). Then scoped Firefox support (BRS §5.2.9) via brainstorming skill — design approved, committed on new branch `feature/firefox-support`; no JS changes needed, just a manifest addition + manual test plan. Implementation not started yet.
-- **Context**: E2E-encrypted Gmail Chrome extension (MV3) + Key API + admin portal. Repo: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\` (nested git repo → GitLab `trustgate/sequremail`). Current branch `chore/rename-to-mytrustmail`, 6 commits pushed this session, MR not yet submitted.
+- **Last worked**: 2026-08-26 (session 23) — Implemented Firefox support: added `browser_specific_settings.gecko.id` to `manifest.json`. Zul's real Firefox load attempt failed (`background.service_worker is currently disabled`) — fixed by declaring both `service_worker` and `scripts` under `background` (standard cross-browser MV3 pattern, no JS changes needed). Wrote a manual test checklist, then broadened it per Zul from Firefox-only to a general regression checklist covering the whole extension + admin portal (`docs/specs/2026-08-24-full-regression-test-checklist.md`). Not yet re-verified working in Firefox after the fix.
+- **Context**: E2E-encrypted Gmail Chrome extension (MV3) + Key API + admin portal. Repo: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\` (nested git repo → GitLab `trustgate/sequremail`). Current branch `feature/firefox-support` (off `chore/rename-to-mytrustmail`, which has 6 commits pushed, MR not yet submitted).
 - **Next Steps**:
-  1. Zul: submit MR `chore/rename-to-mytrustmail` → `master` (GitLab link in project file)
-  2. Implement Firefox support per approved design (`docs/specs/2026-08-24-firefox-support-design.md`)
-  3. Digital Signing — Chrome/Gmail manual UI test of signature badge still pending
-  4. Team feedback checklist: #5 HSM, #4 OWA still not started
+  1. Zul: reload unpacked extension in Firefox, confirm the service-worker error is resolved
+  2. Zul: run through `docs/specs/2026-08-24-full-regression-test-checklist.md` on Firefox (+ Chrome)
+  3. Zul: submit MR `chore/rename-to-mytrustmail` → `master` (GitLab link in project file)
+  4. Digital Signing — Chrome/Gmail manual UI test of signature badge still pending
+  5. Team feedback checklist: #5 HSM, #4 OWA still not started
 - Full detail in `projects/active/tg-sequremail.md`
 
 ## Previous Active Project
