@@ -3,13 +3,37 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-08-24
-**Session Focus**: **TG SeQureMail (MyTrustMail)** — corrected stale memory against real repo state: Admin Multi-Tenant (26/26) and a previously-undocumented Subscriber Status Lifecycle feature (Suspend/Reactivate, 10/10) were already fully verified in prior unlogged sessions (2026-08-19/20/21). Pushed 6 unpushed local commits to `chore/rename-to-mytrustmail`, confirmed one MR covers feature/6 + feature/9 + everything since (link in project file, not yet submitted by Zul). Then scoped **Firefox support** (BRS §5.2.9) via brainstorming skill — design approved, committed on new branch `feature/firefox-support`; no JS changes needed, just a manifest addition + manual test plan. Implementation not started yet.
+**Last Activity**: 2026-08-26
+**Session Focus**: **TradeVault** — moved to position #1. Brainstormed and built a full moomoo (Futu OpenAPI) trading integration across two sessions: Feature A (journal auto-sync bridge — real-time deal-push listener, FIFO matching, dedup, REAL MY account) and Feature B (order-submission — Dejul's own "EMAS Calculator" risk-based position sizing ported from his personal spreadsheet, auto TP/SL placement on entry fill, self-built OCO cancel-on-fill). Backend compiles, frontend builds, `moomoo-bridge` (standalone Python, extended in place for both features) syntax-checked. Neither feature has been run live yet — next step is Dejul's manual deployment (Docker, TradeVault UI account creation, bridge `.env`/`accounts.json`).
 
 ## Active Project
+- **Name**: TradeVault
+- **Resumed**: 2026-08-26 (moved to #1 from #6)
+- **Last worked**: 2026-08-26 — Feature B (order-submission) designed and built: `integration/moomoo` backend proxy module, EMAS Calculator (frontend, client-side, formulas verified against Dejul's real spreadsheet including the exact `ROUND(x,-2)/100` lot-sizing formula he supplied), new Order Ticket page, and `moomoo-bridge` extended with a FastAPI submit-order endpoint + auto TP/SL + OCO cancel-on-fill logic. Spec: `docs/specs/2026-08-25-moomoo-order-submission-design.md`. Previous session (2026-08-25) built Feature A (journal auto-sync) — spec: `docs/specs/2026-08-25-moomoo-journal-sync-design.md`.
+- **Context**: Self-hosted personal trading journal/analytics platform (Spring Boot 3 + Java 21 backend, React/TS frontend, PostgreSQL). Repo: `C:\PROJECTS\TRADEVAULT\tradevault\` (no git repo of its own yet). New standalone bridge: `C:\PROJECTS\TRADEVAULT\moomoo-bridge\`.
+- **Next Steps**:
+  1. Deploy: `docker compose up -d --build`, create "moomoo MY (REAL)" Account + Calculation Profile in the UI, fill in `moomoo-bridge/accounts.json` + `.env`, `pip install -r requirements.txt`, `python bridge.py`
+  2. Verify Feature A live first (place a real trade via Claude Code as usual, confirm it journals correctly)
+  3. Then verify Feature B — submit-only dry run first (unfillable LIMIT price, confirm SUBMITTED, cancel manually) before letting a real entry fill and trigger auto TP/SL
+  4. Continue real usage of TradeVault generally; consider `git init` for its own repo; add `frontend/eslint.config.js`
+- Full detail in `projects/active/tradevault.md`
+
+## Previous Active Project
+- **Name**: Petronas Java Migration
+- **Resumed**: 2026-08-24
+- **Last worked**: 2026-08-24 — Resumed from position #4. Direction locked: Java rewrite should mirror the existing C++ daemon's flow, but the HSM/SSAD signing module specifically needs a security review (key handling, PIN/credential exposure, algorithm choices, error handling) with improvements applied where found — not a straight port.
+- **Context**: Full rewrite of the Petronas card-data SFTP + SafeNet HSM SSAD-signing daemon, C++ → Java 17 (Maven, no framework), SunPKCS11 for HSM access. Built and verified independently alongside the working C++/Docker version — no cutover until proven. Repo: `C:\PROJECTS\HANDOVER PROJECT\Petronas\source code\Petronas_java`. Sibling project (source of truth for existing C++ architecture/known bugs): `projects/active/petronas-legacy-cpp-dockerize.md`. 0% code written.
+- **Next Steps**:
+  1. Explore full C++ source (`PetronasService`, `HSM.cpp`, `FTP.cpp`, `SSAD.cpp`, `DB.cpp`, `GenerateSSAD.cpp`, CronShell scripts), map to Java package structure
+  2. While mapping, security-review the SSAD/HSM signing flow specifically — note candidate improvements before locking the Java design
+  3. Set up Maven project skeleton
+  4. Convert module by module: DB → FTP → HSM/SSAD signing (security-reviewed) → main loop/health-check
+- Full detail in `projects/active/petronas-java-migration.md`
+
+## Previous Active Project
 - **Name**: TG SeQureMail (MyTrustMail)
 - **Resumed**: 2026-08-24 (session 22) — from position #1 (never left top spot)
-- **Last worked**: 2026-08-24 — See Session Focus above. Full detail in `projects/active/tg-sequremail.md`.
+- **Last worked**: 2026-08-24 — Corrected stale memory against real repo state: Admin Multi-Tenant (26/26) and a previously-undocumented Subscriber Status Lifecycle feature (Suspend/Reactivate, 10/10) were already fully verified in prior unlogged sessions (2026-08-19/20/21). Pushed 6 unpushed local commits to `chore/rename-to-mytrustmail`, confirmed one MR covers feature/6 + feature/9 + everything since (link in project file, not yet submitted by Zul). Then scoped Firefox support (BRS §5.2.9) via brainstorming skill — design approved, committed on new branch `feature/firefox-support`; no JS changes needed, just a manifest addition + manual test plan. Implementation not started yet.
 - **Context**: E2E-encrypted Gmail Chrome extension (MV3) + Key API + admin portal. Repo: `C:\PROJECTS\SEQURE MAIL\Development\seqremail\` (nested git repo → GitLab `trustgate/sequremail`). Current branch `chore/rename-to-mytrustmail`, 6 commits pushed this session, MR not yet submitted.
 - **Next Steps**:
   1. Zul: submit MR `chore/rename-to-mytrustmail` → `master` (GitLab link in project file)

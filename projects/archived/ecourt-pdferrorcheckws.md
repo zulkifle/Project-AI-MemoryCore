@@ -11,11 +11,10 @@
 - **Due Date**: TBD
 
 ## Current Status
+- **Status**: Archived (client-side) — 2026-08-24. Client decided not to proceed: concerned about server impact from checking PDFs over network file transfer at their volume/scale. Stream API (2026-08-13) was built specifically to reduce that network overhead (cut Base64 payload inflation), but client still passed. Not a technical failure — deep-check fix (2026-07-28) was verified working live on their pilot server before this decision.
 - **Last Session**: 2026-08-13 — Added new Stream API (`/PdfErrorCheckStream` servlet) for byte-array PDF checking — avoids Base64 network overhead. Client integration doc + Postman/.NET/Java/curl samples written, ready to share.
 - **Previous Session**: 2026-08-06 — Dejul confirmed the deep-check fix is tested OK and live on the client's pilot server; false-negative resolved in real usage
-- **Next Steps**:
-  1. Zul: deploy updated WAR to dev/pilot WildFly, run `testCheckStream.java` (or Postman) against a known-good and known-corrupt PDF to confirm parity with the SOAP method before sharing the doc with the client
-  2. Decide on log retention: add the PowerShell cleanup script + Scheduled Task (10-day retention) for `PdfErrorCheck.log.*`, or leave logs unmanaged and close the project as-is — awaiting Zul's call
+- **Next Steps**: None — parked pending client reconsideration. If revisited: deploy updated WAR to dev/pilot WildFly, run `testCheckStream.java` (or Postman) against a known-good and known-corrupt PDF to confirm parity with the SOAP method; decide on log retention (PowerShell cleanup script + Scheduled Task, 10-day retention for `PdfErrorCheck.log.*`) vs. leaving logs unmanaged.
 - **Known Issues**:
   - `ClassCastException: PdfArray cannot be cast to PdfDictionary` → 100/failed, no auto-fix (AcroForm/Annots structure corruption — not fixable without external tools). Previously this could slip through as 000/success on some PDFs because the check didn't reach the code path where it occurs — see 2026-07-28 session.
   - `InvalidPdfException: Rebuild failed: trailer not found` → 100/failed, too corrupt for iText
@@ -138,4 +137,4 @@ ECOURT_PdfErrorCheckWS/
 [No history yet — this section is populated when session count exceeds 5]
 
 ---
-**Last Updated**: 2026-08-13 (Stream API added) | **Position**: #1/10 Active
+**Last Updated**: 2026-08-24 (Archived — client declined, server-impact concern over network file transfer) | **Position**: Archived (LRU)
