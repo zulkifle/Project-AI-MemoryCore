@@ -6,24 +6,26 @@
 - **Client**: Any Gmail user (external-facing POC)
 - **Period**: 2026-05-21 - Active
 - **Tech Stack**: Frontend: Chrome Extension MV3 (thin client) | Backend: SeQureMail Key API (Spring Boot 3.2 + MySQL + Flyway) + seqremail-admin (Spring Boot 3.2, port 8081) — Software HSM | Crypto: ECDH P-256 + AES-256-GCM double-envelope (server-side, pure JDK) | Auth: OTP email verification (JavaMailSender)
-- **Completion**: 99% (of original Phase 1 POC scope — see BRS gap analysis below for the much larger full-product scope)
-- **Duration**: ~27.5 hours
+- **Completion**: 99% (Phase 1 POC scope) | **~28% of full 13-module BRS** (up from ~19% at 2026-08-13 baseline — see gap analysis + 2026-08-27 addendum)
+- **Duration**: ~33 hours
 - **Due Date**: TBD
 
 ## Current Status
-- **Resumed**: 2026-08-12 (session 19) - from position #1 (never left top spot)
+- **Resumed**: 2026-08-27/28 (session 24) — from position #3
+- **Session 24 (2026-08-27/28)**: Huge session — full regression checklist run (Zul, both Chrome+Firefox), 4 real bugs found and root-caused (drag-drop attachment encryption never encrypts — Gmail's own drop handler wins the race even from `window`-capture, confirmed via live Chrome DOM inspection, still unresolved; Firefox attachment download silently failed — `data:` URLs are rejected outright by Firefox's `downloads.download()`, fixed by switching to `blob:`; suspended-user-can-still-decrypt and receiver-sees-sender's-Recall-button were both traced to the same root cause, `content_script.js`'s `ownerEmail` resolution falling back to a stale `sqmEmail` — not yet fixed, root-caused only). Added admin sidebar identity block + read-only Profile page (`CurrentAdminModelAdvice` injects `currentAdmin` into every page's model). Resolved "Authentication: Bind Email" (BRS roadmap item) as the existing OTP claim flow, not a new mechanism — addendum in the gap-analysis doc. Then, at Zul's direction, built two full new BRS modules from scratch: **Subscription & License Management (BRS 5.2.2, Enterprise slice)** and **Subscriber Management Portal (BRS 5.2.1, open self-registration)** — both fully implemented and verified live, see dedicated sections below. Committed as 6 separate commits on `feature/firefox-support`, none pushed yet (Zul's "save project"-only push policy).
 - **Session 23 (2026-08-26)**: Implemented Firefox support code changes. Added `browser_specific_settings.gecko.id` to `manifest.json` (commit `2114fab`). Zul tried loading the unpacked extension in real Firefox and hit: `background.service_worker is currently disabled. Add background.scripts.` — confirms the "known risk" flagged in the design doc (Firefox stable doesn't support MV3 service workers yet). Fixed by declaring both `service_worker` and `scripts` under `background` in the same manifest — standard cross-browser MV3 pattern, each browser uses the field it supports and ignores the other; `background.js` has no service-worker-specific code so it runs unmodified either way (commit `7412b68`). Also wrote a manual test checklist, then broadened it per Zul's feedback from Firefox-only to a general regression checklist covering the whole extension + admin portal (renamed to `docs/specs/2026-08-24-full-regression-test-checklist.md`, commit `caad4e0`). **Not yet re-tested in Firefox after the fix** — Zul to confirm the reload works.
 - **Session 22 (2026-08-24)**: Discovered (via direct `git log`/`git status` check — prior memory was stale) that sessions on 2026-08-19/20/21 had already fully finished and verified both Admin Multi-Tenant (26/26 test cases) and a brand-new **Subscriber Status Lifecycle** feature (Suspend/Reactivate, BRS §5.2.1 — not previously in memory at all), all committed locally but unpushed. **Pushed all 6 commits** to `chore/rename-to-mytrustmail` (`ce42335..f5d93a3`); confirmed via `git merge-base` that this branch already contains the full history of `feature/6-user-management` and `feature/9-recall-expiry-controls`, so **one MR covers all of it** — GitLab create-MR link: `http://gitlab.msctrustgate.com/trustgate/sequremail/-/merge_requests/new?merge_request%5Bsource_branch%5D=chore%2Frename-to-mytrustmail` (target `master`, not yet submitted). Then scoped **Firefox support** (BRS §5.2.9) via brainstorming skill — design approved, doc committed on new branch `feature/firefox-support` (off `chore/rename-to-mytrustmail` tip). See dedicated sections below.
 - **Session 20 (2026-08-13→21, spans multiple actual work dates not reflected in earlier recaps)**: Admin multi-tenant designed + implemented + fully verified (26/26, 2026-08-19/20). Digital Signing module verified (2026-08-12). Subscriber Status Lifecycle (Suspend/Reactivate) designed + implemented + verified (10/10, 2026-08-20/21) — see dedicated sections below.
 - **Session 19 (2026-08-12)**: Project rebranded **SeQureMail → MyTrustMail** — pushed the `chore/rename-to-mytrustmail` branch (19 commits) after resolving a GCM unsafe-HTTP-remote push block. Read the full `BRS_MyTrustMail_V1.0.pdf` (13 functional modules, ~350 FR items) + 5 key workflow diagrams, saved a gap-analysis + roadmap reference doc to `docs/specs/2026-08-12-brs-gap-analysis.md`. Dejul set priority: Digital Signing module first (Chrome/Gmail scope), then admin portal polish.
 - **Next Steps**:
-  1. Zul: reload the unpacked extension in Firefox (`about:debugging`) and confirm the `background.service_worker` error is resolved
-  2. Zul: work through `docs/specs/2026-08-24-full-regression-test-checklist.md` on Firefox (and Chrome, if not already covered) — document results in a dated test-cases doc once done
-  3. Zul: submit the MR (`chore/rename-to-mytrustmail` → `master`) via the GitLab link above
-  4. Digital Signing — Chrome/Gmail manual UI test of the signature badge still not done (API-level only)
-  5. Continue team feedback checklist: #5 (HSM), #4 (OWA)
-  6. **Parked (2026-08-13): CI/CD via Jenkins** — see dedicated section below, not started
-- **Known Issues**: None currently — working tree on `chore/rename-to-mytrustmail` was clean and fully pushed before branching for Firefox work. Local `feature/6-user-management` and `feature/9-recall-expiry-controls` branches are now redundant (fully contained in `chore/rename-to-mytrustmail`) — safe to delete after the MR merges.
+  1. Fix the 2 unresolved bugs from session 24: drag-drop attachment encryption (root cause not found — DOM event race against Gmail's own handler, may need a fundamentally different approach — e.g. detect-after-Gmail-attaches instead of intercept-before), and the suspend/recall `ownerEmail` resolution bug in `content_script.js` (stale `sqmEmail` fallback)
+  2. Write test-cases docs for the two new modules: `docs/specs/2026-08-27-subscription-license-management-test-cases.md` and a Subscriber Portal one — both currently only verified via live curl/manual testing, not a formal dated doc
+  3. Resolve the reverse-proxy IP-detection question for `OtpIpRateLimiter` (uses `request.getRemoteAddr()` — will misbehave behind nginx/ingress without `X-Forwarded-For` handling) before real production traffic hits the portal
+  4. Zul: submit the MR (`chore/rename-to-mytrustmail` → `master`) via the GitLab link above — now also carries all of session 24's commits
+  5. Digital Signing — Chrome/Gmail manual UI test of the signature badge still not done (API-level only)
+  6. Continue team feedback checklist: #5 (HSM — deliberately parked per Zul), #4 (OWA)
+  7. **Parked (2026-08-13): CI/CD via Jenkins** — see dedicated section below, not started
+- **Known Issues**: 2 unresolved bugs from session 24 regression testing (see Next Steps #1). `feature/firefox-support` branch has 6 unpushed commits as of session 24.
 
 ## Parked — Jenkins CI/CD (2026-08-13, not started)
 Discussed module-level BRS completion estimate (~19% of full BRS, much higher against Phase 1 scope only), then explored automating the API-level verification (encrypt/decrypt/signature/tamper/recall/expiry — the same checks done manually via direct API calls in sessions 16 & 19) as a functional/integration test, to eventually run in Jenkins. **Dejul chose to park this and return to feature dev first** — resume when ready.
@@ -117,7 +119,43 @@ BRS §5.2.9 slice — design at `docs/specs/2026-08-24-firefox-support-design.md
 
 **Not yet done**: re-test the unpacked load in Firefox after the `background.scripts` fix (not yet confirmed working), then run through the full regression checklist and document results in a dated test-cases doc.
 
+**Session 24 update**: Zul confirmed both Chrome and Firefox tested via the regression checklist. Two real bugs found in the process (see session 24 summary + dedicated bug list above) — Firefox's own manifest fix holds, but attachment download and drag-drop encryption both had separate bugs unrelated to the manifest itself. Download bug fixed (blob: URL); drag-drop still open.
+
+## Subscription & License Management — Enterprise slice (implemented 2026-08-27, session 24)
+BRS §5.2.2 slice, scoped via brainstorming skill — full design at `docs/specs/2026-08-27-subscription-license-management-design.md`. Admin-driven, no payment gateway (Zul's explicit call — BRS FR-209/210 allows activation via "administrative approval," not just purchase), Enterprise model only (builds on existing `Company` multi-tenant infra, not Individual subscriptions).
+
+**Data model**: new `Subscription` entity, 1:1 with `Company` — `status` (TRIAL/ACTIVE/SUSPENDED/EXPIRED/CANCELLED), `totalLicenses`, `startDate`/`endDate`. Separate from the existing per-account `SubscriberStatus` — a company's subscription can be ACTIVE while one user in it is individually SUSPENDED, orthogonal concepts.
+
+**Migration ordering finding**: the `subscriptions` table had to be created in **key-api's** migration chain (`V10`), not admin's, even though admin owns editing it — key-api's container starts first in docker-compose and Hibernate `ddl-auto=validate` needs the table to exist at key-api's own startup. Admin's `V6` migration only adds the FK to `companies` (safe there since companies is guaranteed to exist by then) and backfills one `ACTIVE` subscription per existing company, sized to that company's real current subscriber count. Mirrors the exact same ordering lesson already learned once before for `provisioned_by_id` (session 13).
+
+**License assignment**: reuses the existing RECIPIENT↔SUBSCRIBER role-change action rather than a new mechanism — "assign a license" = promote to SUBSCRIBER, now capacity-checked against the pool (single change, bulk change, and the Add User/CSV upload path all go through the same check; bulk correctly counts cumulatively within one batch, not against a stale pre-batch count).
+
+**Encrypt-time enforcement**: company subscription SUSPENDED/EXPIRED/CANCELLED blocks that company's users from `encrypt()` (new `SUBSCRIPTION_INACTIVE`, HTTP 403) independent of their individual account status; `decrypt()` untouched. Individual (non-Enterprise) users have no `company_id` and are unaffected.
+
+**Admin UI**: Company detail page gained a Subscription block (status, "X of Y licenses", dates) with a platform-admin-only edit form.
+
+**Verified live** (curl against rebuilt containers, not yet a formal test-cases doc): capacity rejection at pool limit + acceptance after increasing it, company suspension blocking `encrypt()` then lifting on reactivation, migration ordering (both services started clean). Commit `acd6ab4`.
+
+## Subscriber Management Portal — Open Self-Registration (implemented 2026-08-27/28, session 24)
+BRS §5.2.1 slice — genuinely urgent (Zul: real go-live, 2-day deadline). Built as static pages (`key-api/src/main/resources/static/portal/`) served directly by key-api — zero new Spring service, zero new session/auth system. Reuses the Chrome extension's own already-proven flow end-to-end: `request-otp` → `verify-otp` → `crypto/generate`. `generate()`+`claimKeyPair()` are already idempotent server-side, so the exact same flow serves both first-time registration and returning-subscriber "login" (no password anywhere in this system), and already correctly blocks a suspended account. `sessionStorage` (not a server session) remembers which email a tab verified, mirroring the extension's own `chrome.storage.local` trust model.
+
+**Real security-policy change, confirmed explicitly with Zul first**: `OtpServiceImpl.sendOtp()` had a deliberate whitelist gate — "only emails pre-registered by admin (or auto-provisioned as recipients) can request an OTP." True self-service registration requires removing it. Did NOT make this call unilaterally — asked Zul directly (demo vs. real go-live, then whitelist-bypass vs. existing-users-only) before touching it. Nothing else needed to change: `verifyOtp()` never touched `UserKey`, and `generate()` already auto-creates a fresh `PENDING` row when none exists (same code path as message-triggered auto-provisioning).
+
+**Abuse guard added alongside the whitelist removal**: `OtpIpRateLimiter` — in-memory, single-instance sliding-window limiter (5 requests / 15 min per IP) on `POST /api/keys/request-otp`, since any email can now be targeted (email-bombing risk that didn't exist while the whitelist was up). **Known limitation, flagged to Zul, not yet resolved**: uses `request.getRemoteAddr()` — will misbehave behind a reverse proxy (nginx/ingress) without `X-Forwarded-For` handling; need to confirm actual production deployment topology before this is safe for real traffic.
+
+**T&C acceptance**: new `terms_accepted_at` column (`V11`, NULL for pre-existing accounts, not retroactively enforced), recorded via idempotent `POST /api/keys/accept-terms` — called *after* `generate()`, not before, since the account row doesn't exist yet for a brand-new registration until `generate()` creates it. Portal shows a required checkbox before "Verify & Sign In".
+
+**Subscription status display**: new read-only `GET /api/keys/subscription`, reusing the `Subscription` entity/repository from the module above — null for individual users (no company) rather than an error. Profile page shows a status badge + license pool size for Enterprise users only.
+
+**Verified live**: brand-new email (never seen by the system) completes the full flow end-to-end with zero admin involvement, ends up ACTIVE/RECIPIENT; rate limiter blocks the 6th request from one IP within the window; T&C acceptance is idempotent (second call doesn't move the timestamp); individual users get null subscription data, Enterprise user (`kiflezul94@gmail.com`) correctly shows ACTIVE + license count. Commits `b9c5329`, `47a5418`.
+
+**Not yet done**: reverse-proxy IP-detection fix (see above), formal test-cases doc, any UI/UX polish pass, mobile testing.
+
 ## Session History (Last 5)
+
+### 2026-08-27/28 (Session 24) - Full Regression Test, Admin Profile UX, Subscription & License Management, Subscriber Portal
+- **Changes**: See Current Status entry above for the full summary. Two new BRS modules built from scratch and verified live (Subscription & License Management §5.2.2, Subscriber Management Portal §5.2.1 — dedicated sections above), plus a bug-hunting regression pass (2 fixed, 2 root-caused but still open), admin sidebar/Profile UX, and the Bind Email BRS-roadmap resolution. Full 13-module BRS breakdown re-run twice during the session (~27% → ~28%).
+- **Time Spent**: ~5.5 hours (estimate — no commit-based time tracking in this repo)
 
 ### 2026-08-26 (Session 23) - Firefox Support Implementation, Regression Checklist Broadened
 - **Changes**: Added `browser_specific_settings.gecko.id` to `manifest.json` for Firefox support. Real Firefox load attempt hit `background.service_worker is currently disabled` — fixed by declaring both `service_worker` and `scripts` under `background` (cross-browser MV3 pattern), no JS changes needed. Wrote a manual test checklist, then broadened it (per Zul) from Firefox-specific to a general regression checklist covering every extension + admin portal function, added a missing Admin Portal section. Not yet re-verified working in Firefox after the fix.
@@ -161,8 +199,8 @@ Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryp
   - ~~v1: RSA-OAEP-2048~~ | ~~v2: ECDH P-256 client-side~~ | ~~v3: server-side double-envelope~~ | ~~v4: recall/expiry via messages table~~ | **v5 (current): adds ECDSA P-256 digital signing, separate keypair from encryption** | PQC planned per BRS roadmap (Phase 2, Q4 2026)
 - **Envelope Format v5**: `mytrustmail: poc-v5`, `algorithm`, `from`, `to`, `messageId`, `iv`, `ciphertext`, `signature` (base64, ECDSA P-256, optional — absent for pre-signing accounts). Legacy v3 (`seqremail: poc-v3`, no messageId) and v4 (`mytrustmail: poc-v4`, no signature) still decrypt.
 - **Security Model**: Auto-provision (`claimed=false`) → receiver registers via OTP → `claimed=true` → decrypt unlocked. Each party decrypts with own private key via own block. Strangers blocked by `selectBlock()` check. Signature (when present) verified against the sender's separate signing keypair after decrypt.
-- **Flyway Migrations (key-api)**: V1 (user_keys) | V2 (otp_verifications) | V3 (private_key) | V4 (claimed flag) | V5 (role) | V6 (provisioned_by_id self-referencing FK) | V7 (messages + platform_keys tables, default_expiry_days — Feature #9) | V8 (signing_public_key/signing_private_key columns — Digital Signing module)
-- **Flyway Migrations (admin)**: V1 baseline | V2 (company_id + provisioned_by on user_keys, companies table) | V3 (admin_users) | V4 (drops legacy provisioned_by VARCHAR — superseded by key-api's V6) | V5 (admin multi-tenant — company_id/status/invitation_token/invitation_expires_at on admin_users, password_hash nullable — not yet run/verified) — isolated via `flyway_schema_history_admin`
+- **Flyway Migrations (key-api)**: V1 (user_keys) | V2 (otp_verifications) | V3 (private_key) | V4 (claimed flag) | V5 (role) | V6 (provisioned_by_id self-referencing FK) | V7 (messages + platform_keys tables, default_expiry_days — Feature #9) | V8 (signing_public_key/signing_private_key columns — Digital Signing module) | V9 (subscriber_status — replaces claimed boolean) | V10 (subscriptions table — created here despite admin owning it, since key-api's container starts first) | V11 (terms_accepted_at — Subscriber Portal)
+- **Flyway Migrations (admin)**: V1 baseline | V2 (company_id + provisioned_by on user_keys, companies table) | V3 (admin_users) | V4 (drops legacy provisioned_by VARCHAR — superseded by key-api's V6) | V5 (admin multi-tenant — company_id/status/invitation_token/invitation_expires_at on admin_users, password_hash nullable) | V6 (FK from subscriptions to companies + backfill one ACTIVE subscription per existing company) — isolated via `flyway_schema_history_admin`
 - **provisioned_by_id**: self-referencing FK on `user_keys.id` — the sender (SUBSCRIBER) whose send-to-unregistered-recipient triggered auto-provisioning. Set in `CryptoServiceImpl.generateKeyPair(email, provisionedBy)`. NULL = admin pre-registered / self-registered (no triggering sender). Existing pre-fix rows stay NULL — no way to backfill who triggered them.
 - **Fresh test protocol**: `TRUNCATE TABLE messages; TRUNCATE TABLE otp_verifications; TRUNCATE TABLE user_keys;` (in that order — no FK dependency between them) + `chrome.storage.local.clear()` in extension console + reload extension. DB access: `docker exec -it mytrustmail-db-1 mysql -umytrustmail -pmytrustmail123 mytrustmail_db` (container/creds renamed in the 2026-08-10 MyTrustMail rebrand — was `seqremail-db-1` / `seqremail` / `seqremail123` / `seqremail_db`)
 - **Team Feedback Checklist** (branching strategy: one branch per feature, merge to master sequentially):
@@ -172,13 +210,16 @@ Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryp
   - [x] **Digital Signing (not on the original numbered list — added from the 2026-08-12 BRS gap analysis, Dejul's #1 priority)** — implemented + API-verified 2026-08-12, envelope v5, `signing_public_key`/`signing_private_key` columns (V8). See dedicated section above for full detail. Chrome/Gmail manual UI test still pending.
   - [x] **Admin multi-tenant / multiple admins per company (from the 2026-08-12 BRS gap analysis)** — 26/26 test cases verified, sign-off ready. See dedicated section above.
   - [x] **Subscriber Status Lifecycle / Suspend & Reactivate (BRS §5.2.1, not on the original numbered list)** — 10/10 test cases verified 2026-08-20/21, sign-off ready. See dedicated section above.
-  - [ ] #5 HSM integration
+  - [x] **Subscription & License Management (BRS §5.2.2, Enterprise slice, not on the original numbered list)** — implemented + verified live 2026-08-27. See dedicated section above.
+  - [x] **Subscriber Management Portal / open self-registration (BRS §5.2.1, not on the original numbered list)** — implemented + verified live 2026-08-27/28. See dedicated section above.
+  - [x] **Authentication: Bind Email (BRS roadmap item)** — resolved 2026-08-27 as the existing OTP claim flow, not a new mechanism. Addendum in `docs/specs/2026-08-12-brs-gap-analysis.md`.
+  - [ ] #5 HSM integration — **deliberately parked per Zul, 2026-08-27** ("hsm tu nanti dulu")
   - [ ] #4 Outlook Web (OWA) support
-  - [ ] #2 Firefox support — **design approved 2026-08-24** (`docs/specs/2026-08-24-firefox-support-design.md`), implementation not started. See dedicated section above.
+  - [ ] #2 Firefox support — **design approved 2026-08-24**, manifest fix implemented and confirmed working by Zul 2026-08-27/28. 2 real bugs found in regression testing: download fixed, drag-drop attachment encryption still open (root cause not found). See dedicated section above.
   - [ ] #3 Safari support
   - [ ] #1 MyDigital ID onboarding
   - [ ] #8 Outlook plugin (if possible)
-  - [ ] ~~Admin portal polish to BRS §5.2.3/§5.2.13 criteria~~ — in progress, see "Admin multi-tenant" item above
+  - [ ] ~~Admin portal polish to BRS §5.2.3/§5.2.13 criteria~~ — in progress, see "Admin multi-tenant" item above; sidebar identity block + Profile page added 2026-08-27
 
 ---
-**Last Updated**: 2026-08-26 (session 23) | **Position**: #1/10 Active
+**Last Updated**: 2026-08-28 (session 24) | **Position**: #1/10 Active
