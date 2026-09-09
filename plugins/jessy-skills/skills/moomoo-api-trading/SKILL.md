@@ -41,14 +41,42 @@ Verified directly from Dejul's own `moomoo-bridge/accounts.json` (TradeVault pro
 |---|---|
 | Security Firm | `FUTUMY` |
 | Market | `MY` (Bursa Malaysia — `TrdMarket.MY`) |
-| Account (REAL) | `acc_id = 286260077644734652` |
+| Account (REAL) | `acc_id = 286260077644734652` (MARGIN) |
+| Account (SIMULATE) | `acc_id = 5181982` (CASH — generic paper account, same id across all security firms, default balance RM/USD 1,000,000) |
 | Label | "moomoo MY (REAL)" |
 
 **Bursa Malaysia execution IS supported via the API** — confirmed by Dejul's own moomoo-bridge already watching this REAL `MY`-market account for live deal pushes (`filter_trdmarket=TrdMarket.MY`). This overturns a naive assumption that moomoo only offers US/HK/SG/CN markets — `TrdMarket.MY` exists and works for Dejul's real account.
 
-**Stock code format**: not yet independently re-derived here — reuse whatever code format flows through `moomoo-bridge`'s live deal pushes (`deal["code"]` in `bridge.py`) as ground truth. If placing an order for a new counter for the first time, pull a market snapshot first to confirm the code resolves correctly before submitting an order.
+**Stock code format — CONFIRMED live (2026-09-10)**: `MY.<Bursa numeric code>`, e.g. `MY.7233` (DUFU), `MY.0166` (INARI) — verified directly from Dejul's real open positions via `position_list_query`. Always pull a market snapshot first to double check a new/unfamiliar code before submitting an order.
 
 ---
+
+## Confirmed Request Template (2026-09-10)
+
+This is the exact format Dejul will paste — multi-line, one field per line:
+
+```
+execute
+<CODE>
+EP=<price>
+SL=<price>
+ATR=<value>
+<star>★
+Env : REAL              ← or omit / say SIMULATE for paper
+```
+
+Example:
+```
+execute
+MY.5183
+EP=8.50
+SL=8.20
+ATR=0.25
+4★
+Env : REAL
+```
+
+If `Env` is omitted, default to SIMULATE (Golden Rule #2 below still applies — never assume REAL).
 
 ## Integration with position-size-calculator
 
@@ -56,6 +84,36 @@ Verified directly from Dejul's own `moomoo-bridge/accounts.json` (TradeVault pro
 2. Order quantity (shares) = `Final Lots * 100` (Bursa board lot).
 3. Order price = the calculator's Entry Price (C4), as a **limit** order (never market, per PDF golden rule).
 4. Confirm stock code with Dejul if not already given alongside EP/SL/ATR.
+
+---
+
+## Post-Entry Stop-Loss Handling (confirmed 2026-09-10)
+
+Decision: after the BUY entry order is submitted, **check its fill status, and once FILLED, automatically submit a second, separate protective SELL order at the SL price** — in the same chat session (not a persistent background watcher; that's the deferred `moomoo-bridge` Feature B approach).
+
+Flow:
+1. Submit BUY entry (`place_order`, `trd_side=BUY`).
+2. Poll status via `order_list_query` (filter by `order_id`) until `order_status` is `FILLED_ALL` (or a terminal non-fill state — report that back instead of silently retrying forever).
+3. Once filled, submit the protective SELL order at SL price, same `code`, same `qty` as filled.
+
+**Order types — confirmed by Dejul's own usual manual practice (2026-09-10)**:
+- **Entry (BUY)** → **Limit Order** → `OrderType.NORMAL` (already what this skill uses).
+- **SL (protective SELL)** → **Stop** → `OrderType.STOP` (trigger price = SL, via `aux_price`), NOT a plain limit sell. This matches Dejul's own convention in the moomoo app and resolves the earlier concern: a plain `OrderType.NORMAL` SELL at the SL price would fill immediately at the current bid instead of waiting for price to actually drop — `OrderType.STOP` is what avoids that.
+
+```python
+ret, data = trd_ctx.place_order(
+    price=<SL_price>,           # reference/limit component
+    aux_price=<SL_price>,       # trigger price for the stop
+    qty=<filled_qty>,
+    code='MY.<CODE>',
+    trd_side=TrdSide.SELL,
+    order_type=OrderType.STOP,
+    trd_env=TrdEnv.SIMULATE,    # test here first; TrdEnv.REAL only after explicit confirmation
+    acc_id=<acc_id>,
+)
+```
+
+Still test once in SIMULATE the first time this runs end-to-end (check `ret == RET_OK`) before trusting it unattended on a REAL account — Dejul's manual-app experience confirms the order *type* is right, but the exact futu-api parameter shape (`aux_price` vs other trigger fields) hasn't been live-tested through this skill yet.
 
 ---
 
@@ -84,9 +142,19 @@ quote_ctx.close()
 ```
 
 ### Balance / positions check (safe, read-only)
+
+⚠️ **Confirmed quirk (2026-09-10)**: `filter_trdmarket=TrdMarket.MY` on the context breaks SIMULATE queries (`ERROR: the type of environment param is wrong`) — the SIMULATE paper account (`5181982`) isn't MY-market-specific. Drop the market filter for SIMULATE; keep it for REAL/`MY`.
+
 ```python
 from futu import OpenSecTradeContext, SecurityFirm, TrdEnv, TrdMarket
 
+# SIMULATE — no filter_trdmarket
+trd_ctx = OpenSecTradeContext(host='127.0.0.1', port=11111, security_firm=SecurityFirm.FUTUMY)
+ret, data = trd_ctx.accinfo_query(trd_env=TrdEnv.SIMULATE, acc_id=5181982)
+ret2, positions = trd_ctx.position_list_query(trd_env=TrdEnv.SIMULATE, acc_id=5181982)
+trd_ctx.close()
+
+# REAL — filter_trdmarket=MY is fine (and matches get_acc_list behavior)
 trd_ctx = OpenSecTradeContext(host='127.0.0.1', port=11111,
                                security_firm=SecurityFirm.FUTUMY,
                                filter_trdmarket=TrdMarket.MY)
@@ -137,3 +205,6 @@ else:
 
 ## Level History
 - **Lv.1** — Base: derived from `Panduan_Moomoo_Claude_Code_2026.pdf`. Account details (FUTUMY, market=MY, REAL acc_id) confirmed from Dejul's own `moomoo-bridge` project rather than re-running the firm-scan — confirms Bursa Malaysia execution works via the API. Wired to consume [[position-size-calculator]] output directly (Final Lots × 100 = order qty). Golden safety rules encoded as mandatory steps (SIMULATE default, confirm before REAL, never expose unlock password, $ cap respected).
+- **Lv.1.1** — Confirmed exact multi-line request template (code/EP/SL/ATR/star/Env) Dejul will paste. Explicitly confirmed this skill stays standalone (Claude Code + futu-api direct) and does NOT reuse `moomoo-bridge` — deferred per Dejul 2026-09-10. Added post-entry SL handling: check fill via `order_list_query`, then auto-submit a protective SELL order — flagged that a plain limit-sell at SL price is semantically wrong (fills immediately, not on price drop) and that `STOP`/`STOP_LIMIT` support for `TrdMarket.MY` is unverified — must test in SIMULATE before trusting on REAL.
+- **Lv.1.2** — Live-tested SIMULATE portfolio check (2026-09-10): confirmed OpenD reachable, `get_acc_list()` per firm found SIMULATE acc_id `5181982` (CASH, default RM/USD 1,000,000 balance, no open positions) under every security firm including FUTUMY. Confirmed `filter_trdmarket=TrdMarket.MY` breaks SIMULATE queries — must omit the market filter for SIMULATE, keep it for REAL. Live-checked REAL portfolio too (2 open positions: MY.7233 DUFU, MY.0166 INARI) — confirmed real stock code format is `MY.<Bursa numeric code>`.
+- **Lv.1.3** — Order type convention confirmed by Dejul (2026-09-10): Entry always Limit (`OrderType.NORMAL`), SL always Stop (`OrderType.STOP` with `aux_price`=trigger) — resolves the earlier open question about SL order semantics.
