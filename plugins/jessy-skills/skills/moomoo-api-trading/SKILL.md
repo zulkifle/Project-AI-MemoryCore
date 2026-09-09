@@ -145,6 +145,8 @@ quote_ctx.close()
 
 ⚠️ **Confirmed quirk (2026-09-10)**: `filter_trdmarket=TrdMarket.MY` on the context breaks SIMULATE queries (`ERROR: the type of environment param is wrong`) — the SIMULATE paper account (`5181982`) isn't MY-market-specific. Drop the market filter for SIMULATE; keep it for REAL/`MY`.
 
+⚠️ **Currency bug caught 2026-09-10 — DO NOT repeat**: `accinfo_query`'s top-level `total_assets`/`cash`/`market_val`/`power` fields are in the account's multi-currency **base display currency** (`HKD` for Dejul's REAL margin account, confirmed via the `currency` column), NOT automatically MYR — even though Dejul only trades the MY market. Reporting these fields to Dejul as "RM" without checking `currency` first gave a wrong figure (RM19,659 reported vs real RM10,201.59 in the app — a big overstatement). **Always read the `currency` field before labeling any amount.** For Dejul's account specifically, the correct MYR total is: `my_cash + sum(market_val of MY.* positions)` — his `hk_cash`/`us_cash` are both 0 (MY-only), confirmed live. Prefer the per-currency fields (`my_cash`, `my_avl_withdrawal_cash`, `hk_cash`, `us_cash`, ...) over the base-currency top-level fields whenever reporting a specific-currency figure to Dejul.
+
 ```python
 from futu import OpenSecTradeContext, SecurityFirm, TrdEnv, TrdMarket
 
