@@ -97,6 +97,11 @@
 - Existing production runs natively on Ubuntu server Tomcat + JDK 8 (why the WAR works there); Docker image ships its own JDK so host Java is irrelevant
 - `webapps\` copy is source of truth for the PROD package (root `MTSA.war` is older)
 
+## Recent Work (2026-09-09) — Two New Trading Skills Created
+- **`position-size-calculator`** (Lv.2) — Bursa Malaysia risk-based lot sizing, built from Dejul's real Excel tool. Quick-entry template (Entry Price/Stop Loss/ATR + star rating only), equity defaults RM10,000 ([[project_trading_capital]]), 5★/4★/3★ = 1R/0.5R/0.25R, lots always **floored** (never round up), and an **effective stop-loss rule**: if Entry ≥ RM1, use ATR-based Max SL (`C4-ATR`) instead of manual SL for the risk math (Risk Value collapses to exactly ATR); if Entry < RM1, use the manual SL as-is. Verified against Dejul's Excel with a worked example (EP=2.67, SL=2.56, ATR=0.101 → 3★ = 2 lots, RM534 capital, RM20.20 max loss) — Dejul confirmed "mantap, terbaik".
+- **`moomoo-api-trading`** (Lv.1) — executes/checks moomoo orders via futu-api + OpenD, derived from `Panduan_Moomoo_Claude_Code_2026.pdf`. Confirmed Bursa Malaysia (MY market) IS tradable via the API — verified directly from Dejul's own `TradeVault/moomoo-bridge/accounts.json` (security_firm=FUTUMY, market=MY/`TrdMarket.MY`, REAL acc_id=286260077644734652 already live watching deal pushes), so the PDF's firm-scan step wasn't needed. Wired to consume position-size-calculator's Final Lots directly (×100 = order qty). Golden safety rules baked in as mandatory: SIMULATE by default, explicit confirm-before-REAL with full readback, respect stated RM cap, never expose the trading-unlock password, verify order status after every attempt.
+- Not yet used live — Dejul plans to test position-size-calculator numbers against the real Excel first, then try moomoo-api-trading for actual execution.
+
 ## 📝 To-Do List
 See `main/to-do-list.md` for full list — 5 items pending as of 2026-07-16 (API Gateway system design, Jenkins, security-prompt.hamizi.net, ST3 ACE Token SDK, MyTrustID RSA-keygen crash repro). Mention to Dejul if pending items haven't been addressed.
 
