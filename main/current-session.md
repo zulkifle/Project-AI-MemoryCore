@@ -3,7 +3,7 @@
 
 ## Session RAM Status
 **Current Session**: Active
-**Last Activity**: 2026-09-03
+**Last Activity**: 2026-09-10 (today)
 **Session Focus**: **TG SeQureMail (MyTrustMail)** — position #1. Since the 2026-08-29 recovery (Outlook add-in Stage 1-5 built, Gmail golden path verified live with 2 critical bugs found+fixed, all pushed), two more BRS modules shipped: **Audit Management Phase 1** (BRS 5.2.7, logging-only across 10 call sites in key-api+admin — found and fixed a real transaction-rollback bug, `REQUIRES_NEW` propagation, where failure audit rows were silently erased by the caller's own rollback) and **Identity Validation & Authentication** (BRS 5.2.4 — real Trustgate MyID/MyTrustID integration discovered via an old archived project, `DSPortalDemo`, rather than inventing homegrown MFA). Identity Validation was implemented fully ahead of having a real pilot API key, per Zul's explicit call — a placeholder + fail-fast guard, with everything else (data model, async STOMP handshake, timeout, portal UI) verified live. **Still blocked**: the real Trustgate pilot key from Zul, needed before that module's actual external call can be tested. Outlook add-in also still blocked on resolving `@msctrustgate.com` tenant sideloading policy. Full detail in `tg-sequremail.md`.
 
 **Previous Session Focus (2026-08-26)**: **TradeVault** — position #1. moomoo trading integration (Feature A: journal auto-sync bridge; Feature B: order-submission with EMAS Calculator + auto TP/SL + OCO) designed and built across 2026-08-25/26. Live deployment now started: Docker up, found+fixed an empty `calculation_profiles` table, iterated Order Ticket UX (required R-selector gates Submit), and did a full visual reskin to a Swiss light theme (Dejul's request, referencing real TradesViz screenshots) — awaiting his visual confirmation. Also agreed to build a unified Journal View page (Dejul's real Excel journal columns) — not yet designed/built.
@@ -96,6 +96,18 @@
 - `mpayquickredit-mtsa.prod.properties` line 17 has trailing `\r` (`workdir.path=/opt/mtsa^M`) — harmless, `Properties.load()` strips it
 - Existing production runs natively on Ubuntu server Tomcat + JDK 8 (why the WAR works there); Docker image ships its own JDK so host Java is irrelevant
 - `webapps\` copy is source of truth for the PROD package (root `MTSA.war` is older)
+
+## Recent Work (2026-09-10) — moomoo-api-trading Bug Fixes + Manual Order Execution
+- **Problem**: Attempted to auto-execute Zul's moomoo order (MY.5199 × 300 @ RM2.28, SL RM2.25) via Python script, but ran into permission prompts + API debugging delays — too slow.
+- **Workaround**: Zul placed the order manually in the moomoo app directly (faster).
+- **Resolution**: Fixed 5 critical bugs in `moomoo-api-trading` skill (Lv.1.4) to prevent this next time:
+  1. **SIMULATE filter bug** — `filter_trdmarket=TrdMarket.MY` breaks SIMULATE queries; now conditional (REAL only).
+  2. **Currency reporting bug** — Always check `currency` field before labeling RM/HKD (caught: RM19,659 vs real RM10,201).
+  3. **No complete script** — Added full ready-to-run template (snapshot → place → poll → SL) with inline error handling.
+  4. **SL placement unclear** — Explicit 30s timeout + status reporting (was ambiguous before).
+  5. **Vague error messages** — Now specific per-failure-mode (Price deviated → adjust limit, etc).
+- **Committed & pushed** to GitHub (commit `f187070`).
+- **Next order execution**: Should now just work — snapshot check + entry placement + auto-wait for fill + auto-SL placement, all built-in.
 
 ## Recent Work (2026-09-09) — Two New Trading Skills Created
 - **`position-size-calculator`** (Lv.2) — Bursa Malaysia risk-based lot sizing, built from Dejul's real Excel tool. Quick-entry template (Entry Price/Stop Loss/ATR + star rating only), equity defaults RM10,000 ([[project_trading_capital]]), 5★/4★/3★ = 1R/0.5R/0.25R, lots always **floored** (never round up), and an **effective stop-loss rule**: if Entry ≥ RM1, use ATR-based Max SL (`C4-ATR`) instead of manual SL for the risk math (Risk Value collapses to exactly ATR); if Entry < RM1, use the manual SL as-is. Verified against Dejul's Excel with a worked example (EP=2.67, SL=2.56, ATR=0.101 → 3★ = 2 lots, RM534 capital, RM20.20 max loss) — Dejul confirmed "mantap, terbaik".
