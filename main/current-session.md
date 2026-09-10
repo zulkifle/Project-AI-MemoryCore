@@ -97,18 +97,38 @@
 - Existing production runs natively on Ubuntu server Tomcat + JDK 8 (why the WAR works there); Docker image ships its own JDK so host Java is irrelevant
 - `webapps\` copy is source of truth for the PROD package (root `MTSA.war` is older)
 
-## Recent Work (2026-09-10) — Position Sizing Telegram Bot Built & Deployed to Railway
-- **Project**: `position-sizing-bot` (new)
-- **Built**: Python Telegram bot using python-telegram-bot library
-- **Features**: 
-  - Input: `execute MY.CODE EP= SL= ATR= star★`
-  - Output: Pretty table (lots, qty, capital, max loss)
-  - Lightning fast (<1s response)
-- **Deployment**: Railway.app (free tier, public webhook, always-on)
-- **Status**: ✅ LIVE & TESTED — bot responding instantly in Telegram
-- **GitHub**: https://github.com/zulkifle/-position-sizing-bot
-- **Next**: Can migrate to Kubernetes pod later (CKA training applicable)
-- **Workflow improvement**: Zul now has instant position sizing in Telegram → faster order execution than moomoo app calculations
+## Recent Work (2026-09-10 — full day) — Position Sizing Telegram Bot: Railway + Docker + K8s Ready
+
+### Position-Sizing Telegram Bot (`-position-sizing-bot` repo)
+**Status: ✅ PRODUCTION READY**
+
+**Built:**
+- Python Telegram bot (python-telegram-bot library)
+- Input format: `MY.CODE\nEP=price\nSL=price\nATR=value\n3 STAR\nEnv : REAL`
+- Output: Pretty calculation table (lots, qty, capital, max loss)
+- Response time: <1s
+
+**Deployments (3 options ready):**
+1. **Railway.app** — LIVE NOW ✅ (always-on, free 30 days then RM50-100/month)
+2. **Local Docker + ngrok** — FALLBACK READY (when Railway expires, run docker-compose + ngrok tunnel to PC)
+3. **Kubernetes** — PRODUCTION READY (k8s manifest + Docker image, ready when CKA done)
+
+**Iterations:**
+- Removed "execute" keyword requirement (simpler input)
+- Replaced star emoji with "STAR" text (no Unicode issues)
+- Fixed critical parsing bug (was skipping EP line)
+- Added space between number and STAR for readability (`3 STAR` not `3STAR`)
+
+**Infrastructure:**
+- `Dockerfile` (multi-stage, slim image, health checks)
+- `docker-compose.yml` (local development)
+- `k8s-deployment.yaml` (Kubernetes manifest with Secret + Service)
+- `LOCAL-SETUP.md` (ngrok fallback guide)
+- `DOCKER.md` (Docker Hub + K8s deployment)
+
+**GitHub**: https://github.com/zulkifle/-position-sizing-bot (all files pushed, 7 commits)
+
+**Workflow improvement**: Zul now DMs @bot with EP/SL/ATR/star → instant position size → execute on moomoo. No manual calculations needed. ⚡
 
 ## Recent Work (2026-09-10) — moomoo-api-trading Bug Fixes + Manual Order Execution
 - **Problem**: Attempted to auto-execute Zul's moomoo order (MY.5199 × 300 @ RM2.28, SL RM2.25) via Python script, but ran into permission prompts + API debugging delays — too slow.
