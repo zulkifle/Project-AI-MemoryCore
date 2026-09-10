@@ -97,6 +97,19 @@
 - Existing production runs natively on Ubuntu server Tomcat + JDK 8 (why the WAR works there); Docker image ships its own JDK so host Java is irrelevant
 - `webapps\` copy is source of truth for the PROD package (root `MTSA.war` is older)
 
+## Recent Work (2026-09-10) — Position Sizing Telegram Bot Built & Deployed to Railway
+- **Project**: `position-sizing-bot` (new)
+- **Built**: Python Telegram bot using python-telegram-bot library
+- **Features**: 
+  - Input: `execute MY.CODE EP= SL= ATR= star★`
+  - Output: Pretty table (lots, qty, capital, max loss)
+  - Lightning fast (<1s response)
+- **Deployment**: Railway.app (free tier, public webhook, always-on)
+- **Status**: ✅ LIVE & TESTED — bot responding instantly in Telegram
+- **GitHub**: https://github.com/zulkifle/-position-sizing-bot
+- **Next**: Can migrate to Kubernetes pod later (CKA training applicable)
+- **Workflow improvement**: Zul now has instant position sizing in Telegram → faster order execution than moomoo app calculations
+
 ## Recent Work (2026-09-10) — moomoo-api-trading Bug Fixes + Manual Order Execution
 - **Problem**: Attempted to auto-execute Zul's moomoo order (MY.5199 × 300 @ RM2.28, SL RM2.25) via Python script, but ran into permission prompts + API debugging delays — too slow.
 - **Workaround**: Zul placed the order manually in the moomoo app directly (faster).
