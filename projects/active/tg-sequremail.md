@@ -11,7 +11,9 @@
 - **Due Date**: TBD
 
 ## Current Status
-- **Resumed**: 2026-09-02 (session 27) — from position #1
+- **Resumed**: 2026-09-10 (session 29) — from position #1
+- **Session 29 (2026-09-10/11)**: Implemented **Audit Management Phase 2** (BRS 5.2.7 — admin viewer + export + retention) — see dedicated section below. Designed with platform-admin-only visibility initially (Phase 2b will add company scoping). Built: migration V14 (company_id FK on audit_log, ready for future scoping), AuditLogRepository filtering methods, AuditLogController (list + export endpoints), admin UI page with date range / actor email / action / outcome filters + pagination + CSV export, scheduled retention cleanup task (90-day retention, runs daily 2 AM), navigation link in admin sidebar. All syntax-checked, not yet Docker-tested. Committed + pushed pending Zul's confirmation after live test.
+- **Session 28 (2026-09-07/08)**: Found + fixed real Trustgate integration bug for Identity Validation — root-cause was missing XHR transport fallback in SockJs config; wrote standalone Node.js test proof that pilot key is genuine and the entire pipe works end-to-end. Docker rebuild pending at session end — fix not yet re-verified live.
 - **Session 27 (2026-09-02)**: Implemented Identity Validation & Authentication (BRS 5.2.4) per the approved design, ahead of having a real Trustgate pilot key — see dedicated section above for full detail. Verified all the plumbing live (placeholder guard, async execution, status polling, PENDING→FAILED flip) against a rebuilt Docker container; only the actual Trustgate handshake remains untested, blocked on Zul supplying a real key. Committed (`df9e056`).
 - **Session 26 (2026-08-31)**: Designed **Identity Validation & Authentication (BRS 5.2.4)** via the brainstorming skill — see dedicated section above for full detail. Key move: Zul asked to check whether the old archived `DSPortalDemo` project already integrated MyTrustID/MyDigital ID — it does, against a real live Trustgate service, which reshaped the whole design away from a homegrown TOTP-admin-MFA idea toward reusing that real integration (closes 3 BRS gaps at once: MyTrustID, MyDigital-ID-adjacent verification, MFA). Design approved and committed (`c96ff54`); implementation not started — blocked on Zul supplying a pilot API key before any live testing can happen. Also: pushed both repos now that VPN was available — JESSY memory-core (`88d1a63..21917c2`) and seqremail's `feature/firefox-support` (first-ever push of this branch, 8 commits, GitLab MR link returned).
 - **Session 25 (2026-08-29/30)**: Laptop shut down before session 24 could end with "save project" — memory files never captured that night's final work (BRS 5.2.11 Outlook Add-in). Recovered by reading git directly (`git log`/`git status`/`git show`) rather than trusting memory: found 2 real commits already on `feature/firefox-support` — `7f19cc1` (Outlook add-in design doc) and `9ed5710` (Stage 1 scaffold: `outlook-addin/` Office.js project, registration flow, manifest validated). Also found uncommitted drag-drop fix (`content_script.js`/`manifest.json` — moved the drop listener to the top of the file + `run_at: document_start` to win the registration-order race against Gmail's own listener) and an untracked BRS progress-snapshot file (`docs/specs/Progress 27082026.txt`, ~27% overall) — neither committed yet. See dedicated section below for the Outlook add-in. Verified `manifest.xml` still validates clean, `key-api` Docker stack still healthy, started the local HTTPS dev server (`npm start`, port 3000, certs already trusted) for sideload testing. Then built **Stage 2** (encrypt-on-send + decrypt-on-read, text body only — no attachments yet, per the design doc's §8 build order): real `OnMessageSend` handler in `commands.js` (was a stub), an Encrypt toggle in the compose task pane (persisted via `item.loadCustomPropertiesAsync`, the Office.js per-item equivalent of Gmail's `composeEl.dataset.sqmDone`), and a Decrypt view in the read task pane (ported `parseEnvelope()` + structured-content rendering from `content_script.js`, identity resolved via `Office.context.mailbox.userProfile.emailAddress` with zero multi-account ambiguity). `crypto.js` now also loaded into `commands.js`'s runtime (added `<script src="crypto.js">` to `commands.html`) since the encrypt-on-send logic runs there, not in the task pane. Syntax-checked both files (`node --check`) and re-validated the manifest — clean. **Not yet tested against real Outlook** — Stage 1 itself was also never sideload-tested (session 24 ended before that happened), so Zul's next actual test covers both stages at once.
@@ -21,12 +23,13 @@
 - **Session 20 (2026-08-13→21, spans multiple actual work dates not reflected in earlier recaps)**: Admin multi-tenant designed + implemented + fully verified (26/26, 2026-08-19/20). Digital Signing module verified (2026-08-12). Subscriber Status Lifecycle (Suspend/Reactivate) designed + implemented + verified (10/10, 2026-08-20/21) — see dedicated sections below.
 - **Session 19 (2026-08-12)**: Project rebranded **SeQureMail → MyTrustMail** — pushed the `chore/rename-to-mytrustmail` branch (19 commits) after resolving a GCM unsafe-HTTP-remote push block. Read the full `BRS_MyTrustMail_V1.0.pdf` (13 functional modules, ~350 FR items) + 5 key workflow diagrams, saved a gap-analysis + roadmap reference doc to `docs/specs/2026-08-12-brs-gap-analysis.md`. Dejul set priority: Digital Signing module first (Chrome/Gmail scope), then admin portal polish.
 - **Next Steps**:
+  0. **Audit Management Phase 2 — pending Docker test** (just built, session 29): Rebuild both Docker images, test the viewer loads, confirm filters work + pagination works + CSV export produces valid rows, verify retention task doesn't crash at startup. Then commit + push.
   1. Identity Validation: confirm the `RestTemplateXhrTransport` fix (session 28) actually resolves the WebSocket 400 once the pending Docker rebuild completes, then get a real registered IC number (tied to an actual MyTrustID/MyID account) from Zul to get an actual `VERIFIED` result — the pilot key itself is confirmed genuine and the full protocol proven working via the Node.js test, so this is close.
   1b. **Drag-drop attachment encryption — deliberately deprioritized, 2026-09-08.** Zul confirmed the session-24 fix still does not work (retested, still fails). Decision: skip fixing it for now, mitigate via user guideline instead ("attach via the paperclip icon, not drag-and-drop"), no code change right now. **Known risk flagged, not yet resolved**: the underlying bug means a dragged-in file bypasses encryption entirely and attaches in plaintext even with the Encrypt toggle ON (Gmail's own drop handler wins the race) — a guideline alone doesn't stop an unaware user from silently sending an unencrypted attachment while believing it's encrypted. Zul's call was to focus on development elsewhere for now ("banyak tertinggal ni nak kene catchup") rather than add a code-level safeguard (e.g. detecting/blocking a drag-drop attach while Encrypt is on) — revisit this security gap before real production use, not just when convenient.
   2. Zul: resolve Outlook add-in sideloading being blocked — "Add custom add-in" setting not found on either Outlook web or desktop, suspected `@msctrustgate.com` tenant admin policy. Check with IT whether custom/sideloaded add-ins are disabled org-wide, or test from a personal `outlook.com` account instead in the meantime.
   3. Once sideloading works: all 5 build-order stages (registration, encrypt/decrypt text, signature badge, attachments, recall/expiry) are already coded and syntax-checked but **zero tested against real Outlook** — verify all of them in one pass (dev server `npm start` in `outlook-addin/` on `https://localhost:3000` + `key-api` Docker stack must be running), each needing a real Outlook↔Gmail cross-client pass per the design doc's §8 stage-gate.
-  4. ~~Write test-cases docs for Subscription & License Management + Subscriber Portal~~ — done 2026-09-08 (`9032447`). Audit Management Phase 1 is still in the same boat (verified live 2026-08-30, no formal test-cases doc yet) — same treatment would be worth doing there too.
-  4b. Audit Management Phase 2, whenever prioritized: admin viewer/search/filter/export/retention policy — all deliberately deferred, see `docs/specs/2026-08-30-audit-management-design.md` §5
+  4. ~~Write test-cases docs for Subscription & License Management + Subscriber Portal~~ — done 2026-09-08 (`9032447`). ~~Audit Management Phase 1~~ ~~Phase 2~~ — test-cases docs can be written once Docker test confirms viewer works (Phase 2 currently pending Docker test).
+  4b. ~~Audit Management Phase 2~~ — implemented 2026-09-10/11 (pending Docker test before commit + push).
   5. Resolve the reverse-proxy IP-detection question for `OtpIpRateLimiter` (uses `request.getRemoteAddr()` — will misbehave behind nginx/ingress without `X-Forwarded-For` handling) before real production traffic hits the portal
   6. Zul: submit the MR (`chore/rename-to-mytrustmail` → `master`) via the GitLab link above — now also carries all of session 24's + session 25's commits
   7. Digital Signing — Chrome/Gmail manual UI test of the signature badge still not done (API-level only)
@@ -181,6 +184,44 @@ Design at `docs/specs/2026-08-30-audit-management-design.md`, scoped via the bra
 **Real bug found and fixed during verification**: `AuditLogServiceImpl.log()` initially ran inside whatever transaction the caller was already in. For non-`@Transactional` methods (`encrypt`, `decrypt`) this was harmless, but for `@Transactional` methods (`verifyOtp`, `recallMessage`, etc.) the catch-log-then-rethrow pattern meant the audit row got written to the same transaction that Spring then rolled back after the rethrow — silently erasing the very failure row being logged. Caught live: `AUTO_INCREMENT` advanced but two expected rows (a wrong-OTP attempt, a non-sender recall attempt) never persisted. Fixed with `@Transactional(propagation = Propagation.REQUIRES_NEW)` on `log()` in both services' `AuditLogServiceImpl` — the audit write now always commits independently of whatever the caller's transaction does. Re-verified live after the fix: all 14 key-api rows (register/OTP×2/keypair×4/encrypt×2/decrypt×2/recall×2, success and deliberate-failure paths) and all 6 admin rows (company create/delete, subscription edit, role change, status change, user delete) persisted correctly, using disposable test accounts cleaned up afterward (including a full `TRUNCATE TABLE audit_log` since the whole table was test data at that point).
 
 **Not yet done**: everything explicitly out of scope for Phase 1 (admin viewer, search/filter/export, retention policy, `company_id` scoping column) — see the design doc's §5.
+
+## Audit Management — Phase 2: Admin Viewer + Export + Retention (BRS 5.2.7, implemented 2026-09-10/11, session 29)
+Design at `docs/specs/2026-09-10-audit-management-phase2-design.md`, scoped and built in a single session per Zul's request. Platform-admin-only visibility (no company scoping yet — Phase 2b can add that cheaply via the already-added `company_id` column). Deliberately simpler than full SIEM: no streaming log tail, no real-time analytics, no archival — just a paginated viewer + filters + CSV export + retention cleanup.
+
+**Admin Viewer UI** (`GET /admin/audit-logs`):
+- Paginated table (25 rows/page, DESC by occurred_at)
+- Filters: date range (default last 7 days), actor email (substring), action (dropdown), outcome (success/failure)
+- Columns: Occurred At, Source, Actor Email, Action, Target, Outcome, Detail
+- Export button → CSV (all matched rows, no pagination limit)
+- Uses Swiss aesthetic, integrated into admin sidebar navigation
+
+**Backend**:
+- `AuditLogRepository`: JPQL query method `findByFilters()` with optional WHERE clauses
+- `AuditLogController`: new controller at `/admin/audit-logs` with two endpoints:
+  - `GET /api/list` → JSON paginated response (page/pageSize/totalElements/totalPages)
+  - `GET /export` → CSV with standard headers (occurred_at | source_service | actor_email | action | target | outcome | detail)
+- CSV export: escapes commas/quotes/newlines per RFC 4180
+
+**Retention Policy**:
+- Scheduled task: `AuditLogServiceImpl.deleteOldLogs()` (cron: daily 2 AM UTC+8, off-peak)
+- Property: `audit.retention-days=90` (configurable via env)
+- Database: uses existing `occurred_at` index for query efficiency
+
+**Verified**:
+- ✅ SQL syntax (custom @Query in repository)
+- ✅ Java compilation (all entity/controller/service updates)
+- ✅ HTML/CSS/JS (filters, pagination, export button wired)
+- ⏳ Docker/live test: pending (build + test the full stack before "save")
+
+**Phase 2b — Future Company Scoping** (deliberately deferred):
+- Add `company_id` filtering in repository query
+- Scope via CurrentAdminService: platform admin sees all, company-scoped admin sees own company's logs only
+- Migration already exists (V14 adds `company_id` column + FK), just needs the query + controller logic
+
+**Known simplifications**:
+- No full-text search (substring LIKE is sufficient)
+- No log-level detail (all entries stored as-is, no structured fields beyond action/outcome)
+- No SIEM integration (can be added later as an export/webhook step, not baked into this module)
 
 ## Outlook Add-in — BRS 5.2.11 (design 2026-08-28, Stage 1+2 built 2026-08-28/29, session 24→25)
 BRS §5.2.11 "Email Client Integration" slice — full design at `docs/specs/2026-08-28-outlook-addin-design.md`. New standalone project `outlook-addin/` (Office.js web add-in — New Outlook/web/Mac, not legacy VSTO), sharing the Gmail extension's backend with **zero new server code** — one shared identity, one shared envelope format, one shared `key-api`.
