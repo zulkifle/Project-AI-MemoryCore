@@ -100,7 +100,7 @@
 ## Recent Work (2026-09-10 — full day) — Position Sizing Telegram Bot: Railway + Docker + K8s Ready
 
 ### Position-Sizing Telegram Bot (`-position-sizing-bot` repo)
-**Status: ✅ PRODUCTION READY**
+**Status: ✅ PRODUCTION READY + ACCURATE LOT ADJUSTMENT**
 
 **Built:**
 - Python Telegram bot (python-telegram-bot library)
@@ -128,7 +128,29 @@
 
 **GitHub**: https://github.com/zulkifle/-position-sizing-bot (all files pushed, 7 commits)
 
-**Workflow improvement**: Zul now DMs @bot with EP/SL/ATR/star → instant position size → execute on moomoo. No manual calculations needed. ⚡
+**Latest improvements (2026-09-14):**
+- ✅ Input format: `STAR=value` (supports 1-5 rating OR R-values 0.05-1.0)
+- ✅ Bursa Malaysia fees included: brokerage + platform + clearing + stamp duty
+- ✅ Configurable EQUITY: optional in input, defaults to RM10,000
+- ✅ **Accurate lot-size adjustment**: reduces lots (whole lots only) so Total Max Loss ≤ target risk
+- ✅ Removed EQUITY from display header (cleaner output)
+- ✅ Docker image built & ready (no push yet, just built)
+
+**How it works (accurate calculation):**
+- Target risk: e.g., RM100 (1R)
+- Calculate initial lot size
+- If total loss (price + entry fees + exit fees) > target → reduce 1 lot, recalculate fees
+- Loop until total loss ≤ target risk (whole lots only)
+- Show adjusted lots if changed
+
+**Example output:**
+```
+Environment: REAL
+Lots: 3 lot(s) (adjusted from 4)
+Total Max Loss: RM98.50  ← equals/under target
+```
+
+**Workflow**: Zul DMs @bot with position request → bot calculates accurate lot size + total fees → execute on moomoo. No surprises, total loss stays ≤ target! ⚡
 
 ## Recent Work (2026-09-10) — moomoo-api-trading Bug Fixes + Manual Order Execution
 - **Problem**: Attempted to auto-execute Zul's moomoo order (MY.5199 × 300 @ RM2.28, SL RM2.25) via Python script, but ran into permission prompts + API debugging delays — too slow.
