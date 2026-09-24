@@ -6,7 +6,7 @@
 - **Client**: Any Gmail user (external-facing POC)
 - **Period**: 2026-05-21 - Active
 - **Tech Stack**: Frontend: Chrome Extension MV3 (thin client) | Backend: SeQureMail Key API (Spring Boot 3.2 + MySQL + Flyway) + seqremail-admin (Spring Boot 3.2, port 8081) — Software HSM | Crypto: ECDH P-256 + AES-256-GCM double-envelope (server-side, pure JDK) | Auth: OTP email verification (JavaMailSender)
-- **Completion**: 99% (Phase 1 POC scope) | **~28% of full 13-module BRS** (up from ~19% at 2026-08-13 baseline — see gap analysis + 2026-08-27 addendum; Outlook add-in Stage 1-5, Audit Management Phase 1, and Identity Validation all built 2026-08-29 to 2026-09-02 but not yet counted — Outlook untested against real Outlook, Audit Management verified live, Identity Validation plumbing verified live but blocked on a real pilot key for the actual Trustgate call)
+- **Completion**: Phase 1 POC now ~99% feature-complete | **Enterprise Onboarding (Figure 13) Step 1 done, full workflow in progress** | **Individual Onboarding (Figure 6/7) done** | **Envelope v7 aligned with target architecture** | **SMS OTP complete and working** | **~35% of full 13-module BRS** (up from ~28% — Audit Management Phase 2 added, Enterprise/Individual Onboarding workflows built, SMS OTP integrated, envelope v7 aligned with boss's target design)
 - **Duration**: ~41.5 hours
 - **Due Date**: TBD
 
@@ -260,6 +260,14 @@ Both fixes are in the same uncommitted working tree as session 24's drag-drop/ow
 
 ## Session History (Last 5)
 
+### 2026-09-24 (Session 30+) - Enterprise Onboarding (Figure 13), Individual Onboarding (Figure 6/7), Envelope v7, SMS OTP Complete
+- **Changes**: Major feature sprint on MyTrustMail enterprise + individual onboarding workflows plus encryption architecture alignment with boss's target design. **Figure 13 — Admin Enrollment Wizard** (Step 1): platform admin invites organization on their behalf — no payment gateway, supporting documents (SSM, LOA, payment receipt) uploaded, stored in DB with OrganizationDocument entity/repository, instant "RA approval" (no real RA system yet) → company + subscription provisioned + invitation email sent to enterprise admin with full subscription details included. **Figure 6/7 — Individual Onboarding**: self-service registration via public `/pricing` page + unified login (`/login` routes by table lookup: admin_users → password, user_keys → OTP, unknown → pricing). Closed the RECIPIENT-only gap — existing recipients can now upgrade to SUBSCRIBER via the pricing page without re-registering, admin manually converts leads to full subscriptions (Phase 2 feature). **Envelope v7** — re-architected to match boss's target diagram: removed platform-KEK outer wrap layer, single per-recipient ECDH→KEK→wrap-CEK architecture, sender's own-copy path clarified, signature + digest validation preserved. **SMS OTP (FR-509)** — fully integrated and verified working end-to-end: uses TrustGate SOAP gateway (auto-generated JAX-WS stubs, not manual), correct header handling (ProjectKey/Username/Password as individual HTTP headers per Zul's provided example), statusCode parsing, V16/V17 migrations for threading support. Burgundy theme rolled out across all new pages. Demo run sheet updated to cover SMS OTP, reply/read-receipt, classification, audit viewer. Multiple browser onboarding test cycles completed — form submission, confirmation pages, invitation email delivery all verified live.
+- **Time Spent**: ~6 hours (estimate)
+
+### 2026-09-10/11 (Session 29) - Audit Management Phase 2 + Figure 13 Started
+- **Changes**: Implemented **Audit Management Phase 2** (BRS 5.2.7) — admin viewer + CSV export + 90-day retention task, platform-admin-only visibility. Migration V14 (company_id FK ready for future scoping), AuditLogRepository filtering methods, AuditLogController endpoints, admin UI with date range / actor email / action / outcome filters + pagination + CSV export, scheduled retention cleanup task. All syntax-checked, Docker test pending completion. Began work on Figure 13 enterprise admin enrollment wizard (admin onboarding flow per BRS Figure 13 — no payment gateway, supporting documents only).
+- **Time Spent**: ~2 hours
+
 ### 2026-09-02 (Session 27) - Identity Validation & Authentication Implemented (BRS 5.2.4)
 - **Changes**: See "Identity Validation & Authentication" section above for full detail. Implemented the full Trustgate MyID/MyTrustID integration ahead of having a real pilot key (Zul's explicit call) — new `identity_verification` table, STOMP-over-SockJS client (API confirmed via `javap` on the cached jar, not guessed), background async handshake with a 2-minute timeout, and a "Verify your identity" card on the Subscriber Portal profile page. Rebuilt the Docker container (survived two killed background build attempts) and verified all the plumbing live short of the actual Trustgate call. Committed (`df9e056`), not yet pushed.
 - **Time Spent**: ~2 hours (estimate — no commit-based time tracking in this repo)
@@ -343,4 +351,5 @@ Project started 2026-05-21 as a Chrome MV3 POC to prove client-side email encryp
   - [ ] ~~Admin portal polish to BRS §5.2.3/§5.2.13 criteria~~ — in progress, see "Admin multi-tenant" item above; sidebar identity block + Profile page added 2026-08-27
 
 ---
-**Last Updated**: 2026-09-02 (session 27) | **Position**: #1/10 Active
+**Last Updated**: 2026-09-24 (session 30+) | **Position**: #1/10 Active
+**Current Sprint**: Enterprise Onboarding (Figure 13) - Form Submission + Confirmation + Email Verification | Individual Onboarding (Figure 6/7) - Self-Service Registration | Envelope v7 Alignment | SMS OTP Integration Complete
