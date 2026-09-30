@@ -1,11 +1,93 @@
 # 🌟 Current Session Memory - RAM
 *Temporary working memory - resets each session, provides recap when AI restarts*
 
-## Session RAM Status
-**Current Session**: 2026-09-23
-**Session Focus**: **MITI MyTrustSignerXML - UAT Test Suite Creation (11 Essential Test Cases)**
+## Session 32 — MCMC DigitalSeal ICD + tgekyc Liveness v1.3.2 Build Fix & Deploy ✅ COMPLETE
 
-## What Shipped Today
+**Date**: 2026-09-28 to 2026-09-30
+**Focus**: MCMC DigitalSeal API tech spec, tgekyc liveness Docker build failure root-cause + fix + deploy, skill upgrade
+
+### Completed Work
+1. **MCMC DigitalSeal API — Interface Control Document**
+   - Documented the `digitalSeal` SOAP API (`MyTrustSignerServicePilot`/`DigitalSealServerAPI`) from a SoapUI sample: endpoint, auth headers, request/response params, sample XML
+   - Revised per Zul's corrections: Base64-string wording (not "binary payload"), all fields mandatory per WSDL, removed page-number gap (seal applies to every page), headers set to `TBA`, status codes simplified to TBD
+   - **Environment discovery**: writing outside the trusted repo (`C:\PROJECTS\MCMC MTSA\...`) came back as a different filename (`DigitalSeal-Sandbox-API-v1.0.md` instead of the intended `MCMC-DigitalSeal-API-TechSpec-ICD-v1.0.md`) with "MCMC" genericized to `<Project>` and two sections truncated. Flagged to Zul — he confirmed the genericization was fine for this doc. Saved as new memory: `feedback_write_outside_trusted_repo.md`
+
+2. **tgekyc Liveness v1.3.2 — Docker build failure root-caused and fixed**
+   - `docker build` on `C:\PROJECTS\EKYC\Deployment\liveness_detection-v1.3.2-20260929` failed on `apt-get install` (tesseract-ocr + deps) with a mix of `403 Forbidden`, `Hash Sum mismatch`, `connection reset` — all from the same Fastly edge IP fronting `deb.debian.org`
+   - Fix: switch apt sources to HTTPS (`sed` on `/etc/apt/sources.list.d/debian.sources`) + `-o Acquire::Retries=5` on `apt-get update`/`install`. Verified with a full `--no-cache` build — succeeded end-to-end
+   - Built, tagged, and pushed `tgekyc-liveness:1.064` to the registry (`10.5.1.43:30445`) — one large layer needed a few push retries (same network flakiness pattern), resolved by retrying
+   - Zul ran the final `kubectl apply -f deployment-live.yaml -n tgekyc` himself (this session has no route to the real cluster — kubeconfig files point to `127.0.0.1:6443`, needs Zul's SSH tunnel) — confirmed working
+
+3. **Skill upgrade: `tgekyc-liveness-deployment-checklist` → Lv.4**
+   - New "Build & Push New Version" protocol: auto-detect newest vendor drop folder, read current version from `deployment-live.yaml` (source of truth), compute next version, patch Dockerfile with the HTTPS+retry fix (must be reapplied per vendor drop — not carried over), build → tag → push → update manifest → **stop before `kubectl apply`** (handed to Zul, no cluster tunnel from this session)
+   - New version increment rule documented: `+0.001`, e.g. `1.064→1.065→…→1.099→1.10` (trailing zero dropped, not `1.100`)
+   - Documented the apt-get/Fastly known issue and the two registry addresses (`localhost:30445` in-cluster vs `10.5.1.43:30445` from Zul's workstation)
+
+### Key Technical Decisions
+- Docker build robustness fix (HTTPS mirror + apt retries) is per-vendor-drop, since Ctrl CV ships a fresh dated folder (not a shared `master`) each version — must be reapplied every time, not assumed to persist
+- Never attempt to open an SSH tunnel to the real K8s cluster autonomously — always hand `kubectl apply` back to Zul when no tunnel is already open in the session
+
+---
+
+## Previous Session RAM Status
+**Last Session**: 2026-09-25
+**Session Focus**: **Session 31 — MyTrustMail Individual Onboarding Flow Refactor ✅ COMPLETE**
+
+**Date**: 2026-09-25  
+**Focus**: Restructure individual onboarding flow — verify identity BEFORE payment (8-step → 7-step)
+
+### Completed Work
+1. **Flow Refactor: 8 steps → 7 steps with identity verification moved to Step 2 (pre-payment)**
+   - Removed "Install Extension" step (moved to post-onboarding)
+   - Identity Verification now Step 2: collects fullname + IC, offers MyTrustID/MyDigitalID/Skip
+   - User cannot proceed to payment without completing identity verification
+   - **Problem Solved**: Prevents wasted payment if user lacks verification methods
+
+2. **New Step Sequence**
+   - Step 1: Landing (unchanged)
+   - **Step 2: Identity Verification** (NEW position — was step 6, now pre-payment)
+   - Step 3: Choose Plan (was step 2)
+   - Step 4: Checkout (was step 3)
+   - Step 5: Payment Confirmed (was step 4)
+   - Step 6: Create Account (was step 5; fullname/IC from step 2 via sessionStorage)
+   - Step 7: Account Activated (was step 6b)
+
+3. **Data Flow via SessionStorage**
+   - Step 2 collects and stores: `sqmFullname`, `sqmIcNumber`, `sqmIdentityMethod`
+   - Step 6 retrieves stored data for account creation
+   - Prevents data loss across navigation
+
+4. **Testing Verified**
+   - Built application successfully with Docker
+   - Tested flow: Landing → Step 2 Identity → Filled fullname + IC → Clicked Skip → Moved to Step 3 Choose Plan
+   - Progress bar: correct (7 dots total, 3 filled at step 3)
+   - All button routing confirmed working
+
+5. **Files Changed**
+   - `individual-onboarding.html` — reorganized 8 sections → 7, moved identity before payment
+   - `individual-onboarding.js` — updated STEP_LABELS array, goToStep() logic, form field IDs, event handlers
+   - Progress bar: 8 dots → 7 dots
+
+6. **Commit**
+   - `1b293b3`: "refactor: MyTrustMail individual onboarding — verify identity before payment"
+
+---
+
+## Previous Session RAM Status
+**Last Session**: 2026-09-24 (continued)
+**Session Focus**: **TG MyTrustMail - Enterprise Onboarding (Figure 13) E2E Testing + Compose/Send Verification**
+
+## Project Saved (Current Session)
+**TG SeQureMail (MyTrustMail)**: Updated project memory with Sessions 29-30+ major work:
+- **Enterprise Onboarding (Figure 13)** — Admin enrollment wizard Step 1: platform admin invites org, no payment gateway, supporting documents (SSM/LOA/receipt) uploaded & stored, instant approval → company + subscription provisioned + invitation email sent with subscription details
+- **Individual Onboarding (Figure 6/7)** — Self-service via public pricing page + unified login; closed RECIPIENT-only gap; existing recipients can now upgrade via pricing without re-registering
+- **Envelope v7** — Re-architected per boss's target diagram: removed platform-KEK outer wrap, single per-recipient ECDH→KEK→wrap-CEK, signature + digest validation preserved
+- **SMS OTP (FR-509)** — Fully integrated + working end-to-end via TrustGate SOAP gateway; auto-generated JAX-WS stubs, correct header handling, V16/V17 migrations for threading
+- **Burgundy theme** — Standardized across all new onboarding pages
+- **BRS completion**: ~35% (up from ~28%)
+- **GitHub push**: ✅ Confirmed
+
+## What Shipped In Prior Sessions (Still Pending E2E Testing)
 **MITI MyTrustSignerXML - Comprehensive UAT Test Suite (Streamlined)**
 - Created 11 essential test cases (removed: audit logging, auth enforcement, exclusive C14N per Zul's direction)
 - **Signing Tests (6)**: TC-SIGN-001 to TC-SIGN-006 covering basic signing, large payloads, error handling, whitespace normalization, object ID handling, concurrent requests
