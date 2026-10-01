@@ -1,6 +1,32 @@
 # 🌟 Current Session Memory - RAM
 *Temporary working memory - resets each session, provides recap when AI restarts*
 
+## Session 33 — MyTrustMail: OIDC SSO end-to-end + Individual Multi-Email ✅ SAVED
+
+**Date**: 2026-09-30 to 2026-10-01
+**Project**: TG SeQureMail / MyTrustMail (`C:\PROJECTS\SEQURE MAIL\Development\seqremail`, branch `feature/firefox-support`)
+
+### Completed Work
+1. **Edge extension tested by Zul** — works identical to Chrome. Safari pending (needs Mac + Xcode).
+2. **Audited Zul's 12-item feedback list against real code** (memory had no record of the 26-30 Sep commits; recovered from `git log`). 5 done, 1 built, 4 not started, 2 unclear (items 6, 7).
+3. **/login is OIDC-only** ("Sign in with MyTrustID"); **sign-out calls Trustgate end_session** (provider code is `C:\PROJECTS\DOCKER GITLAB\docker\oidc	g_oidc` — node oidc-provider v7 + Mongo; `mytrustmail-portal` client already registered for post-logout redirect).
+4. **Extension SSO**: portal session cookie is the single source of truth (`/account/ext-session`); Zul confirmed popup signs in with no second approval.
+5. **Individual multi-email (item 8)**: brainstormed → design doc → key-api + portal + extension; each email own keypair, `primary_key_id` link, tier stored, limits 2/5/10, add-ons deferred. 20/20 API tests.
+
+### Key Decisions
+- Enterprise users do NOT get multi-email (company-issued, domain-validated); Zul agreed.
+- Each linked email has its own keypair (not shared) — old mail to a removed address becomes unreadable.
+- Add-on slot purchase deferred until pricing decided (Zul chose option B).
+
+### Pending / Next
+- Zul to browser-test sign-out end-session and the extension multi-email UI; then lock down old `/login/find|password|otp` backend endpoints.
+- Next feedback item recommended: **12 (vLEI)** — OP already supports `lei_*` claims; groundwork for 11.
+- Ask Zul what items 6, 7, 9 mean.
+- Gotcha: admin sessions are in-memory — every admin rebuild logs everyone out.
+
+---
+
+## Previous Session RAM Status
 ## Session 32 — MCMC DigitalSeal ICD + tgekyc Liveness v1.3.2 Build Fix & Deploy ✅ COMPLETE
 
 **Date**: 2026-09-28 to 2026-09-30
