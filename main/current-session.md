@@ -3,7 +3,7 @@
 
 ## Session 33 — MyTrustMail: OIDC SSO end-to-end + Individual Multi-Email ✅ SAVED
 
-**Date**: 2026-09-30 to 2026-10-01
+**Date**: 2026-09-30 to 2026-10-02
 **Project**: TG SeQureMail / MyTrustMail (`C:\PROJECTS\SEQURE MAIL\Development\seqremail`, branch `feature/firefox-support`)
 
 ### Completed Work
@@ -13,6 +13,9 @@
 4. **Extension SSO**: portal session cookie is the single source of truth (`/account/ext-session`); Zul confirmed popup signs in with no second approval.
 5. **Individual multi-email (item 8)**: brainstormed → design doc → key-api + portal + extension; each email own keypair, `primary_key_id` link, tier stored, limits 2/5/10, add-ons deferred. 20/20 API tests.
 
+6. **Later (10-01/02)**: adopt auto-provisioned RECIPIENT rows when linking an email; item 10 DNSSEC+CAA domain check (DoH); item 9 `/install` page (store URLs placeholder); item 12 vLEI (LE = register company only, OOR/ECR = sign-in/link, GLEIF -> SSM prefill; fixed SAID-as-IC bug). Commits `b3948dc`, `9d46112` (local; GitLab last pushed 914dd62).
+7. Zul's decisions: item 6 removed; items 3/7/11, Safari, JWT for key-api and the old D-list are ON HOLD; **GitLab MR only after Zul says stable — remind him**; no more GitLab pushes until he tests.
+
 ### Key Decisions
 - Enterprise users do NOT get multi-email (company-issued, domain-validated); Zul agreed.
 - Each linked email has its own keypair (not shared) — old mail to a removed address becomes unreadable.
@@ -20,8 +23,8 @@
 
 ### Pending / Next
 - Zul to browser-test sign-out end-session and the extension multi-email UI; then lock down old `/login/find|password|otp` backend endpoints.
-- Next feedback item recommended: **12 (vLEI)** — OP already supports `lei_*` claims; groundwork for 11.
-- Ask Zul what items 6, 7, 9 mean.
+- Zul tests vLEI with a pilot credential; CTOS (item 11) once he has tested the webservice.
+- Remind Zul to raise the GitLab MR when stable.
 - Gotcha: admin sessions are in-memory — every admin rebuild logs everyone out.
 
 ---
