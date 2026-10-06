@@ -1,6 +1,28 @@
 # 🌟 Current Session Memory - RAM
 *Temporary working memory - resets each session, provides recap when AI restarts*
 
+## Active Project
+- Name: TG SeQureMail (MyTrustMail) — saved 2026-10-06
+
+## Session 34 — MyTrustMail: CTOS check, Q4 A1 + A3, first pilot deployment ✅ SAVED
+
+**Date**: 2026-10-02 to 2026-10-06
+**Repo**: `C:\PROJECTS\SEQURE MAIL\Development\seqremail`, branch `feature/firefox-support`, HEAD `ca3763f` — 13 local commits since GitLab `914dd62`, **not pushed** (Zul: no GitLab push/MR until he tests and says stable).
+
+### Completed Work
+1. **Item 11 CTOS/SSM check** — GetLatestRecord → getCompanyProfileDetail; EXISTING = auto-approve on document submit; 3 fails per order → manual; provider down prompt. Pilot CTOS service still times out (504) and lacks GetLatestRecord.
+2. **Q4 A1 Multiple Email Domains + DNS TXT verification** (FR-321/322).
+3. **Q4 A3 Classification Security Policy** (FR-324) — platform default, org tighten-only, server strips attachment keys when download blocked.
+4. **Pilot deployment on Rancher** — `https://digitalid2.msctrustgate.com/mytrustmail` (temporary). Manifests `C:\PROJECTS\DOCKER GITLAB\docker\mytrustmail\pilot\` (configmap.yaml split from deployment.yaml). Pods running (NodePorts 30280/30281 verified on 10.5.1.42/.43/.45). Fixed: MariaDB 10.11 collation (DB must be utf8mb4_general_ci), actuator mail-health probe hang, OIDC redirect_uri (MyTrustMail uses the PROD OIDC provider).
+5. Admin subpath support, extension `config.js`, one-click `deploy\` scripts (Run-Local tested for real; Deploy-Pilot dry-run tested).
+
+### Pending / Next
+- Zul: nginx digitalid2 location blocks, apply PROD OIDC configmap + restart `oidc` (ns `oidc-csc`), test login via digitalid2, check SMTP from pod, try Deploy-Pilot(-DryRun).bat.
+- Combined test pass (list in memory `project_mytrustmail_q4_progress`).
+- Q4 group A remaining: A2 User Groups (parked, BRS scope), A4, A5, A6; backlog crypto-shred expired messages.
+
+---
+
 ## Session 33 — MyTrustMail: OIDC SSO end-to-end + Individual Multi-Email ✅ SAVED
 
 **Date**: 2026-09-30 to 2026-10-02
