@@ -884,6 +884,31 @@ kubectl diff -k overlays/prod/
 
 ---
 
+## Trustgate Cluster Conventions + Spring Boot Deploy Gotchas (real deployments)
+
+Conventions in Dejul's Rancher cluster (`C:\PROJECTS\DOCKER GITLAB\docker\<app>\<env>\`):
+- One namespace per app/env, Service type **NodePort**, image `localhost:30445/<app>:<ver>` (push from
+  the workstation to `10.5.1.42:30445` or `10.5.1.43:30445` — same registry, any node).
+- No Ingress: the data-center nginx proxies to `http://cluster.local:<NodePort>` (any node answers a NodePort).
+  App at its root → `proxy_pass http://cluster.local:30276/;` (trailing slash strips the location prefix).
+  App with a servlet context path → `proxy_pass http://cluster.local:30281;` (NO trailing slash, keep the path).
+- Split `configmap.yaml` (Namespace + Secret + ConfigMap) from `deployment.yaml` so config changes are
+  `kubectl apply -f configmap.yaml` + `kubectl rollout restart` (env vars are read at start-up only).
+- Before picking a NodePort, grep every manifest for `nodePort:` — collisions fail the Service apply.
+- This session has no route to the cluster: hand `kubectl apply` to Dejul.
+
+Gotchas seen in production deploys (MyTrustMail pilot, 2026-10-06):
+
+| Symptom | Root cause | Fix |
+|---------|-----------|-----|
+| Startup probe `context deadline exceeded`, pod killed (exit 143) though the log says `Started …` | Spring actuator `/actuator/health` includes the **mail** health indicator; JavaMail has no default timeout, so health hangs when the cluster can't reach the SMTP host | `MANAGEMENT_HEALTH_MAIL_ENABLED=false`, `SPRING_MAIL_PROPERTIES_MAIL_SMTP_{CONNECTIONTIMEOUT,TIMEOUT,WRITETIMEOUT}=10000`, probe `timeoutSeconds: 5` |
+| Flyway/Hibernate log `MySQL 5.5` but the server is newer | **MariaDB** reports `5.5.5-10.x` over the MySQL protocol | Check `SELECT VERSION()`; it is MariaDB, not 5.5 |
+| Flyway: `errno 150 "Foreign key constraint is incorrectly formed"` on MariaDB | Collation mismatch: a table created with bare `DEFAULT CHARSET=utf8mb4` gets `utf8mb4_general_ci` on MariaDB, newer tables inherit the DB default (`utf8mb4_unicode_ci`) | Create the DB with `COLLATE utf8mb4_general_ci` (don't edit applied migrations — breaks Flyway checksums); drop `createDatabaseIfNotExist` from the JDBC URL |
+| Flyway `Detected failed migration … run repair` after a fix | Half-applied schema from the failed run | `DROP DATABASE` + recreate (new app), or `flyway repair` + manual cleanup (existing data) |
+| `ConfigMap` env shared via `envFrom` moves BOTH apps | e.g. `SERVER_SERVLET_CONTEXT_PATH` meant for one app | Put app-specific env under that container's `env:`, not the shared ConfigMap |
+| Redirects go to `http://` behind TLS nginx / OTP rate limit sees nginx IP | Proxy headers ignored | `SERVER_FORWARD_HEADERS_STRATEGY=native` + nginx `X-Forwarded-Proto/For` |
+| Windows `cmd`: `'grep' is not recognized` | No grep in cmd | `kubectl logs … \| findstr /C:"Started" /C:"ERROR"` |
+
 ## Level History
 - **Lv.1** — Full CKA skill: all 5 exam domains, imperative commands, YAML templates,
   troubleshooting ladder, etcd backup/restore, RBAC, scheduling, storage, networking.
@@ -891,3 +916,7 @@ kubectl diff -k overlays/prod/
 - **Lv.2** — Lab-sourced content from Dejul's CKA Training 2025 (25 labs). Added:
   HPA v2, CRD + CR pattern, NFS dynamic provisioning, Gateway API (Traefik + HTTPRoute),
   Kustomize base/overlay pattern. All YAML sourced from real training lab files.
+- **Lv.3** — Real-deployment knowledge (MyTrustMail pilot, 2026-10-06): Trustgate cluster conventions
+  (NodePort + data-center nginx `cluster.local`, registry, configmap/deployment split) and a gotcha table
+  (actuator mail-health probe hang, MariaDB "MySQL 5.5" compat string, MariaDB collation FK errno 150,
+  shared-ConfigMap env leakage, forward headers, cmd findstr).

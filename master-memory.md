@@ -54,7 +54,7 @@ Project files stored in projects/active/ and projects/archived/.
   - `laravel-php-skills` — Triggers on any Laravel project task: artisan, eloquent, blade, tailwind, migration, controllers, caching, HTTP client, scheduling (Lv.2 — full ruleset)
   - `pest-testing` — Triggers on Pest PHP testing in Laravel: writing/editing/fixing tests, TDD, datasets, PHPUnit migration
   - `tailwindcss-development` — Triggers on Tailwind CSS: responsive grids, flex/grid layouts, UI components, dark mode
-  - `certified-kubernetes-admin` — Triggers on kubectl, pod, deployment, service, ingress, pv/pvc, rbac, kubeadm, etcd, CKA, k8s, cluster admin, or any Kubernetes task
+  - `certified-kubernetes-admin` (Lv.3) — Triggers on kubectl, pod, deployment, service, ingress, pv/pvc, rbac, kubeadm, etcd, CKA, k8s, cluster admin, or any Kubernetes task. Lv.3 adds Trustgate cluster conventions (NodePort + data-center nginx `cluster.local`, configmap/deployment split) and a real-deploy gotcha table (actuator mail-health probe hang, MariaDB compat version + collation FK errno 150)
   - `signing-labs` — Triggers on "signing lab", "signing test", "new hash class", "PDF_prepareHash", "MyTrustPDFSigner_IT5", or any iText5 deferred signing lab task
   - `xml-signing` — Triggers on XMLDSig, Apache Santuario, xmlsec, EXC-C14N, "sign XML", "verify XML signature", DigestValue/SignatureValue in XML context, mtsa.properties/kspath in MyTrustSignerXML, or any MyTrustSignerXML-MITI task
   - `brainstorming` — Triggers on "brainstorm [topic]", "design [feature]", "let's plan", "I want to build" — explores requirements and design BEFORE any code is written

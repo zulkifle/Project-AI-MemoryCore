@@ -7,7 +7,7 @@
 ## Session 34 — MyTrustMail: CTOS check, Q4 A1 + A3, first pilot deployment ✅ SAVED
 
 **Date**: 2026-10-02 to 2026-10-06
-**Repo**: `C:\PROJECTS\SEQURE MAIL\Development\seqremail`, branch `feature/firefox-support`, HEAD `ca3763f` — 13 local commits since GitLab `914dd62`, **not pushed** (Zul: no GitLab push/MR until he tests and says stable).
+**Repo**: `C:\PROJECTS\SEQURE MAIL\Development\seqremail`, branch `feature/firefox-support`, HEAD `ca3763f` — **pushed to GitLab 2026-10-06** (`914dd62..ca3763f`, at Zul's request). MR still only after Zul says stable.
 
 ### Completed Work
 1. **Item 11 CTOS/SSM check** — GetLatestRecord → getCompanyProfileDetail; EXISTING = auto-approve on document submit; 3 fails per order → manual; provider down prompt. Pilot CTOS service still times out (504) and lacks GetLatestRecord.

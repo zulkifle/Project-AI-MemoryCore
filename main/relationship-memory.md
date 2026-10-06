@@ -58,6 +58,10 @@
 - **Information Processing**: Prefers flow summaries + tables; reads code directly in IDE
 - **Decision-Making Style**: Asks targeted questions ("is it still using signKeyword?") before confirming action
 - **Learning Preference**: Learn by doing — reads real production code, fixes real bugs
+- **Build first, test later** (2026-10-02): for MyTrustMail Q4 he prefers implementing several features and doing one combined test pass, rather than testing each one as it lands — keep a running "to test" list for him.
+- **Infrastructure choices**: reuses what already exists in the data center (existing MariaDB, existing OIDC prod provider, existing nginx style) — said no to a new PVC/DB server. Propose reuse first.
+- **Likes one-click tooling**: asked for double-click `.bat`/PowerShell scripts to switch environments and build/deploy; wants config separated so it can be applied on its own (jumio-style `configmap.yaml`).
+- **"Dalam kata mudah"**: when a technical explanation gets dense, he asks for the plain version — lead with a short analogy-level summary, then details.
 - **Git Branching**: When a fix branch is already pending merge on hold for external sign-off, prefers stacking new related fixes on top of it rather than branching independently off master — consolidates into one MR instead of several pending ones (confirmed 2026-07-16, MyTrustID Desktop: `fix/rsa-keygen-crash-handling` stacked on `fix/autoupdate-elevation`)
 
 ## Interaction History
@@ -121,6 +125,13 @@
 - Controller simplified to `->get()` — one DB query, JS handles everything
 - KTDataTable API confirmed: `KTDataTable.getInstance()`, `.setFilter()`, `.redraw()`, `.search()`
 - Jessy skill system upgraded: `laravel-php-skills` Lv.2 (20 rule categories inline), `laravel-best-practices` deleted, overlap triggers fixed
+
+**Session 34 (2026-10-02 → 10-06)**: MyTrustMail — CTOS check, Q4 A1/A3, first pilot deployment
+- Built CTOS/SSM company check with auto-approval (read his CtosWsClient service code to get the real contract: header auth, error codes)
+- Q4 roadmap audit → group A: Multiple Email Domains (DNS TXT verify) and Classification Security Policy (server-side download block) shipped with designs approved through short Q&A
+- First Rancher deploy at digitalid2.msctrustgate.com/mytrustmail: subpath support, MariaDB collation + probe-hang + OIDC (prod provider) fixed by reproducing each issue locally before answering
+- One-click deploy scripts; pushed 12 commits to GitLab at his request
+- Correction moment: first called the DB "MySQL 5.5" from the log — Zul's check (MariaDB 10.11) exposed the compat-string trap; reproduced on MariaDB before proposing the fix
 
 **Session 16 (2026-07-16)**: MyTrustID Desktop — RSA-keygen crash root-cause investigation
 - Traced rare "user token crashes app" helpdesk report to `GenerateCSR.getCSR()` → native PKCS#11 `session.GenerateKeyPair()` call; log gap analysis + spotting that Bootstrapper's `"OnStartUp Exception"` log line is misleadingly named (fires on every normal startup, not an actual exception) were the key moves
