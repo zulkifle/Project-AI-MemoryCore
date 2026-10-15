@@ -2,7 +2,15 @@
 *Temporary working memory - resets each session, provides recap when AI restarts*
 
 ## Active Project
-- Name: TG SeQureMail (MyTrustMail) — saved 2026-10-06
+- Name: MTSA v1.0.8.2-JKR (JKR SKALA)
+- Resumed: 2026-10-15 (reactivated from archived)
+- Last worked: 2026-06-18
+- Context: Java EE MTSA signing platform for JKR — PDF deferred signing via MyGPKI/SKALA roaming certs (INTERNAL + ROAMING paths), iText5 + BouncyCastle CMS, Docker deploy at `/opt/mtsa_jkr`
+- Recent progress: 2026-06-18 OTP expiry 300s → 60s (config only); 2026-04-22 deploy.sh improvements + delivered; 2026-04-10 async signing (SigningJobExecutor, /sign/status polling)
+- Previous active project: TG SeQureMail (MyTrustMail) — saved 2026-10-14
+
+## Session 37 (2026-10-15) — notes so far
+- Studied DBKL BR1D `klispdfsign` (2017 client-side Java Web Start agent, WebSocket localhost:9999) — decompiled jar; found integration flow + security issues (browser-trusted callback, postMessage without origin check, params via browser, no frame-ancestors, PIN in window.prompt, SSRF in Home::pdf). Proposed token + server-to-server (OAuth-style) redesign. Zul parked it for now.
 
 ## Session 34 — MyTrustMail: CTOS check, Q4 A1 + A3, first pilot deployment ✅ SAVED
 

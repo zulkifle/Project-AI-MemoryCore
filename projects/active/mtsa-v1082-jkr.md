@@ -7,7 +7,8 @@
 - **Tech Stack**: Java 17 + iText5 + BouncyCastle + NetBeans + Tomcat
 - **Completion**: 100%
 - **Duration**: ~7 hours
-- **Status**: Completed — Delivered to client 2026-04-22
+- **Status**: Reactivated 2026-10-15 (delivered to client 2026-04-22)
+- **Last Accessed**: 2026-10-15
 
 ## Current Status
 - **Last Session**: 2026-06-18 - JKR meeting: OTP expiry changed 300s → 60s per client recommendation
@@ -15,6 +16,9 @@
 - **Known Issues**: None
 
 ## Session History (Last 5)
+
+### 2026-10-15 - Project Resumed
+- Project resumed from archived. Repo `C:\PROJECTS\MyGPKI-SKALA\Development\mtsa` on branch `MTSA-JKR`, clean and in sync with `origin/MTSA-JKR`; HEAD `8521b9b` (2026-06-04, "fix: improve the signing job watcher and front end message") — that commit was not recorded in this file before.
 
 ### 2026-06-18 - JKR Meeting: OTP Expiry Config Change
 - **Changes**:
