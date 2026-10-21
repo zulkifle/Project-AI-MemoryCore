@@ -2,12 +2,22 @@
 *Temporary working memory - resets each session, provides recap when AI restarts*
 
 ## Active Project
-- Name: MTSA v1.0.8.2-JKR (JKR SKALA)
-- Resumed: 2026-10-15 (reactivated from archived)
-- Last worked: 2026-06-18
-- Context: Java EE MTSA signing platform for JKR — PDF deferred signing via MyGPKI/SKALA roaming certs (INTERNAL + ROAMING paths), iText5 + BouncyCastle CMS, Docker deploy at `/opt/mtsa_jkr`
-- Recent progress: 2026-06-18 OTP expiry 300s → 60s (config only); 2026-04-22 deploy.sh improvements + delivered; 2026-04-10 async signing (SigningJobExecutor, /sign/status polling)
-- Previous active project: TG SeQureMail (MyTrustMail) — saved 2026-10-14
+- Name: TG SeQureMail (MyTrustMail)
+- Last worked: 2026-10-21 (session 38)
+- Repo: `C:\PROJECTS\SEQURE MAIL\Development\seqremail` — currently on `master` = `07bd4f9` = pilot 1.09
+- Previous active project: MTSA v1.0.8.2-JKR (reactivated 2026-10-15)
+
+## Session 38 (2026-10-20/21) — MyTrustMail ✅ SAVED
+1. Cert lifecycle design + P1-P5 on `feature/cert-lifecycle` (`0ec41cb`, pushed, not deployed). Left: P6 portal/admin UI + emails, P7 docs.
+2. Legal reply drafted (recipient Privacy Notice): CA repository publication TBC; recipients can't self-close an account.
+3. Pilot 1.08 (old master) broke the store extension → merged Fakrul's master into hsm-cert-lifecycle (`07bd4f9`), 1.09 built + pushed, Zul set image; master fast-forwarded to `07bd4f9`.
+4. Outlook add-in 401 (no token) → Fakrul fixes it himself.
+
+### Pending / Next
+- Zul: test Gmail compose → Sign & Encrypt → Send on 1.09.
+- Delete `feature/hsm-cert-lifecycle` when Zul says OK (identical to master).
+- Resume cert lifecycle: merge master into `feature/cert-lifecycle` first, then P6/P7, test, MR after Zul says stable, delete branch.
+- Legal: Zul sends the reply; ask TGCA/PKIWS team about CA repository publication.
 
 ## Session 37 (2026-10-15) — notes so far
 - Studied DBKL BR1D `klispdfsign` (2017 client-side Java Web Start agent, WebSocket localhost:9999) — decompiled jar; found integration flow + security issues (browser-trusted callback, postMessage without origin check, params via browser, no frame-ancestors, PIN in window.prompt, SSRF in Home::pdf). Proposed token + server-to-server (OAuth-style) redesign. Zul parked it for now.
