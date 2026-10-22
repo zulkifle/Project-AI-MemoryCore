@@ -3,9 +3,21 @@
 
 ## Active Project
 - Name: TG SeQureMail (MyTrustMail)
-- Last worked: 2026-10-21 (session 38)
-- Repo: `C:\PROJECTS\SEQURE MAIL\Development\seqremail` — currently on `master` = `07bd4f9` = pilot 1.09
+- Last worked: 2026-10-22 (session 39)
+- Repo: `C:\PROJECTS\SEQURE MAIL\Development\seqremail` — currently on `feature/cert-lifecycle` = `d149e85` (NOT pushed — VPN off at save, ahead 16); master/pilot still `07bd4f9` = 1.09
 - Previous active project: MTSA v1.0.8.2-JKR (reactivated 2026-10-15)
+
+## Session 39 (2026-10-21/22) — MyTrustMail ✅ SAVED
+1. Cert lifecycle P6/P7 done; origin/master merged in; PKIWS SMIME_SIGN/SMIME_ENCRYPT; DN `CN=,SERIALNUMBER=MTM-<pseudonym>,C=MY`; validity = subscription.
+2. Cert no longer travels in the email; extension shows no cert details (portal only).
+3. Multi-account extension: follows the open Gmail account (portal V21 `extension_sessions`, 30-day refresh tokens).
+4. Local docker stack rebuilt (V27 + V21) for Zul's manual test.
+
+### Pending / Next
+- **REMIND Zul 2026-10-23**: test the Chrome extension locally (multi-account 8 cases + cert cases).
+- Recipient Privacy Notification pop-up at decrypt + tick-to-consent — discuss mock-up first.
+- Privacy notice URL → PDF — wait for Zul's link.
+- PKIWS lifecycle IT (Zul runs/confirms); boss OK on SERIALNUMBER pseudonym; `extension/config.js` back to pilot before a pilot build; pilot = portal V21 + new extension together; MR after stable.
 
 ## Session 38 (2026-10-20/21) — MyTrustMail ✅ SAVED
 1. Cert lifecycle design + P1-P5 on `feature/cert-lifecycle` (`0ec41cb`, pushed, not deployed). Left: P6 portal/admin UI + emails, P7 docs.
