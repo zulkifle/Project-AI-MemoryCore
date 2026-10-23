@@ -4,7 +4,7 @@
 ## Active Project
 - Name: TG SeQureMail (MyTrustMail)
 - Last worked: 2026-10-22 (session 39)
-- Repo: `C:\PROJECTS\SEQURE MAIL\Development\seqremail` — currently on `feature/cert-lifecycle` = `d149e85` (NOT pushed — VPN off at save, ahead 16); master/pilot still `07bd4f9` = 1.09
+- Repo: `C:\PROJECTS\SEQURE MAIL\Development\seqremail` — currently on `feature/cert-lifecycle` = `d149e85` (pushed to GitLab 2026-10-23); master/pilot still `07bd4f9` = 1.09
 - Previous active project: MTSA v1.0.8.2-JKR (reactivated 2026-10-15)
 
 ## Session 39 (2026-10-21/22) — MyTrustMail ✅ SAVED

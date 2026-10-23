@@ -13,7 +13,7 @@
 
 ## Current Status
 - **Last Accessed**: 2026-10-22 (session 39 — cert lifecycle P6/P7 + master merge + PKIWS DN/validity + cert out of email + multi-account extension; local stack ready for Zul's test) — position #1
-- **Session 39 (2026-10-21/22)** — all on `feature/cert-lifecycle` (`3a0d234` → `d149e85`). **NOT pushed** — push at save failed (gitlab.msctrustgate.com unresolvable, VPN off); push on next save with VPN. Not deployed.
+- **Session 39 (2026-10-21/22)** — all on `feature/cert-lifecycle` (`3a0d234` → `d149e85`). Pushed to GitLab 2026-10-23 (`0ec41cb..d149e85`, retry after VPN). Not deployed.
   - **P6/P7 done**: portal My Certificates + admin Certificates + dashboard counters + notification emails (`3a0d234`); test cases, pilot rollout checklist, store note (`792764e`, `94a588b`).
   - **Merged origin/master** (Fakrul — Outlook SSO, separate sign/encrypt, multiple recipients) → `eb848de`. `CertificateGate` now also on legacy multi-recipient encrypt (every recipient) and sign-only `/sign`.
   - **PKIWS pilot**: accounts `SMIME_SIGN` / `SMIME_ENCRYPT` (`954914b`; creds in memory only, never git). Zul's flow (A verifies → cert via CSR; A sends to B → B auto-provisioned; B verifies → cert via CSR over provisioned keys) confirmed covered + IT (`05ec9a3`).
@@ -346,7 +346,7 @@ Both fixes are in the same uncommitted working tree as session 24's drag-drop/ow
 ## Session History (Last 5)
 
 ### 2026-10-21/22 (Session 39) - Cert lifecycle P6/P7, master merge, PKIWS DN + subscription validity, cert out of email, multi-account extension
-- **Changes**: Finished cert lifecycle P6/P7, merged Fakrul's master, PKIWS SMIME accounts, DN subject with MyKad pseudonym, validity from subscription, cert removed from email + extension UI, extension follows the open Gmail account (per-account refresh tokens, portal V21). All tests green; local stack rebuilt for Zul's manual test. Branch `feature/cert-lifecycle` NOT pushed (VPN off at save, ahead 16). New to-dos: recipient privacy consent pop-up (mock-up first), privacy URL → PDF (link from Zul).
+- **Changes**: Finished cert lifecycle P6/P7, merged Fakrul's master, PKIWS SMIME accounts, DN subject with MyKad pseudonym, validity from subscription, cert removed from email + extension UI, extension follows the open Gmail account (per-account refresh tokens, portal V21). All tests green; local stack rebuilt for Zul's manual test. Branch `feature/cert-lifecycle` pushed 2026-10-23 (`0ec41cb..d149e85`). New to-dos: recipient privacy consent pop-up (mock-up first), privacy URL → PDF (link from Zul).
 - **Time Spent**: ~8 hours (estimate)
 
 ### 2026-10-20/21 (Session 38) - Cert lifecycle P1-P5, pilot 1.09 (merge Fakrul's master), master updated
