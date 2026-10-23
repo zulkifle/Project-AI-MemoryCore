@@ -6,7 +6,7 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[TG SeQureMail](./active/tg-sequremail.md)** (now MyTrustMail) | 2026-10-22 | TBD | Phase 1 ~99% / BRS ~45% | Session 39: cert lifecycle P1-P7 complete + master merged, PKIWS DN/SERIALNUMBER pseudonym, validity = subscription, cert out of email + extension, multi-account extension (follows open Gmail). `feature/cert-lifecycle` pushed (`d149e85`), not deployed. Next: Zul tests the extension locally 2026-10-23; recipient privacy consent pop-up (mock-up first); privacy URL → PDF (link from Zul); pilot rollout + MR when stable. |
+| 1 | **[TG SeQureMail](./active/tg-sequremail.md)** (now MyTrustMail) | 2026-10-23 | TBD | Phase 1 ~99% / BRS ~45% | Session 40: on master with Fakrul's interop fixes; Outlook SSO multi-email fix `0753000` (linked mailbox signs in as primary), pilot 1.11 deployed; interop matrix all 4 directions OK (Gmail→Outlook via task pane only). Proposed (awaiting Zul): admin/user email link features, OTP IP forwarding, Gmail auto-decrypt. Still pending: local extension test on `feature/cert-lifecycle` (merge master first), recipient privacy consent pop-up. |
 | 2 | **[MTSA v1.0.8.2-JKR](./active/mtsa-v1082-jkr.md)** (JKR SKALA) | 2026-10-15 | — | 100% (delivered) | Reactivated from archive 2026-10-15. Repo clean on `MTSA-JKR`, HEAD `8521b9b` (2026-06-04), in sync with origin. Last client action: OTP expiry 60s config change on server. |
 | 3 | **[TradeVault](./active/tradevault.md)** | 2026-08-26 | TBD | 85% | Live deployment started (3 containers running). Fixed empty `calculation_profiles` table, iterated Order Ticket UX (R-selector), reskinned to Swiss light theme (awaiting Dejul's visual confirmation), reset Dejul's forgotten password + fixed a mobile-login bug (username field auto-capitalizing on phone keyboards). Next: build unified Journal View (Excel-style columns), finish moomoo Account + bridge config to verify Feature A/B live. |
 | 4 | **[Petronas Java Migration](./active/petronas-java-migration.md)** | 2026-08-26 | TBD | 75% | Full daemon wrapper built and runnable — DB layer, FTP layer, signing core (verified byte-for-byte against real production signature), `.ssd`/`.err` report writers, per-file orchestrator, main loop + TCP health-check + `main()`. `mvn package` produces a working shaded jar. 35 tests, all passing. Blocked on: 3 of 4 Pre-BRS deliverables from Petronas (spec/business-rules/docs for new embossing values), plus operational setup (PKCS#8 key file, env config, SFTP known_hosts) before a real test run. |
@@ -29,4 +29,4 @@
 ---
 ## System Status
 - **Total Projects**: 14 (7 active + 7 archived)
-- **Last Updated**: 2026-10-15 - save project: TG SeQureMail (Session 37) moved to #1
+- **Last Updated**: 2026-10-23 - save project: TG SeQureMail (Session 40) at #1

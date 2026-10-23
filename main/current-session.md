@@ -3,9 +3,21 @@
 
 ## Active Project
 - Name: TG SeQureMail (MyTrustMail)
-- Last worked: 2026-10-22 (session 39)
-- Repo: `C:\PROJECTS\SEQURE MAIL\Development\seqremail` — currently on `feature/cert-lifecycle` = `d149e85` (pushed to GitLab 2026-10-23); master/pilot still `07bd4f9` = 1.09
+- Last worked: 2026-10-23 (session 40)
+- Repo: `C:\PROJECTS\SEQURE MAIL\Development\seqremail` — currently on **master** = origin/master = `0753000` (Fakrul's interop fixes + Jessy's Outlook multi-email fix); pilot = **1.11**. `feature/cert-lifecycle` = `d149e85` (pushed, not deployed)
 - Previous active project: MTSA v1.0.8.2-JKR (reactivated 2026-10-15)
+
+## Session 40 (2026-10-23) — MyTrustMail ✅ PROJECT SAVED (memory save deferred by Zul)
+1. Outlook SSO: a linked email now signs in as its primary account (`0753000`, pushed); pilot 1.11 built + pushed, Zul applied.
+2. Pilot orphan row 30 (`zulkifle@msctrustgate.com`, SUBSCRIBER, no IC/primary) → "Email already registered"; Zul resolved it, and Outlook decrypt works.
+3. Interop: all 4 directions work; Gmail→Outlook is task pane only (no X-MyTrustMail header from Gmail).
+4. Explained the OTP per-IP limit (portal pod IP shared).
+
+### Pending / Next
+- Zul: test sending from Outlook as `zulkifle@msctrustgate.com`.
+- Awaiting Zul's go: Gmail auto-decrypt (side effects listed; branch choice), admin/user email link features (#1 adopt orphan + #4 investigate row 30, then #2 admin link/unlink), OTP client-IP forwarding, Gmail→Outlook docs (pin pane / mail-flow rule), summary for Fakrul.
+- Commit `pilot/deployment.yaml` 1.11 in DOCKER GITLAB repo (uncommitted).
+- Still open: local extension test on `feature/cert-lifecycle` (merge master in first), recipient privacy consent pop-up.
 
 ## Session 39 (2026-10-21/22) — MyTrustMail ✅ SAVED
 1. Cert lifecycle P6/P7 done; origin/master merged in; PKIWS SMIME_SIGN/SMIME_ENCRYPT; DN `CN=,SERIALNUMBER=MTM-<pseudonym>,C=MY`; validity = subscription.
