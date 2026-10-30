@@ -10,6 +10,7 @@
 ## Session 41 (2026-10-29) — MyTrustID Desktop ✅ PROJECT SAVED
 1. NPRA `AUT100` for BPFK user `'AIN MUNIRAH BINTI AHMAD` (payload sent `` `AIN ``): the 2026-10-27 apostrophe-list fix wasn't enough. `NormalizeName()` now compares letters + digits only (FormKD, Lm excluded) and logs symbol code points on a mismatch. Built OK, logic tested on 9 variants.
 2. The log Zul pasted was from another PC still on the old exe (no `Identity mismatch` line). Local tests fail earlier on `DecryptedToken` (plain TokenPin).
+3. **MyTrustID v1.3.3 is NOT published/released yet** (Zul, 2026-10-30). It's only a local/test build so far, and the latest official release is still v1.3.2. Don't call 1.3.3 "deployed" or "released".
 
 ### Pending / Next
 - Install the v1.3.3 MSI on the user's PC and retest; if still AUT100, read the `normalized` log lines.

@@ -6,6 +6,7 @@
 - **Period**: 2026-03-31 - Active (reactivated 2026-07-09, archived 2026-08-26, reactivated 2026-10-29)
 - **Tech Stack**: C# + WPF + .NET Framework 4.8 + WebSocket
 - **Completion**: 90% (v1.3.3 installer with NPRA name-normalize fix built; awaiting install + retest on the user's PC)
+- **Release status**: latest published release = **v1.3.2** (helpdesk, 2026-07-28). **v1.3.3 is NOT published/released yet** (confirmed by Zul 2026-10-30). It's a local/test build only.
 - **Status**: Active — reactivated 2026-10-29 for NPRA `AUT100` apostrophe name mismatch (BPFK user `'AIN MUNIRAH BINTI AHMAD`). RSA-keygen crash on the one failing PC is still parked.
 - **Due Date**: TBD
 - **Duration**: ~25 hours
@@ -26,7 +27,7 @@
 ## Current Status
 - **Last Session**: 2026-10-29 (Session 24) — NPRA `AUT100` still failing for `'AIN MUNIRAH BINTI AHMAD` even with the 2026-10-27 apostrophe fix (`483449a`). `NormalizeName()` in `AuthServiceNpra.cs` now keeps letters + digits only (FormKD, modifier letters Lm excluded), and a mismatch logs code points per symbol. Built x64 Debug OK; **uncommitted** on `fix/rsa-keygen-crash-handling`. The log Zul pasted came from another PC still running the old exe (none of the new log lines, and the 16:44:53 entries are not in this machine's log).
 - **Next Steps**:
-  1. **Install the new `MyTrustID\Debug\MyTrustIDesktop.msi` (v1.3.3) on the user's PC** and retest NPRA login for `'AIN MUNIRAH`. Check the exe first: `[Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes('C:\Program Files\Trustgate\MyTrustID\MyTrustIDv1.exe')).Contains('DescribeSymbols')` must be `True`. If still AUT100, read the 3 log lines `Identity mismatch` / `Cert name normalized` / `Payload name normalized`.
+  1. **Install the new `MyTrustID\Debug\MyTrustIDesktop.msi` (v1.3.3, unreleased test build) on the user's PC** and retest NPRA login for `'AIN MUNIRAH`. Check the exe first: `[Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes('C:\Program Files\Trustgate\MyTrustID\MyTrustIDv1.exe')).Contains('DescribeSymbols')` must be `True`. If still AUT100, read the 3 log lines `Identity mismatch` / `Cert name normalized` / `Payload name normalized`.
   2. **Commit the `AuthServiceNpra.cs` change** once Zul OKs it (not committed yet; asked 2026-10-29, no answer).
   3. Local test on Zul's own machine fails earlier with `DecryptedToken Exception: not a valid Base-64 string`. The test client sends a non-encrypted `TokenPin`; code expects Base64 of 16-byte IV + AES-CBC ciphertext (key `msctrustgate2015`).
   4. Check whether `0c01454` (and later commits `483449a`) were ever pushed to `origin/fix/rsa-keygen-crash-handling`; the 2026-07-29 push failed on network.
