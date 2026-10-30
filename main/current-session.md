@@ -2,10 +2,18 @@
 *Temporary working memory - resets each session, provides recap when AI restarts*
 
 ## Active Project
-- Name: TG SeQureMail (MyTrustMail)
-- Last worked: 2026-10-23 (session 40)
-- Repo: `C:\PROJECTS\SEQURE MAIL\Development\seqremail` — currently on **master** = origin/master = `0753000` (Fakrul's interop fixes + Jessy's Outlook multi-email fix); pilot = **1.11**. `feature/cert-lifecycle` = `d149e85` (pushed, not deployed)
-- Previous active project: MTSA v1.0.8.2-JKR (reactivated 2026-10-15)
+- Name: MyTrustID Desktop (reactivated from archive 2026-10-29)
+- Last worked: 2026-10-29 (session 41)
+- Repo: `C:\repos\MyTrustIDv1_AATL-GENERIC`, branch `fix/rsa-keygen-crash-handling` (HEAD `483449a`) + **uncommitted** `AuthServiceNpra.cs` name-normalize change
+- Previous active project: TG SeQureMail (MyTrustMail), session 40 on 2026-10-23. Its pending list is below and still open.
+
+## Session 41 (2026-10-29) — MyTrustID Desktop ✅ PROJECT SAVED
+1. NPRA `AUT100` for BPFK user `'AIN MUNIRAH BINTI AHMAD` (payload sent `` `AIN ``): the 2026-10-27 apostrophe-list fix wasn't enough. `NormalizeName()` now compares letters + digits only (FormKD, Lm excluded) and logs symbol code points on a mismatch. Built OK, logic tested on 9 variants.
+2. The log Zul pasted was from another PC still on the old exe (no `Identity mismatch` line). Local tests fail earlier on `DecryptedToken` (plain TokenPin).
+
+### Pending / Next
+- Install the v1.3.3 MSI on the user's PC and retest; if still AUT100, read the `normalized` log lines.
+- Commit `AuthServiceNpra.cs` when Zul OKs it.
 
 ## Session 40 (2026-10-23) — MyTrustMail ✅ PROJECT SAVED (memory save deferred by Zul)
 1. Outlook SSO: a linked email now signs in as its primary account (`0753000`, pushed); pilot 1.11 built + pushed, Zul applied.

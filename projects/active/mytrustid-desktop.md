@@ -3,12 +3,12 @@
 
 ## Project Overview
 - **Type**: Desktop Application (WPF)
-- **Period**: 2026-03-31 - Active (reactivated 2026-07-09)
+- **Period**: 2026-03-31 - Active (reactivated 2026-07-09, archived 2026-08-26, reactivated 2026-10-29)
 - **Tech Stack**: C# + WPF + .NET Framework 4.8 + WebSocket
-- **Completion**: 90% (v1.3.2 x64 build deployed to helpdesk; crash root-cause still unresolved on failing user PC)
-- **Status**: Archived 2026-08-26 — parked as settled-for-now per Zul; crash root-cause on the one failing PC remains unresolved but deprioritized, not a blocking issue for current usage
+- **Completion**: 90% (v1.3.3 installer with NPRA name-normalize fix built; awaiting install + retest on the user's PC)
+- **Status**: Active — reactivated 2026-10-29 for NPRA `AUT100` apostrophe name mismatch (BPFK user `'AIN MUNIRAH BINTI AHMAD`). RSA-keygen crash on the one failing PC is still parked.
 - **Due Date**: TBD
-- **Duration**: ~23.5 hours
+- **Duration**: ~25 hours
 
 ## Solution Structure
 | Project | Purpose | Path |
@@ -24,9 +24,12 @@
 - Desktop installer via VS installer project
 
 ## Current Status
-- **Last Session**: 2026-07-29 (Session 22) — Committed session 20's x64-lock + Phase 1 process isolation changes (163 files: `MyTrustIDv1.TokenHelper` new project, `TokenDetectCore.cs`, `App.config`, `MyTrustIDv1.csproj`, `MyTrustID.vdproj`, `mytrustid.bat` dependencies, `EnableCrashDumps.zip`) to `fix/rsa-keygen-crash-handling` as commit `0c01454`. **Push to origin failed** — could not reach the internal GitLab server (`10.5.1.42:30220`, connection timeout) — likely a network/VPN issue on this machine at the time. Commit is safe locally; branch is 1 commit ahead of `origin/fix/rsa-keygen-crash-handling`.
+- **Last Session**: 2026-10-29 (Session 24) — NPRA `AUT100` still failing for `'AIN MUNIRAH BINTI AHMAD` even with the 2026-10-27 apostrophe fix (`483449a`). `NormalizeName()` in `AuthServiceNpra.cs` now keeps letters + digits only (FormKD, modifier letters Lm excluded), and a mismatch logs code points per symbol. Built x64 Debug OK; **uncommitted** on `fix/rsa-keygen-crash-handling`. The log Zul pasted came from another PC still running the old exe (none of the new log lines, and the 16:44:53 entries are not in this machine's log).
 - **Next Steps**:
-  1. **Retry `git push origin fix/rsa-keygen-crash-handling`** once network/VPN access to `10.5.1.42:30220` is restored.
+  1. **Install the new `MyTrustID\Debug\MyTrustIDesktop.msi` (v1.3.3) on the user's PC** and retest NPRA login for `'AIN MUNIRAH`. Check the exe first: `[Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes('C:\Program Files\Trustgate\MyTrustID\MyTrustIDv1.exe')).Contains('DescribeSymbols')` must be `True`. If still AUT100, read the 3 log lines `Identity mismatch` / `Cert name normalized` / `Payload name normalized`.
+  2. **Commit the `AuthServiceNpra.cs` change** once Zul OKs it (not committed yet; asked 2026-10-29, no answer).
+  3. Local test on Zul's own machine fails earlier with `DecryptedToken Exception: not a valid Base-64 string`. The test client sends a non-encrypted `TokenPin`; code expects Base64 of 16-byte IV + AES-CBC ciphertext (key `msctrustgate2015`).
+  4. Check whether `0c01454` (and later commits `483449a`) were ever pushed to `origin/fix/rsa-keygen-crash-handling`; the 2026-07-29 push failed on network.
   2. **Diagnose why `pkcs11-logger` produced zero output** — no log file, no error — when Dejul tested it. Not yet asked: (a) which machine was tested — Dejul's own working machine (no crash expected, but a log should still appear from normal calls) vs. the actual failing user's PC; (b) were the `PKCS11_LOGGER_LIBRARY_PATH`/`_LOG_FILE_PATH` env vars set as **System** vars via `setx`, and was the machine rebooted/user re-logged-in after (setx doesn't affect the currently-running session); (c) was the edit made to the **deployed** `MyTrustIDv1.exe.config` (not the repo's `App.config`) and was the app relaunched fresh afterward.
   3. Once a log is captured, interpret it to find why the crash still happens post-bitness-fix.
   4. Unresolved from earlier: desktop shortcut not working + double-click `.exe` producing zero log output — diagnostic questions asked (Event Viewer, `C:\Trustgate\MyTrustID\logs\` folder existence, Task Manager during launch) but not yet answered by Dejul.
@@ -40,6 +43,8 @@
 - **Known Issues**: bpfk outer iframe missing `allow="local-network-access"` — confirmed via Sec-Fetch-Dest + empty MTID header log
 
 ## Key Logic Notes
+- **`AUT100` name compare (2026-10-29)**: `NormalizeName()` keeps only Unicode categories Lu/Ll/Lt/Lo/Nd after `Normalize(FormKD)`, uppercased, compared `Ordinal`. Drops all punctuation and spaces, so any apostrophe variant (`` ` `` `’` `ʼ` `ʻ` `＇` `｀`) matches the cert's `'`. Modifier letters (Lm) are excluded on purpose: `ʼ` U+02BC is Lm, so `char.IsLetterOrDigit` would keep it (found in a test). `UserID` and `UserCompID` stay exact match, so identity stays anchored on the IC. The 2026-10-27 version (`483449a`) only mapped 6 listed look-alikes to `'`, which wasn't enough. Log text can't tell `'` from `ʼ`, which is why `DescribeSymbols()` logs `U+XXXX@index` on a mismatch.
+- **How to tell which exe produced a log**: the new build logs `Identity mismatch - userIdMatch: ..., fullNameMatch: ...` before `Authentication failed, UserID/UserFullName...`. If that line is missing, the exe is old. Installer `MyTrustID.vdproj` packages `..\MyTrustIDv1\obj\x64\Debug\MyTrustIDv1.exe`, ProductVersion 1.3.3; build the solution (`MyTrustIDv1.sln /p:Configuration=Debug /p:Platform=x64`), because building the csproj alone fails on `MyTrustIDv1.TokenHelper` (no OutputPath for that config).
 - **`AUT100` root causes found 2026-07-13**: (1) `X509Certificate2.Subject` quotes RDN values containing a comma (e.g. `CN="PAN, CHIA-YUEH"`) — naive `Split(',')` in `CertHelper.cs` tore the value in two, corrupting `CD.UserFullName`. (2) Caller (NPRA/PKI webservice) sometimes sends untrimmed whitespace in request params (e.g. `UserFullname: "Siow Nget Kam "`) — cert-side value is trimmed during DN parsing but request-side wasn't, so `OrdinalIgnoreCase` comparison still failed on the trailing space.
 - `CheckBNMcert()` in `PickupNewCertViewModel.cs:507` — reads X509 SubjectDN, checks `O=BNM`
 - Returns `isModifiedCka = true` if BNM cert detected → affects how cert is imported via `ImportCertificate()`
@@ -59,6 +64,14 @@
 - **`pkcs11-logger` set up for deeper diagnosis, but produced nothing on first attempt**: found a bundled copy already in `C:\repos\Pkcs11Admin-0.6.0\src\lib\pkcs11-logger\pkcs11-logger-x64.dll`, verified genuinely x64 via PE header. Instructed Dejul to set `PKCS11_LOGGER_LIBRARY_PATH`/`PKCS11_LOGGER_LOG_FILE_PATH` env vars and repoint the deployed config's `MyTrustID` key at the logger DLL. Result: "no error or file generated" — the logger apparently never engaged at all. Not yet diagnosed (see Next Steps #1) — candidates: wrong machine tested, `setx` env vars not yet live (needs reboot/relog), or the deployed `.exe.config` wasn't the one edited.
 
 ## Session History (Last 5)
+
+### 2026-10-29 - NPRA AUT100 Apostrophe: Letters-and-Digits Name Compare
+- **Changes**: Reactivated from archive. BPFK user's cert CN `'AIN MUNIRAH BINTI AHMAD` vs NPRA payload `` `AIN MUNIRAH BINTI AHMAD `` still gave `AUT100`. Confirmed the built exes already had the 2026-10-27 fix, so the actual characters were outside the 6-item list. Following Zul's idea, rewrote `NormalizeName()` to compare letters + digits only (FormKD, Lm excluded), dropped the unused `Regex` import, and added mismatch diagnostics (`DescribeSymbols()`). Tested the logic against 9 variants (all apostrophe forms, case, spacing, accent match; a different name still rejected). Solution build x64 Debug passed. Zul installed it locally (Program Files exe 16:37 has the fix). The log Zul pasted had none of the new lines and wasn't in the local log, so it came from another PC on the old exe. Local tests on Zul's machine fail earlier on `DecryptedToken` (plain `TokenPin`). Not committed yet.
+- **Time Spent**: ~1 hour
+
+### 2026-10-27 - NPRA Apostrophe Look-alikes + '=' in DN Values (commit `483449a`)
+- **Changes**: (Recovered from git log; no session save at the time.) `AuthServiceNpra` compared `UserFullName` via `NormalizeName()` mapping `` ` `` `´` `‘` `’` `ʼ` `′` to `'` and collapsing whitespace. `CertHelper` GPKI/ECourt/Mykey parsers split RDNs with `Split('=', 2)` so a CN containing `=` no longer gets dropped (it used to cause a NullReferenceException on `.ToUpper()`). Installer v1.3.3 built the same day.
+- **Time Spent**: ~30 min
 
 ### 2026-07-29 - Committed Session 20's x64-Lock + Phase 1 Isolation (Push Pending)
 - **Changes**: Staged and committed all of session 20's outstanding changes on `fix/rsa-keygen-crash-handling` (commit `0c01454`, 163 files) — `MyTrustIDv1.TokenHelper` project, `TokenDetectCore.cs`, x64 `PlatformTarget` lock in both `.csproj` files, `MyTrustID.vdproj` x64 `TargetPlatform` + removed 32-bit driver merge-module entries (`eToken.dll`, `IDPrimeTokenEngine.dll`), `App.config` isolation flag, `EnableCrashDumps.zip` diagnostic tooling. `git push` to `origin` failed with a connection timeout to the internal GitLab host (`10.5.1.42:30220`) — network/VPN unreachable at the time. Commit is local and clean; nothing lost, just needs a retry.
@@ -119,4 +132,4 @@ Earlier sessions (2026-03-31 to 2026-04-21): Project registered. Full solution e
 - **SafeNet Token installer**: `C:\PROJECTS\MYTRUSTID DESKTOP\Token\Safenet\Installation` — install this before signing EXE/MSI with real code signing cert
 
 ---
-**Last Updated**: 2026-07-29 (Session 22) | **Position**: #1/9 Active
+**Last Updated**: 2026-10-29 (Session 24) | **Position**: #1/8 Active

@@ -1,10 +1,11 @@
 ---
 name: position-size-calculator
 description: "MUST use when calculating stock position size, lot size, or risk-based position sizing
-             for Bursa Malaysia (or any equity) trading. Trigger on 'position size calculator',
-             'calculate lot saham', 'berapa lot nak beli', 'risk based position sizing',
-             'position sizing saham', or when Dejul pastes just Entry Price / Stop Loss / ATR
-             (+ optional star rating) to size a trade."
+             for Bursa Malaysia or US stocks (fractional shares via moomoo). Trigger on
+             'position size calculator', 'calculate lot saham', 'berapa lot nak beli',
+             'risk based position sizing', 'position sizing saham', 'saham US', 'US stock',
+             'fractional', or when Dejul pastes just Entry Price / Stop Loss / ATR
+             (+ optional star rating) to size a trade. Prices in $ → US mode."
 ---
 
 # position-size-calculator — Risk-Based Position Sizing (Bursa Malaysia)
@@ -136,6 +137,78 @@ Keep it short — a small table (or one line if only one tier requested):
 
 ---
 
+## US Stocks Mode (Lv.3, confirmed 2026-10-27)
+
+Same concept as Bursa — risk a fixed % of equity, risk per share = ATR — only the units change.
+Use this mode when Dejul says US / gives prices in $ / names a US ticker.
+
+### Quick Entry (US)
+```
+US Ticker   =            (optional)
+Entry Price = $
+Stop Loss   = $          (only used when Entry < $5)
+ATR         = $
+Setup       = 5★ / 4★ / 3★
+```
+
+### Fixed constants
+| Constant | Value | Note |
+|---|---|---|
+| FX | **1 USD = RM4.08** | Fixed value chosen by Dejul (BNM KL reference rate 4.0841 on 2026-10-26). Change only when he says so. |
+| Equity (USD) | `C2_USD = RM10,000 / 4.08 = $2,450.98` | Same RM10,000 capital as Bursa, converted — see [[project_trading_capital]] |
+| 1% Risk | `F2_USD = 0.01 × C2_USD = $24.51` | |
+| Penny threshold | **$5** | Entry ≥ $5 → EffectiveSL = Entry − ATR. Entry < $5 → use manual SL (same idea as the RM1 rule). |
+
+### Sizing — fractional shares (moomoo)
+No board lot in the US: 1 unit = 1 share, and moomoo supports fractional shares down to **0.0001 share**.
+
+```
+F4 (Risk/share)    = Entry − EffectiveSL            (= ATR when Entry ≥ $5)
+Raw Shares         = R × F2_USD / F4
+Fractional Shares  = FLOOR(Raw Shares, 4 decimals)  ← never round up
+Capital Required   = Fractional Shares × Entry
+Actual Max Loss    = Fractional Shares × F4         ← also show in RM (× 4.08) and % of equity
+Whole Shares       = FLOOR(Raw Shares)              ← alternative if he wants a normal (non-fractional) order
+```
+
+Do NOT use the Bursa `ROUND(..., -2)` step here — it can round up; US sizing always floors.
+
+### Fractional order rules to remind Dejul (moomoo MY)
+- Fractional buys are **market orders only** (Dejul's own experience; moomoo help centre also says day orders only). The fill price will differ from the planned Entry — real risk = shares × (fill − SL). Place the order when price is close to Entry.
+- **No attached stop-loss** on fractional orders — the SL has to be a separate order or watched manually.
+- Minimum fractional **buy amount is $5** — if Capital Required < $5 the trade can't be placed.
+- Not every US stock supports fractional — check for the "Fractional Share" tag.
+
+### Worked examples (US)
+**A** — Entry $50.00 | ATR $1.20 | 4★ (0.5R)
+```
+EffectiveSL = 50 − 1.20 = $48.80, F4 = $1.20
+Raw = 0.5 × 24.5098 / 1.20 = 10.21242 → 10.2124 shares
+Capital = 10.2124 × 50 = $510.62
+Max loss = 10.2124 × 1.20 = $12.25  (≈ RM50.00, 0.50% equity)
+Whole-share alternative: 10 shares, $500.00, max loss $12.00
+```
+
+All tiers for A:
+| | 1R | 0.5R | 0.25R |
+|---|---|---|---|
+| Fractional shares | 20.4248 | 10.2124 | 5.1062 |
+| Capital | $1,021.24 | $510.62 | $255.31 |
+| Max loss | $24.51 | $12.25 | $6.13 |
+| Whole shares | 20 | 10 | 5 |
+
+**B** — expensive stock: Entry $500.00 | ATR $12.00 | 3★ (0.25R)
+```
+Raw = 0.25 × 24.5098 / 12 = 0.51062 → 0.5106 shares, capital $255.30, max loss $6.13 (≈ RM25.00)
+Whole shares = 0 → only tradable as fractional (market order)
+```
+
+### Output format (US)
+`Entry / EffectiveSL / Fractional shares / Capital ($ + RM) / Max loss ($ + RM + % equity) / Whole-share alternative`
+
+---
+
 ## Level History
 - **Lv.1** — Base: Formulas confirmed directly by Dejul (2026-09-09) from his real Excel tool. Worked example added for verification.
 - **Lv.2** — Quick-entry template (EP/SL/ATR + star rating only, equity defaults to RM10,000), star→R mapping (5★=1R/4★=0.5R/3★=0.25R), floor-lot rule (never round up), and effective-SL rule (≥RM1 uses ATR-based Max SL, <RM1 uses manual SL) — all confirmed by Dejul 2026-09-09.
+- **Lv.3** — US stocks mode (2026-10-27): RM10,000 converted at a fixed FX of 4.08, sizing in fractional shares (0.0001, floored) for moomoo market orders, whole-share alternative, $5 penny threshold, moomoo fractional rules (market/day only, no attached SL, $5 min buy).
