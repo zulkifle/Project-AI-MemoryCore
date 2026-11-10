@@ -13,7 +13,7 @@
 
 ## Current Status
 - **Last Accessed**: 2026-11-10 (session 44 — Firefox Add-ons (AMO) submission) — position #1
-- **Session 44 (2026-11-10)** — **Firefox Add-ons (AMO): SUBMITTED 2026-11-10** by Zul (no code changes; guided form-filling only). ZIP most likely `dist\MyTrustMail-firefox-pilot-v1.0.2.zip` (newest Firefox build, 2026-11-03; repo `extension/manifest.json` = 1.0.2) — confirm with Zul.
+- **Session 44 (2026-11-10)** — **Firefox Add-ons (AMO): SUBMITTED 2026-11-10** by Zul (no code changes; guided form-filling only). ZIP = `dist\MyTrustMail-firefox-pilot-v1.0.2.zip` (built 2026-11-03; confirmed by Zul).
   - Listing choices: Support email `helpdesk@msctrustgate.com`; support website `https://digitalid2.msctrustgate.com/mytrustmail/contact`; License **All Rights Reserved** (proprietary; bundled PDF.js Apache-2.0 + qrcode.js MIT keep their own licences); category Privacy & Security.
   - **Privacy Policy field** (AMO wants the full text, not a URL): pasted a shortened MyTrustMail-specific policy based on the `91e6674` page — it *supplements* the corporate notice (first line links `msctrustgate.com/privacy-notice-view`), DPO `dpo@msctrustgate.com` + `helpdesk@`. Note: management had said "corporate notice as-is" — this text differs from the Chrome listing (`/privacy` redirect). If boss objects, align the two.
   - **Source code: answered No** (no build step; only minified files are unmodified pdfjs-dist 4.10.38 + qrcode.js). Notes to Reviewer = store-submission.md §6 steps + library versions + one line that the packaging script only writes a per-browser `manifest.json` (no JS transformed).
