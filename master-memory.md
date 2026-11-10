@@ -44,7 +44,7 @@ Project files stored in projects/active/ and projects/archived/.
 ### 🔌 **Skill Plugin System**
 - Plugin: `jessy-skills` (Claude Code plugin)
 - Location: `plugins/jessy-skills/`
-- Skills: 24 active skills
+- Skills: 25 active skills
   - `springboot-restful` — Auto-triggers on all Spring Boot / Java REST tasks
   - `save-memory` — Triggers on "save", "save memory", "save progress"
   - `mygpki-signing` — Triggers on MyGPKI INTERNAL signing, MTSA PDF signing, iText5 CMS flow
@@ -69,6 +69,7 @@ Project files stored in projects/active/ and projects/archived/.
   - `position-size-calculator` (Lv.3) — Triggers on "position size calculator", "calculate lot saham", "berapa lot nak beli", "risk based position sizing", or Dejul pasting just Entry Price/Stop Loss/ATR + star rating — quick-entry risk-based lot sizing for Bursa Malaysia (equity defaults RM10,000, 5★/4★/3★ = 1R/0.5R/0.25R, lots always floored, ATR-based Max SL used as effective stop when Entry ≥RM1). Lv.3 adds US stocks mode: RM10,000 at fixed FX 4.08 → $2,450.98, moomoo fractional shares (0.0001, floored, market orders only), whole-share alternative, $5 penny threshold
   - `moomoo-api-trading` — Triggers on "execute guna moomoo", "beli saham guna moomoo api", "check moomoo balance", or combining position-size-calculator output into an order — executes/checks orders via futu-api + OpenD; confirmed account FUTUMY/market MY/Bursa Malaysia execution works (verified from Dejul's own TradeVault moomoo-bridge project); SIMULATE by default, mandatory confirm-before-REAL + $ cap + never expose unlock password
   - `hedge-fund-analysis` — Triggers on "analisis saham [X]", "equity analysis", "hedge fund analysis", "fair value [stock]", "analisis FCPO", or Dejul's "Act as a professional equity analyst" prompt — 10-section analyst report (Executive Summary view Positive/Neutral/Negative, business, financials, drivers, risks, valuation P/E P/B EV/EBITDA yield + peers, technicals, bull/base/bear fair values, trading plan, final thesis); always states date + price, labels facts (source+date) vs "Andaian:"; commodity mode for FCPO swaps valuation for spreads/curve/cost and keeps the 6-factor scorecard bias
+  - `trustgate-gitops-cicd` (Lv.1) — Triggers on "buat CI/CD", "setup CI CD", ".gitlab-ci.yml", "follow tgnra", "gitops", "argocd", or a failed release job — Trustgate pattern from trustgate/tgnra + `docker/argocd/README-ci.md`: review (SonarQube) → build (buildkit rootless → Nexus `<app>:<VERSION>` + sha256 digest) → release (commit `localhost:30453/<app>:<VERSION>@<digest>` into trustgate/gitops `<app>/<env>/`, wait for Argo CD Synced + Healthy); pipeline never touches the cluster; always copy the template from README-ci.md; Java/Maven WAR adaptation (test stage + Sonar binaries/JaCoCo + multi-stage Dockerfile) marked unverified
 - Add new skills: Create folder in `plugins/jessy-skills/skills/`
 
 ## 🔥 Essential Components (Always Load)

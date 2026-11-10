@@ -2,10 +2,21 @@
 *Temporary working memory - resets each session, provides recap when AI restarts*
 
 ## Active Project
-- Name: MyTrustID Desktop (reactivated from archive 2026-10-29)
-- Last worked: 2026-10-29 (session 41)
-- Repo: `C:\repos\MyTrustIDv1_AATL-GENERIC`, branch `fix/rsa-keygen-crash-handling` (HEAD `483449a`) + **uncommitted** `AuthServiceNpra.cs` name-normalize change
-- Previous active project: TG SeQureMail (MyTrustMail), session 40 on 2026-10-23. Its pending list is below and still open.
+- Name: **MTSA KASTAM** (`C:\PROJECTS\KASTAM\MTSA_KASTAM`) — unit tests + CI/CD (session 43, 2026-11-10)
+- Previous: MyTrustID Desktop (session 41, 2026-10-29) — repo `C:\repos\MyTrustIDv1_AATL-GENERIC`, branch `fix/rsa-keygen-crash-handling` (HEAD `483449a`) + **uncommitted** `AuthServiceNpra.cs` name-normalize change. TG SeQureMail (session 40) pending list below is still open.
+
+## Session 43 (2026-11-10) — MTSA KASTAM unit tests + Trustgate GitOps CI/CD skill (NOT yet saved/pushed)
+1. **MTSA KASTAM** = NetBeans Ant WAR (`MyTrustSignerServiceAPI.war`), JDK 1.8, WildFly 18, 14 REST servlets, 37 JAX-WS clients; libs from `C:\PROJECTS\java Library`. Was not a git repo.
+2. Added **`pom.xml` beside Ant** (Ant/NetBeans unchanged): same lib versions, `jaxws-maven-plugin` 2.6 wsimport per client from local WSDLs + `catalog.xml`, `javax.servlet-api` 4.0.1 provided (javaee-web-api 7.0 is a stripped jar — fails in tests), opencsv transitive deps excluded, JaCoCo. Maven WAR = same classes as Ant WAR (only jar file names differ: `log4j-1.2.8.jar`, `commons-lang3-3.7.jar`).
+3. **290 unit tests pass** (`mvn clean package` on JDK 8): AESCryptoUtil, encryptPin/decyptPin, 8 `Validate*Param` (reflection, WS104 names), ReadConfig (55 required keys), 14 servlets bad JSON → WS131 (Mockito), Gson response key contract, X509 parsing. Production code untouched.
+4. `git init -b master` + `.gitlab-ci`-ready `.gitignore` (root-anchored; `/test/` ignored because old main() scripts hold pilot creds). **No commit, no remote yet.**
+5. Findings reported to Zul (not fixed): `ReadConfig.readConfig()` never closes its FileInputStream (called on every API request → fd leak); hardcoded MTIDA API key `SignJobHelper.java:826`; pilot creds in 10 `test/*.java`; `ValidateUserReportParam` reports "SignatureStatus" for missing CertificateRequestStatus.
+6. Zul's friend said to follow **trustgate/tgnra** for CI/CD → studied it + `C:\PROJECTS\DOCKER GITLAB\docker\argocd\README-ci.md` (official guide by Habib) → new skill **`trustgate-gitops-cicd` Lv.1**, plugin 1.14.0. Pattern: review (SonarQube) → build (buildkit rootless → Nexus `<app>:<VERSION>` + digest) → release (commit image@digest to trustgate/gitops `<app>/<env>/`, wait Argo CD Synced+Healthy). Pipeline never touches the cluster.
+
+### Pending / Next
+- Zul to decide: fix the fd leak + move the MTIDA key to config before first push? GitLab remote name (`trustgate/mtsa-kastam`?), release branch, pilot vs prod first.
+- Write KASTAM `.gitlab-ci.yml` from the README template + Java additions (test stage, Sonar binaries/JaCoCo), multi-stage Dockerfile (Maven → WildFly 18), `VERSION`, `.dockerignore`; gitops `kastam/<env>/deployment.yaml` with `/opt/mtsa` config from Secret/NFS in the mount guard. Java path is unverified — confirm runner Maven Central access with Habib.
+- Run `save` to commit + push memory (skill + session) — not pushed yet.
 
 ## Session 42 (2026-11-05 to 2026-11-10) — Zoho ASAP test + FCPO Morning Brief ✅ SAVED
 1. Zoho Desk ASAP test page (scratchpad index.html, served on port 5500 because Docker holds 8080). Widget connected; the Answer Bot replied once the friend's KB articles were published.
