@@ -16,7 +16,15 @@
 ### Pending / Next
 - Zul to decide: fix the fd leak + move the MTIDA key to config before first push? GitLab remote name (`trustgate/mtsa-kastam`?), release branch, pilot vs prod first.
 - Write KASTAM `.gitlab-ci.yml` from the README template + Java additions (test stage, Sonar binaries/JaCoCo), multi-stage Dockerfile (Maven → WildFly 18), `VERSION`, `.dockerignore`; gitops `kastam/<env>/deployment.yaml` with `/opt/mtsa` config from Secret/NFS in the mount guard. Java path is unverified — confirm runner Maven Central access with Habib.
-- Run `save` to commit + push memory (skill + session) — not pushed yet.
+- Run `save` to commit + push memory (skill + session). **Note**: the skill, plugin 1.14.0, master-memory and this section were already pushed in `ac245e9` (swept in by the parallel MyTrustMail save, session 44) — a later `save` only needs to add new changes.
+
+## Session 44 (2026-11-10, parallel to session 43) — MyTrustMail Firefox Add-ons submission ✅ PROJECT SAVED
+1. Guided Zul through the AMO form; Zul **submitted 2026-11-10** (likely `dist\MyTrustMail-firefox-pilot-v1.0.2.zip`).
+2. Choices: support `helpdesk@msctrustgate.com` + `/mytrustmail/contact`; licence All Rights Reserved; privacy = MyTrustMail-specific text supplementing the corporate notice (based on `91e6674`); source code = No; same reviewer accounts as Chrome.
+
+### Pending / Next
+- Wait for the AMO verdict; keep pilot + reviewer allow-list unchanged until then. On approval: add the Firefox link to `/install`.
+- AMO privacy text differs from the Chrome listing (corporate-notice redirect). Align them if the boss objects.
 
 ## Session 42 (2026-11-05 to 2026-11-10) — Zoho ASAP test + FCPO Morning Brief ✅ SAVED
 1. Zoho Desk ASAP test page (scratchpad index.html, served on port 5500 because Docker holds 8080). Widget connected; the Answer Bot replied once the friend's KB articles were published.

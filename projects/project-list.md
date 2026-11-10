@@ -6,7 +6,7 @@
 
 | Pos | Project | Last Modified | Due Date | Completion | Status |
 |-----|---------|--------------|----------|------------|--------|
-| 1 | **[TG SeQureMail](./active/tg-sequremail.md)** (now MyTrustMail) | 2026-11-10 | TBD | Phase 1 ~99% / BRS ~45% | Session 43: **Firefox Add-ons (AMO) submitted 2026-11-10** (likely v1.0.2 pilot ZIP; All Rights Reserved; MyTrustMail-specific privacy text supplementing the corporate notice; source code = No; same reviewer accounts as Chrome). Waiting AMO verdict — keep pilot + reviewer setup unchanged. Still pending: local extension test, recipient privacy consent pop-up, Gmail auto-decrypt (awaiting Zul). |
+| 1 | **[TG SeQureMail](./active/tg-sequremail.md)** (now MyTrustMail) | 2026-11-10 | TBD | Phase 1 ~99% / BRS ~45% | Session 44: **Firefox Add-ons (AMO) submitted 2026-11-10** (likely v1.0.2 pilot ZIP; All Rights Reserved; MyTrustMail-specific privacy text supplementing the corporate notice; source code = No; same reviewer accounts as Chrome). Waiting AMO verdict — keep pilot + reviewer setup unchanged. Still pending: local extension test, recipient privacy consent pop-up, Gmail auto-decrypt (awaiting Zul). |
 | 2 | **[MyTrustID Desktop](./active/mytrustid-desktop.md)** | 2026-10-29 | TBD | 90% | Reactivated from archive. NPRA `AUT100` apostrophe name mismatch: `NormalizeName()` now compares letters + digits only, plus mismatch code-point logging. Built, not committed. Next: install v1.3.3 MSI on the user's PC and retest (the pasted log came from a PC still on the old exe). |
 | 3 | **[MTSA v1.0.8.2-JKR](./active/mtsa-v1082-jkr.md)** (JKR SKALA) | 2026-10-15 | — | 100% (delivered) | Reactivated from archive 2026-10-15. Repo clean on `MTSA-JKR`, HEAD `8521b9b` (2026-06-04), in sync with origin. Last client action: OTP expiry 60s config change on server. |
 | 4 | **[TradeVault](./active/tradevault.md)** | 2026-08-26 | TBD | 85% | Live deployment started (3 containers running). Fixed empty `calculation_profiles` table, iterated Order Ticket UX (R-selector), reskinned to Swiss light theme (awaiting Dejul's visual confirmation), reset Dejul's forgotten password + fixed a mobile-login bug (username field auto-capitalizing on phone keyboards). Next: build unified Journal View (Excel-style columns), finish moomoo Account + bridge config to verify Feature A/B live. |
@@ -29,4 +29,4 @@
 ---
 ## System Status
 - **Total Projects**: 14 (8 active + 6 archived)
-- **Last Updated**: 2026-11-10 - save project: TG SeQureMail moved to #1 (Session 43, Firefox AMO submission)
+- **Last Updated**: 2026-11-10 - save project: TG SeQureMail moved to #1 (Session 44, Firefox AMO submission)
