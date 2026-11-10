@@ -7,6 +7,17 @@
 - Repo: `C:\repos\MyTrustIDv1_AATL-GENERIC`, branch `fix/rsa-keygen-crash-handling` (HEAD `483449a`) + **uncommitted** `AuthServiceNpra.cs` name-normalize change
 - Previous active project: TG SeQureMail (MyTrustMail), session 40 on 2026-10-23. Its pending list is below and still open.
 
+## Session 42 (2026-11-05 to 2026-11-10) — Zoho ASAP test + FCPO Morning Brief ✅ SAVED
+1. Zoho Desk ASAP test page (scratchpad index.html, served on port 5500 because Docker holds 8080). Widget connected; the Answer Bot replied once the friend's KB articles were published.
+2. FCPO research for Zul (market, bias, Dec/Jan prices, MPOB stocks, exports, sources), then the **FCPO Morning Brief** built into TradeVault `position-sizing-bot`. It runs Mon-Fri 09:45 MYT, with a rule-based scorecard (MPOC + Yahoo) + Claude web-search analysis. First commit a4dce32 (image 1.3).
+3. 2026-11-10: Zul's hedge-fund analyst prompt → adapted for futures, trimmed to ~2,200-2,800 chars and always one Telegram message. Web search cap is 10, logged per run. Optional `FCPO_BOT_TOKEN` = a second Telegram bot in the SAME pod (own chat). Commit **6b3dc6d** pushed, image `customsupp:1.4` pushed.
+4. New skill `hedge-fund-analysis` (Lv.1) for stock/commodity deep-dives; plugin 1.13.0.
+
+### Pending / Next
+- Zul: create the FCPO bot at BotFather (press Start), create a real `sk-ant-api03-` key at console.anthropic.com, revoke the `sk-ant-usr-` value pasted in chat, patch `customsupp-secret` (`fcpo-bot-token` + `anthropic-api-key`), `kubectl apply -f k8s-deployment.yaml`, test `/fcpo`.
+- The first real Claude analysis has never run, so check output length/quality and the "web searches" log line after Zul's first test.
+- Unanswered: what fixed the Zoho KB; whether Zul trades FCPO futures directly (1 contract ≈ RM112k notional, RM25/point vs RM10k equity) or plantation stocks.
+
 ## Session 41 (2026-10-29) — MyTrustID Desktop ✅ PROJECT SAVED
 1. NPRA `AUT100` for BPFK user `'AIN MUNIRAH BINTI AHMAD` (payload sent `` `AIN ``): the 2026-10-27 apostrophe-list fix wasn't enough. `NormalizeName()` now compares letters + digits only (FormKD, Lm excluded) and logs symbol code points on a mismatch. Built OK, logic tested on 9 variants.
 2. The log Zul pasted was from another PC still on the old exe (no `Identity mismatch` line). Local tests fail earlier on `DecryptedToken` (plain TokenPin).

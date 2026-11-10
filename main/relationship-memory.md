@@ -62,6 +62,9 @@
 - **Infrastructure choices**: reuses what already exists in the data center (existing MariaDB, existing OIDC prod provider, existing nginx style) — said no to a new PVC/DB server. Propose reuse first.
 - **Likes one-click tooling**: asked for double-click `.bat`/PowerShell scripts to switch environments and build/deploy; wants config separated so it can be applied on its own (jumio-style `configmap.yaml`).
 - **"Dalam kata mudah"**: when a technical explanation gets dense, he asks for the plain version — lead with a short analogy-level summary, then details.
+- **Trading reports — short but not bare** (2026-11-10): for the FCPO Telegram brief he first asked for a full hedge-fund style analysis, then "short kan sahaja, tldr", then "jangan terlampau ringkas, sedikit penerangan, yang penting 1 mesej". Default for market reports = all sections, 1-3 lines each (number + short why), one Telegram message. Full deep report only when he asks.
+- **Clarify scope words like "bot baru"** (2026-11-10): he wanted a new Telegram bot/chat but the SAME service/pod — not a second deployment. When he asks for something "separate", confirm whether he means the user-facing side or the infrastructure.
+- **Secrets hygiene**: he once pasted an API-like token into chat while following kubectl steps (2026-11-10). Give copy-paste commands that only need one clearly marked placeholder replaced, and remind him not to paste keys in chat.
 - **Git Branching**: When a fix branch is already pending merge on hold for external sign-off, prefers stacking new related fixes on top of it rather than branching independently off master — consolidates into one MR instead of several pending ones (confirmed 2026-07-16, MyTrustID Desktop: `fix/rsa-keygen-crash-handling` stacked on `fix/autoupdate-elevation`)
 
 ## Interaction History
