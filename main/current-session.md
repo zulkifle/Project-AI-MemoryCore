@@ -2,8 +2,20 @@
 *Temporary working memory - resets each session, provides recap when AI restarts*
 
 ## Active Project
-- Name: **MTSA KASTAM** (`C:\PROJECTS\KASTAM\MTSA_KASTAM`) — unit tests + CI/CD (session 43, 2026-11-10)
+- Name: **ImportCertTester + MyTrustID Desktop** (session 45, 2026-11-11). See below.
+- Also open: **MTSA KASTAM** (`C:\PROJECTS\KASTAM\MTSA_KASTAM`) — unit tests + CI/CD (session 43, 2026-11-10)
 - Previous: MyTrustID Desktop (session 41, 2026-10-29) — repo `C:\repos\MyTrustIDv1_AATL-GENERIC`, branch `fix/rsa-keygen-crash-handling` (HEAD `483449a`) + **uncommitted** `AuthServiceNpra.cs` name-normalize change. TG SeQureMail (session 40) pending list below is still open.
+
+## Session 45 (2026-11-11) — ImportCertTester + MyTrustID ECC pickup fix ✅ SAVED
+1. **ImportCertTester** (`C:\repos\ImportCertTester`, WinForms .NET 8 x64, **not a git repo**): token → keypair (RSA 2048-4096 / ECC P-256/384/521) + CSR with copy → sign in PKIWS → paste + import → result. Built on MyTrustID's Pkcs11Interop 4.1.2 + BouncyCastle 2.6.2 templates; all token calls via `Task.Run` (TAP). Zul generated a real AATL ECC cert on ST3Ace with it.
+2. **Adobe empty signature** with that ECC cert: PDF `/Contents` all zeros. Cause = ST3Ace middleware links the cert in `CurrentUser\My` to `Securemetric ST3Ace CSP v1.0` (CAPI PROV_RSA_FULL, no ECDSA). Fix that worked for Zul: `certutil -user -csp "ST3Ace PKI Token Key Storage Provider" -repairstore My <thumb>`. Afterwards the store showed the CSP again → the middleware likely re-links on re-insert (not confirmed). Adobe PKCS#11 module attach gave "password is incorrect" though the PIN was right (unresolved, not needed).
+3. Tester made a desktop app: v1.0.0, icon, version info, logs in `%LOCALAPPDATA%\MSC Trustgate\ImportCertTester\logs`, FormClosing blocked while busy. `build-installer.ps1` → self-contained single-file `publish\ImportCertTester.exe` (portable, no .NET needed) + WiX 5 MSI `dist\ImportCertTester-Setup-1.0.0.msi` (UpgradeCode `821EED7C-D429-48AE-BE95-BF6B88E7D0C3`, never change).
+4. **MyTrustID ECC pickup error** (`C_SignInit CKR_GENERAL_ERROR` → `'elements' cannot be null`): first built as a module inside the tester, then **Zul asked to revert that and fix in the MyTrustID repo instead**. Fixed `CertificateRequest.cs` only → commit `261ef35` on new branch `fix/ecc-csr-pickup-st3ace`, **pushed**. Zul tested pickup on ST3Ace: works. Details in `projects/active/mytrustid-desktop.md`.
+
+### Pending / Next
+- MyTrustID: raise MR / cherry-pick `261ef35` to master when Zul asks. `origin/fix/rsa-keygen-crash-handling` still lacks `6b757b2` (it reached origin only via the new branch).
+- ImportCertTester: optional `git init` + GitLab repo if Zul wants it. Not yet tested on a PC without .NET.
+- ST3Ace ECC + Adobe: ask SecureMetric whether the middleware can propagate ECC certs with the KSP instead of the CSP.
 
 ## Session 43 (2026-11-10) — MTSA KASTAM unit tests + Trustgate GitOps CI/CD skill (NOT yet saved/pushed)
 1. **MTSA KASTAM** = NetBeans Ant WAR (`MyTrustSignerServiceAPI.war`), JDK 1.8, WildFly 18, 14 REST servlets, 37 JAX-WS clients; libs from `C:\PROJECTS\java Library`. Was not a git repo.
@@ -13,9 +25,15 @@
 5. Findings reported to Zul (not fixed): `ReadConfig.readConfig()` never closes its FileInputStream (called on every API request → fd leak); hardcoded MTIDA API key `SignJobHelper.java:826`; pilot creds in 10 `test/*.java`; `ValidateUserReportParam` reports "SignatureStatus" for missing CertificateRequestStatus.
 6. Zul's friend said to follow **trustgate/tgnra** for CI/CD → studied it + `C:\PROJECTS\DOCKER GITLAB\docker\argocd\README-ci.md` (official guide by Habib) → new skill **`trustgate-gitops-cicd` Lv.1**, plugin 1.14.0. Pattern: review (SonarQube) → build (buildkit rootless → Nexus `<app>:<VERSION>` + digest) → release (commit image@digest to trustgate/gitops `<app>/<env>/`, wait Argo CD Synced+Healthy). Pipeline never touches the cluster.
 
+7. **Zul's decisions**: GitLab repo `trustgate/mtsa-kastam`, release branch **`main`** (local branch renamed master → main). Zul OK'd fixing the findings:
+   - fd leak fixed: `ReadConfig.readConfig()` closes the stream in a `finally`. The regression test `configFileIsReleasedAfterSuccessAndFailure` was proven by mutation (it fails without the fix).
+   - Hardcoded TSMS API key removed from `SignJobHelper.sendPostMTIDA` → new optional config `mtida.tsms.api.key` (AES-encrypted like `mtida.user`, decrypted to `cfg.dec_tsms_api_key`); missing key → TSMS call returns `-101 "TSMS API key not configured"` before any HTTP. **Zul must add the encrypted key to `kastam-mtsa.pilot/prod.properties` (encrypt with `EncrypDecryptKey` in NetBeans) before deploying this build**, else TSMS user check/cert update fail. Old key value was in source + deployed WARs → consider rotating it with TSMS.
+   - **296 tests pass** now. Still uncommitted.
+8. Visual explainer published: https://claude.ai/artifact/E8EjEU6CQEYfB37hRE7yzw (Trustgate GitOps Pipeline — who talks to whom, the 3 jobs, release wait states, KASTAM delta, owners, failure table).
+
 ### Pending / Next
-- Zul to decide: fix the fd leak + move the MTIDA key to config before first push? GitLab remote name (`trustgate/mtsa-kastam`?), release branch, pilot vs prod first.
-- Write KASTAM `.gitlab-ci.yml` from the README template + Java additions (test stage, Sonar binaries/JaCoCo), multi-stage Dockerfile (Maven → WildFly 18), `VERSION`, `.dockerignore`; gitops `kastam/<env>/deployment.yaml` with `/opt/mtsa` config from Secret/NFS in the mount guard. Java path is unverified — confirm runner Maven Central access with Habib.
+- Write KASTAM `.gitlab-ci.yml` (`PIPELINE_BRANCH: main`) from the README template + Java additions (test stage, Sonar binaries/JaCoCo), multi-stage Dockerfile (Maven → WildFly 18), `VERSION`, `.dockerignore`; gitops `mtsa-kastam/<env>/deployment.yaml` (or `mtsa-kastam/` if single env) with `/opt/mtsa` config from Secret/NFS in the mount guard. Java path is unverified — confirm runner Maven Central access with Habib.
+- Ask Zul: single env (prod only) or pilot too? Then first commit + create GitLab project + push (only on his go).
 - Run `save` to commit + push memory (skill + session). **Note**: the skill, plugin 1.14.0, master-memory and this section were already pushed in `ac245e9` (swept in by the parallel MyTrustMail save, session 44) — a later `save` only needs to add new changes.
 
 ## Session 44 (2026-11-10, parallel to session 43) — MyTrustMail Firefox Add-ons submission ✅ PROJECT SAVED
