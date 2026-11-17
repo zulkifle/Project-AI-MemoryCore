@@ -2,9 +2,24 @@
 *Temporary working memory - resets each session, provides recap when AI restarts*
 
 ## Active Project
-- Name: **ImportCertTester + MyTrustID Desktop** (session 45, 2026-11-11). See below.
+- Name: **LHDN e-Invoice signing — client "500 Network connection broken"** (session 46, 2026-11-17). See below.
+- Previous: **ImportCertTester + MyTrustID Desktop** (session 45, 2026-11-11).
 - Also open: **MTSA KASTAM** (`C:\PROJECTS\KASTAM\MTSA_KASTAM`) — unit tests + CI/CD (session 43, 2026-11-10)
 - Previous: MyTrustID Desktop (session 41, 2026-10-29) — repo `C:\repos\MyTrustIDv1_AATL-GENERIC`, branch `fix/rsa-keygen-crash-handling` (HEAD `483449a`) + **uncommitted** `AuthServiceNpra.cs` name-normalize change. TG SeQureMail (session 40) pending list below is still open.
+
+## Session 46 (2026-11-17) — LHDN e-Invoice: client "500 Network connection broken" ✅ SAVED
+1. Project = `C:\PROJECTS\LHDN` (eInvoiceSigning WAR on WildFly, K8s `einvoice` NodePort 30030; latest source only in `Development\eInvoiceSigning_bacup_09092025.zip`; past cases in `ERROR REPORTED\`). No project file existed before.
+2. A client (SAP-based) reported `<H2>500 Network connection broken</H2>`, started after the infra maintenance on **Sat 14 Nov 2026 01:00-03:00**. Zul's direct calls to `https://digitalid.msctrustgate.com/einvoice/[v1.1/]eInvoiceSigning/SignInvoice` work.
+3. Probes from this PC (2026-11-17):
+   - **HTTP/1.0 without `Host` header → TLS OK, then the server closes with NO response** (GET and POST, repeated). HTTP/1.0 with `Host` and HTTP/1.1 → `401` (normal). Matches the symptom. Likely an nginx default_server `return 444`-style rule added during maintenance (not confirmed by infra).
+   - TLS: only TLS 1.2/1.3; TLS 1.2 accepts only `ECDHE-RSA-AES256-GCM-SHA384` + `ECDHE-RSA-AES128-GCM-SHA256`. Cert `*.msctrustgate.com` renewed (notBefore 19 Oct 2026, GeoTrust TLS RSA CA G1 → DigiCert Global Root G2). Secondary suspect only.
+4. Infra said the cause is the client's SAP using HTTP/1.0 and suggested SAP fixes. Corrected two points: no kernel/S4 upgrade needed, and `icm/HTTP/client/keep_alive_timeout` is unrelated.
+5. Zul emailed the client a checklist (timeline, platform, openssl/curl test, TLS/cipher support, CA trust, logs) with the 2 CA certs attached (exported to scratchpad `einvoice-certs\`).
+
+### Pending / Next
+- Wait for the client's reply; analyse their openssl/curl output and SAP `dev_icm` trace.
+- Proposed fix (not yet sent): **A** client SAP Basis: `SM59` → Type G destination → Special Options → HTTP Version = **HTTP 1.1** (permanent); **B** infra: let `/einvoice` accept requests without `Host` (make the digitalid server block `default_server` on 443 or relax the 444 rule) as a quick fix. Offered to draft both messages.
+- Ask infra exactly what changed on 14/11 (Host/444 rule, TLS ciphers, cert).
 
 ## Session 45 (2026-11-11) — ImportCertTester + MyTrustID ECC pickup fix ✅ SAVED
 1. **ImportCertTester** (`C:\repos\ImportCertTester`, WinForms .NET 8 x64, **not a git repo**): token → keypair (RSA 2048-4096 / ECC P-256/384/521) + CSR with copy → sign in PKIWS → paste + import → result. Built on MyTrustID's Pkcs11Interop 4.1.2 + BouncyCastle 2.6.2 templates; all token calls via `Task.Run` (TAP). Zul generated a real AATL ECC cert on ST3Ace with it.
