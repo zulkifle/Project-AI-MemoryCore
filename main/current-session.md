@@ -36,11 +36,12 @@
 - Ask Zul: single env (prod only) or pilot too? Then first commit + create GitLab project + push (only on his go).
 - Run `save` to commit + push memory (skill + session). **Note**: the skill, plugin 1.14.0, master-memory and this section were already pushed in `ac245e9` (swept in by the parallel MyTrustMail save, session 44) — a later `save` only needs to add new changes.
 
-## Session 44 (2026-11-10 to 11-16, parallel to sessions 43/45) — MyTrustMail Firefox Add-ons submission + FCPO trading SOP ✅ SAVED
+## Session 44 (2026-11-10 to 11-17, parallel to sessions 43/45) — MyTrustMail Firefox Add-ons submission + FCPO trading SOP ✅ SAVED
 1. Guided Zul through the AMO form; Zul **submitted 2026-11-10** (`dist\MyTrustMail-firefox-pilot-v1.0.2.zip`, confirmed by Zul).
 2. Choices: support `helpdesk@msctrustgate.com` + `/mytrustmail/contact`; licence All Rights Reserved; privacy = MyTrustMail-specific text supplementing the corporate notice (based on `91e6674`); source code = No; same reviewer accounts as Chrome.
 3. Casual chat → FCPO plan: Zul has **not started trading** yet (TA class Thu/Fri nights until end Nov, TradingView backtest in Dec). His teacher trades XAUUSD on a $100k prop account; explained why a 300-pip gold stop ≠ 300 FCPO ticks (RM7,500). Agreed risk 1-2.5% → keep RM250/trade, plus RM1,000 monthly cap.
 4. **FCPO trading SOP in Telegram** (TradeVault `position-sizing-bot`): reminder line under every brief + `/sop`. Added from Zul's Google-AI paste: 2 SL in a row → stop for the day, BE +1 tick at +15-20 ticks, Conservative RM200/8-tick profile, 1:2/1:3 TP table. Left out the "Agresif 3%" row and noted partial close needs ≥2 contracts (Zul agreed with all 3 calls). Brief model → Sonnet (Zul agreed). Commit `c13f884` pushed, image `customsupp:1.5` pushed. Rules in memory `project_trading_capital`.
+5. **2026-11-17: capital vs stop size.** Zul says his zones average ~50 ticks. Worked out the capital needed per stop at 2% risk: 8 ticks = RM10k (today's capital), 10 = RM12.5k, 15 = RM18.75k, 50 = RM62.5k. Advice: use the December backtest to measure the real stop each setup needs. If most fit in 8-10 ticks, RM10k is enough. If not, grow the capital or skip the big-stop setups. Never raise the % risk. No SOP change.
 
 ### Pending / Next
 - Zul: `kubectl apply -f k8s-deployment.yaml` (customsupp 1.5), then test `/sop` + `/fcpo`; watch Sonnet brief quality for a few days (switch back = `FCPO_BRIEF_MODEL` env only).
