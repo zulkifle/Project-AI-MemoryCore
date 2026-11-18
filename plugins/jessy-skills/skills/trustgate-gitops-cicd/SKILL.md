@@ -11,7 +11,7 @@ description: "MUST use when setting up or changing CI/CD for a Trustgate project
 ---
 
 # Trustgate GitOps CI/CD — review → build → release via Argo CD
-*How Trustgate apps are built and deployed: GitLab CI pushes an image to Nexus, records it in trustgate/gitops, and Argo CD rolls it out. Reference project: trustgate/tgnra.*
+*How Trustgate apps are built and deployed: GitLab CI pushes an image to Nexus, records it in trustgate/gitops, and Argo CD rolls it out. Reference project: trustgate/tgnra. Source of truth for the job YAML: `argocd/README-ci.md` in trustgate/docker on origin/master — `git fetch` and read `git show origin/master:argocd/README-ci.md` before writing or reviewing a pipeline (it changed 2026-11-12: tag `<VERSION>-<short sha>` + Nexus tag cleanup).*
 
 ## Activation
 
@@ -53,11 +53,12 @@ If the README and the tgnra pipeline disagree, the README template wins (it's th
 ```
 push to release branch (protected, e.g. production)
   → review:<app>   SonarQube scan            (sonar-scanner-cli, runner tag: review)
-  → build:<app>    image → Nexus <app>:<VERSION>, captures sha256 digest
+  → build:<app>    image → Nexus <app>:<VERSION>-<CI_COMMIT_SHORT_SHA> (e.g. 1.02-0a228a0d), captures sha256 digest
                    (moby/buildkit:rootless, daemonless — no Docker-in-Docker; runner tag: build)
   → release:<app>  sed the image line in trustgate/gitops <app>/<env>/*.yaml to
-                   localhost:30453/<app>:<VERSION>@sha256:<digest>, commit to master,
-                   then poll the Argo CD API (read-only token) until Synced + Healthy (max 10 min)
+                   localhost:30453/<app>:<VERSION>-<sha>@sha256:<digest>, commit to master,
+                   then poll the Argo CD API (read-only token) until Synced + Healthy (max 10 min),
+                   then delete all but the newest 3 tags of <app> from Nexus (NEXUS_URL http://10.5.1.42:30452, repo docker-hosted)
   → Argo CD        auto-sync (polls every 60s) applies <app>/<env>/ to the cluster
 ```
 
@@ -133,7 +134,7 @@ push to release branch (protected, e.g. production)
 
 ### Step 7: Confirm
 - [ ] Report: pipeline URL/state, image `<app>:<VERSION>@sha256:…`, gitops commit, Argo CD Healthy
-- [ ] Add rollback note: `git revert` the release commit in trustgate/gitops (old digest must still be in Nexus)
+- [ ] Add rollback note: `git revert` the release commit in trustgate/gitops (old digest must still be in Nexus; the release keeps only the newest 3 tags, so rollback reaches 2 releases back)
 
 ---
 
@@ -148,18 +149,96 @@ The template is written for Laravel. The **build** and **release** jobs are stac
 | **Java / Maven (WAR on WildFly/Tomcat)** | (1) add a `test` stage before `review`: `maven:3.9-eclipse-temurin-<jdk>` → `mvn -B clean verify`, keep `target/classes`, `target/site/jacoco/jacoco.xml` and surefire XML as artifacts (`reports: junit: target/surefire-reports/TEST-*.xml`); (2) Sonar needs `-Dsonar.java.binaries=target/classes -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml`, `-Dsonar.sources=src/java` (or `src/main/java`), `-Dsonar.tests=src/test/java`, and `needs: [test]`; (3) multi-stage Dockerfile: Maven stage builds the WAR, runtime stage copies it into the app server's deployments dir — so the buildkit job stays unchanged; (4) config dir (e.g. `/opt/mtsa` with `.properties` + `wscredentials.xml`) comes from a Secret or NFS mount, never the image; put that path in the mount guard |
 | Spring Boot jar | As Java, runtime stage `eclipse-temurin:<jdk>-jre` + `java -jar` |
 
-**Unverified for Java until the first real pipeline runs** — tgnra/tgwebsite (PHP) are the only proven apps as of 2026-11-10. Mark anything Java-specific as a proposal and confirm with Habib if the runner lacks Maven Central access (may need Nexus as a Maven mirror via `settings.xml`).
+**Java proven 2026-11-13:** MTSA KASTAM (`trustgate/custom`) pipeline #550 passed all of test (296), review, build and release on pilot. The Maven Central downloads worked from the runner. Mark anything Java-specific as a proposal and confirm with Habib if the runner lacks Maven Central access (may need Nexus as a Maven mirror via `settings.xml`).
 
 ---
 
 ## Day to day (short — details in README)
 
 - **Deploy**: push to the release branch. Unchanged `VERSION` still deploys (new digest) — bump it anyway for a readable tag.
-- **Rollback**: `git revert` the release commit in trustgate/gitops, push.
+- **Rollback**: `git revert` the release commit in trustgate/gitops, push. Full playbook in *Rollback & image tags* below.
 - **Edit gitops by hand**: always `git pull --rebase origin master` first (releases commit there any time).
 - **Change .env/config**: edit master copy `docker/<app>/<env>/.env` → recreate Secret with `--dry-run=client -o yaml | kubectl apply -f -` → `kubectl rollout restart deploy/<app>`.
 - **kubectl on Argo apps**: `applications.argoproj.io`, not `app` (Rancher steals the short name).
 - **selfHeal is on**: manual `kubectl edit` of managed objects gets reverted — change gitops instead.
+
+## Rollback & image tags (answers Dejul asked for, 2026-11-13..17, MTSA KASTAM)
+
+Explain these in Malay with the real example. Example from KASTAM pipeline #550:
+
+```
+localhost:30453/custom:1.07-26b046f4@sha256:442df0ad…
+└─registry────┘ └repo┘ └ver┘ └commit┘ └image digest┘
+                       └────tag────┘
+```
+
+| Part | Source | Meaning |
+|---|---|---|
+| `1.07` | `VERSION` file in the app repo | Human label. It changes only when Dejul edits the file. |
+| `26b046f4` | `$CI_COMMIT_SHORT_SHA` | The exact app commit the image was built from (`git show 26b046f4`). |
+| tag `1.07-26b046f4` | version + sha | One tag per push, so builds never overwrite each other. |
+| `@sha256:…` | Content hash computed at build time | What Kubernetes actually pulls (the tag is ignored once a digest is present). It can't be faked and changes with any byte. |
+
+**Every push to the release branch deploys**, whatever `VERSION` says. This includes a docs-only push: it gets a new tag and usually a new digest (`yum update` and timestamps change the image), the pod restarts, and one of the 3 kept Nexus tags is used up. If wanted, offer `rules: changes:` to skip `*.md`/`deploy/` pushes.
+
+**Dejul never edits the `image:` line by hand.** The release job clones gitops, seds the line, commits and pushes. Example: gitops `da08b43` was made by `release:custom-pilot`, not by Dejul. Dejul edits gitops by hand only for:
+- a rollback
+- non-image changes: env, probes, mounts, resources
+
+Run `git pull --rebase origin master` before either.
+
+**Rollback playbook:**
+
+1. **Restore the running app (gitops only, no app code touched).**
+
+   ```
+   cd "C:\PROJECTS\DOCKER GITLAB\gitops"; git pull --rebase origin master
+   git log --oneline -5 -- <app>/<env>      # path filter: only this app's commits
+   git show --stat <bad-release-sha>        # must list ONLY <app>/<env>/deployment.yaml
+   git revert <bad-release-sha> --no-edit; git push origin master
+   ```
+
+   - Argo CD syncs within about 1 minute. Only the app whose folder changed rolls out; other apps in the shared gitops repo stay untouched.
+   - If a commit touched several apps (manual commits), don't revert it. Instead: `git checkout <good-sha> -- <app>/<env>/deployment.yaml`, commit, push.
+   - Check `git diff HEAD~1 --stat` before pushing.
+   - Make sure no pipeline is still running on the release branch first, or its release overwrites the revert.
+
+2. **Stop the bug from coming back (app repo).** The release branch still holds the bad code, and the next push redeploys it. Either fix forward (bump VERSION), or `git revert` in the app repo before pushing again.
+
+3. **When the old image is gone from Nexus.** Cleanup keeps the newest 3 tags of the repo across ALL versions. Example: pushing 1.04 three times (`1.04-b1..b3`) deletes every `1.03-*` tag.
+   - A gitops revert then gives `ImagePullBackOff`. The old pod keeps running, so the app is not down.
+   - Roll back in the app repo instead:
+
+     ```
+     git revert --no-commit <last-good-sha>..HEAD
+     git commit -m "Revert to 1.03"
+     git push
+     ```
+
+     This rebuilds as `1.03-<new sha>`. Later, revert that revert to resume work on 1.04.
+   - Rolling back to an earlier attempt of the same version (b3 bad, b2 good) still works via gitops, within the last 3 tags.
+
+Don't use these to roll back:
+- `kubectl set image` or `kubectl edit`: selfHeal reverts them within seconds.
+- Argo CD UI "Rollback": not allowed while auto-sync is on.
+
+**Advice for iterating many times:**
+- Work on a feature branch. The pipeline runs only on the release branch, so branch pushes don't deploy.
+- Test locally (`mvn verify`, `docker build`/run), then merge.
+- Proposed but not adopted, ask Habib: cleanup keeps the newest 3 **plus the newest tag of the previous VERSION**.
+
+**Before adding a prod release job when pilot and prod share one image repo** (KASTAM: `custom`): pilot pushes would make the cleanup delete the image prod is running. The running pod survives, but a reschedule to another node fails the pull. This must be solved first: protect the image that prod is running, or use separate repos.
+
+**Unit-test log noise:** `ERROR` lines and stack traces in `test:<app>` come from negative tests that deliberately feed bad input. Judge only by `Tests run: N, Failures: 0, Errors: 0` and `BUILD SUCCESS`.
+
+**Coverage (JaCoCo):**
+- It is the share of code lines executed by unit tests. It shows untested logic and feeds Sonar Quality Gates.
+- Where to look:
+  - SonarQube project → Coverage. This is the main view, with red/green lines per file.
+  - GitLab pipeline → Tests tab, for JUnit results.
+  - The job artifact `jacoco.xml`: raw, expires after 1 day.
+  - Locally: `mvn verify`, then `target/site/jacoco/index.html`.
+- Watch the trend and coverage on new code, not 100%.
 
 ## When it fails (most common)
 
@@ -190,3 +269,4 @@ The template is written for Laravel. The **build** and **release** jobs are stac
 ## Skill Level
 
 **Lv.1** (2026-11-10) — extracted from trustgate/tgnra (`production`, image 1.06) + `docker/argocd/README-ci.md`; first target: MTSA KASTAM (Java 8 / Maven WAR / WildFly 18).
+**Lv.2** (2026-11-17) — added the first Java pipeline (KASTAM #550, green) and the rollback & image-tag playbook from Dejul's questions.
