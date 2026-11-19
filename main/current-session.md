@@ -2,8 +2,21 @@
 *Temporary working memory - resets each session, provides recap when AI restarts*
 
 ## Active Project
-- Name: **LHDN e-Invoice signing — client "500 Network connection broken"** (sessions 46-47, 2026-11-17/18). See below.
-- Also today (parallel): **FCPO bot — SMC + CRT entry SOP, customsupp 1.6** (session 48, 2026-11-18).
+- Name: **KVM7DC etcd maintenance — 4→3 members + etcd on NVMe** (session 49, 2026-11-18/19). See below.
+- Previous: LHDN e-Invoice (sessions 46-47), FCPO bot customsupp 1.6 (session 48).
+
+## Session 49 (2026-11-18/19) — KVM7DC etcd slowness: scripts + guide + CRF ✅ SAVED
+1. Fakrul asked Zul for help: etcd latency far above p99 < 10 ms. Investigated read-only via the tunnel: `slow fdatasync` (>1 s, max 2.4 s) on all 4 nodes, kvm7 (leader) worst, late heartbeats; kvm8 precheck: 567 "apply took too long"/h. Root cause: etcd, Longhorn (22 vols x3, Prometheus writes non-stop), containerd all on one `sda` HDD. `nvme0n1` 447G at `/mysql` on kvm7/kvm8/kvm10 (Zul confirmed kvm7/kvm10).
+2. Plan (Fakrul's proposal): (a) remove kvm9 from etcd (4→3, same fault tolerance), kvm9 rejoins as control-plane only (`disable-etcd: true`); (b) move ONLY `/var/lib/rancher/rke2/server/db/etcd` to `/mysql/rke2-etcd` via **symlink** (path is fixed: RKE2 regenerates `etcd/config`, static pod mounts only that hostPath; `data-dir:` would move all of rke2). systemd drop-in `10-etcd-ssd.conf` guards the NVMe mount.
+3. Delivered in `C:\PROJECTS\DOCKER GITLAB\docker\etcd-ssd-migration\` (not committed, not our repo): `common.sh`, `00-precheck.sh` (read-only, `--fio` optional), `01-snapshot.sh`, `02-remove-etcd-member.sh stop|remove|rejoin`, `03-move-etcd-to-ssd.sh [target]|rollback` (fio p99 ≤10 ms gate, rsync -aHAX + diff + SELinux label sync, HDD copy kept as `etcd.hdd-bak-<stamp>`), `README.md`, `STEPS.txt` (step 0 removed — Zul already ran precheck). Simulated in an oraclelinux:9 container: 7/7 tests pass.
+4. Zul's DevOps team reviewed it: OK. Activity date not set yet.
+5. Drafted the CRF (6 fields, change type "Other": etcd/storage maintenance), est. 2-3 h, date TBC → added as precedent in the CRF skill (Lv.3).
+
+### Pending / Next
+- Activity day: help Zul read outputs step by step (order kvm9 stop → kvm7 remove → kvm9 rejoin → kvm10 → kvm8 → kvm7). Watch for SELinux `permission denied` on the first node (kvm10). Not yet proven on real RKE2.
+- Still open for Fakrul: OK for etcd to share the NVMe with MySQL; kvm9 control-plane vs agent; follower defrag (437 MB vs 114 MB); MySQL backup device on kvm9; spread `backup-dr` (hourly :00).
+- After 1 week stable: delete `etcd.hdd-bak-*` / `db.removed-*`; never delete `/mysql/rke2-etcd`.
+- `README.md` stray edit in this repo still left out of the commit — ask Zul whether to discard.
 
 ## Session 48 (2026-11-18, parallel to 47) — FCPO bot: SMC + CRT entry SOP, customsupp 1.6 ✅ SAVED
 1. Zul pasted his newest SOP from the TA class (SMC + CRT). Added it to `/sop` as a new section (`sop_setup()` in `fcpo_brief.py`, TradeVault `position-sizing-bot`): setups POI HTF + CRT at PWH/PDH (ref. class example #1 + trade idea #12.5), AIE setup deferred until bigger capital, SMC checklist in order (H4+H1 → M15 → M5/M3/M1: POI → swing low/high → MSS breakout body → liquidity inducement → premium/discount range → BOS), induce rules, skip-MSS rules, Zone/TP table (SMC = POI HTF / last high, CRT = BOS structure / last res-sup), intraday close before market close. Risk rules unchanged.

@@ -909,6 +909,18 @@ Gotchas seen in production deploys (MyTrustMail pilot, 2026-10-06):
 | Redirects go to `http://` behind TLS nginx / OTP rate limit sees nginx IP | Proxy headers ignored | `SERVER_FORWARD_HEADERS_STRATEGY=native` + nginx `X-Forwarded-Proto/For` |
 | Windows `cmd`: `'grep' is not recognized` | No grep in cmd | `kubectl logs … \| findstr /C:"Started" /C:"ERROR"` |
 
+### RKE2 etcd maintenance (KVM7DC, 2026-11-18)
+
+| Topic | Fact / gotcha |
+|-------|---------------|
+| etcdctl | Not on the host. `crictl exec <etcd cid> etcdctl --cacert/--cert/--key /var/lib/rancher/rke2/server/tls/etcd/... --endpoints https://127.0.0.1:2379`, with `CRI_CONFIG_FILE=/var/lib/rancher/rke2/agent/etc/crictl.yaml`. Metrics: `http://127.0.0.1:2381/metrics` |
+| Slow disk signs | `slow fdatasync` (only logged when one fsync > 1 s), `apply request took too long`, `leader failed to send out heartbeat ... slow disk`. Target: WAL fsync p99 < 10 ms. fio test: `--rw=write --ioengine=sync --fdatasync=1 --size=22m --bs=2300` |
+| Moving etcd only | The path `/var/lib/rancher/rke2/server/db/etcd` is fixed (RKE2 regenerates `etcd/config` each start; static pod mounts only that hostPath). `data-dir:` moves ALL of rke2. Use a symlink (or bind mount) to the SSD, plus a systemd drop-in `RequiresMountsFor=` + `ExecStartPre=mountpoint -q` |
+| rke2-killall.sh | Unmounts every mount under `/var/lib/rancher/rke2` → a bind mount there gets unmounted; a symlink survives |
+| cluster-reset | `rke2 server --cluster-reset` renames the `etcd` path → with a symlink the link moves and new data lands back on the HDD |
+| 4 vs 3 members | Both tolerate 1 failure; 3 needs 2 acks per write instead of 3. Remove a member: drain + stop node → `kubectl delete node` (RKE2 removes the member) → `disable-etcd: true` + move `server/db` aside → rejoin as control-plane only |
+| Bash scripts | `lsblk` on a non-block device returns exit 32 → kills a `set -o pipefail` script silently; wrap with `|| true` |
+
 ## Level History
 - **Lv.1** — Full CKA skill: all 5 exam domains, imperative commands, YAML templates,
   troubleshooting ladder, etcd backup/restore, RBAC, scheduling, storage, networking.
@@ -920,3 +932,4 @@ Gotchas seen in production deploys (MyTrustMail pilot, 2026-10-06):
   (NodePort + data-center nginx `cluster.local`, registry, configmap/deployment split) and a gotcha table
   (actuator mail-health probe hang, MariaDB "MySQL 5.5" compat string, MariaDB collation FK errno 150,
   shared-ConfigMap env leakage, forward headers, cmd findstr).
+- **Lv.4** — RKE2 etcd maintenance (KVM7DC, 2026-11-18): etcdctl via crictl, slow-disk log signs + fio test, moving only the etcd dir (symlink + systemd guard), killall/cluster-reset gotchas, 4→3 member removal, lsblk/pipefail gotcha.

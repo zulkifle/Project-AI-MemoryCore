@@ -93,6 +93,17 @@ The first real CRF filed using this pattern — reference this when drafting fut
 
 Requested by Dejul 2026-07-14, endorsed same day, authorized 2026-07-20, completed and validated 2026-07-21.
 
+### Other Change Type: Cluster / Storage Maintenance (KVM7DC etcd, 2026-11-18)
+
+Second documented pattern: a change Zul's team executes with prepared scripts (not a NAS mount). The CRF records it for approval.
+
+- **Purpose** names every node + IP touched, both parts of the change, and what is explicitly NOT touched (e.g. "Longhorn, containerd, kubelet, snapshots, logs stay on the HDD").
+- **Reason** quotes the measured symptom with numbers (p99 target vs observed, log warning counts, late heartbeats) and the root cause in one sentence.
+- **Impact** for rolling node maintenance: "No full service downtime; nodes drained one at a time, pods restart on other nodes". Risk = **Medium**. Call out any window with no fault tolerance. Give per-node rollback + disaster restore (snapshot).
+- **Note** lists the prepared scripts/guide, who reviewed them (DevOps team), backup retention, and safety guards. Mark unconfirmed facts `[confirm]` until Zul verifies (e.g. "kvm7/kvm10 have the same NVMe" — confirmed by Zul the same day).
+- **Activities** follow the guide's order: precheck → snapshot → change → verify per node → post-check → cleanup after a week.
+- **Duration** = script runtime plus buffer for verify/rollback (1.5-2 h of work → "2-3 hours"); Time = "after office hours / maintenance window".
+
 ### Reason Variants Seen So Far
 
 The "why" for a NAS mount tends to fall into one of these — ask which applies, and ask for the exact local path and file names before drafting, don't assume:
@@ -223,3 +234,4 @@ Estimated Duration: [e.g. 30–60 minutes]
 
 - **Lv.1** — Base: 7-section CRF template with an invented "Description of Change" field, NFS Mount convention, inline-output-only default. (Origin: 2026-08-06, first request — mtsa NAS mount under quickcash)
 - **Lv.2** — Corrected to match MSC Trustgate's real Appendix B-4.0 template after Dejul shared the actual filed form: dropped the invented section (Purpose carries the technical detail inline), scope corrected to default to "all K8s nodes" not a single server, added the real `mtidverchecker` precedent (2026-07-14 request → 2026-07-21 completed) as the reference example, explicitly scoped out the approval chain and Section 2 Follow-up as outside this skill. (Origin: 2026-08-06, same session — real form: `Change Request Form (CRF).pdf`)
+- **Lv.3** — First non-NAS change type: cluster/storage maintenance (KVM7DC etcd 4→3 members + etcd data dir on NVMe via symlink). Added its Purpose/Reason/Impact/Note/Activities/Duration conventions and the `[confirm]` tag for unverified facts. (Origin: 2026-11-18/19, session 49)
